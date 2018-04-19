@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Spring Boot 事务的使用 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="Spring Boot 使用事务非常简单，首先使用注解 @EnableTransactionManagement 开启事务支持后，然后在访问  数据库  的Service方法上添加注解 @Transactional 便可。 关于事务管理器，不管是JPA还是JDBC等都实现自接口 PlatformTransactionManager 如果你添加的是 spring-boot-starter-jdbc">
+<meta name="keywords" content="spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot 事务的使用">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Spring Boot 事务的使用/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="Spring Boot 使用事务非常简单，首先使用注解 @EnableTransactionManagement 开启事务支持后，然后在访问  数据库  的Service方法上添加注解 @Transactional 便可。 关于事务管理器，不管是JPA还是JDBC等都实现自接口 PlatformTransactionManager 如果你添加的是 spring-boot-starter-jdbc">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:updated_time" content="2018-04-19T16:30:06.054Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Boot 事务的使用">
+<meta name="twitter:description" content="Spring Boot 使用事务非常简单，首先使用注解 @EnableTransactionManagement 开启事务支持后，然后在访问  数据库  的Service方法上添加注解 @Transactional 便可。 关于事务管理器，不管是JPA还是JDBC等都实现自接口 PlatformTransactionManager 如果你添加的是 spring-boot-starter-jdbc">
+<meta name="twitter:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Spring Boot 事务的使用" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Spring Boot 事务的使用
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Spring Boot 事务的使用/">
+            <time datetime="2018-04-19T16:34:21.442Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Spring/">Spring</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/spring/">spring</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>Spring Boot 使用事务非常简单，首先使用注解 @EnableTransactionManagement 开启事务支持后，然后在访问 <a href="http://lib.csdn.net/base/14" target="_blank" rel="noopener"> 数据库
+</a> 的Service方法上添加注解 @Transactional 便可。</p>
+<p>关于事务管理器，不管是JPA还是JDBC等都实现自接口 PlatformTransactionManager 如果你添加的是 spring-boot-<br>starter-jdbc 依赖，框架会默认注入 DataSourceTransactionManager 实例。如果你添加的是 spring-boot-<br>starter-data-jpa 依赖，框架会默认注入 JpaTransactionManager 实例。</p>
+<p>你可以在启动类中添加如下方法，Debug测试，就能知道自动注入的是 PlatformTransactionManager 接口的哪个实现类。</p>
+<pre><code>@EnableTransactionManagement // 启注解事务管理，等同于xml配置方式的 &lt;tx:annotation-driven /&gt;
+@SpringBootApplication
+public class ProfiledemoApplication {
+
+    @Bean
+    public Object testBean(PlatformTransactionManager platformTransactionManager){
+        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&quot; + platformTransactionManager.getClass().getName());
+        return new Object();
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(ProfiledemoApplication.class, args);
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+</ul>
+<p>这些SpringBoot为我们自动做了，这些对我们并不透明，如果你项目做的比较大，添加的持久化依赖比较多，我们还是会选择人为的指定使用哪个事务管理器。<br>代码如下：</p>
+<pre><code>@EnableTransactionManagement
+@SpringBootApplication
+public class ProfiledemoApplication {
+
+    // 其中 dataSource 框架会自动为我们注入
+    @Bean
+    public PlatformTransactionManager txManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean
+    public Object testBean(PlatformTransactionManager platformTransactionManager) {
+        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&quot; + platformTransactionManager.getClass().getName());
+        return new Object();
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(ProfiledemoApplication.class, args);
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+</ul>
+<p>在Spring容器中，我们手工注解@Bean 将被优先加载，框架不会重新实例化其他的 PlatformTransactionManager 实现类。</p>
+<p>然后在Service中，被 @Transactional 注解的方法，将支持事务。如果注解在类上，则整个类的所有方法都默认支持事务。</p>
+<p>对于同一个工程中存在多个事务管理器要怎么处理，请看下面的实例，具体说明请看代码中的注释。</p>
+<pre><code>@EnableTransactionManagement // 开启注解事务管理，等同于xml配置文件中的 &lt;tx:annotation-driven /&gt;
+@SpringBootApplication
+public class ProfiledemoApplication implements TransactionManagementConfigurer {
+
+    @Resource(name=&quot;txManager2&quot;)
+    private PlatformTransactionManager txManager2;
+
+    // 创建事务管理器1
+    @Bean(name = &quot;txManager1&quot;)
+    public PlatformTransactionManager txManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    // 创建事务管理器2
+    @Bean(name = &quot;txManager2&quot;)
+    public PlatformTransactionManager txManager2(EntityManagerFactory factory) {
+        return new JpaTransactionManager(factory);
+    }
+
+    // 实现接口 TransactionManagementConfigurer 方法，其返回值代表在拥有多个事务管理器的情况下默认使用的事务管理器
+    @Override
+    public PlatformTransactionManager annotationDrivenTransactionManager() {
+        return txManager2;
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(ProfiledemoApplication.class, args);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+</ul>
+<pre><code>@Component
+public class DevSendMessage implements SendMessage {
+
+    // 使用value具体指定使用哪个事务管理器
+    @Transactional(value=&quot;txManager1&quot;)
+    @Override
+    public void send() {
+        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;Dev Send()&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
+        send2();
+    }
+
+    // 在存在多个事务管理器的情况下，如果使用value具体指定
+    // 则默认使用方法 annotationDrivenTransactionManager() 返回的事务管理器
+    @Transactional
+    public void send2() {
+        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;Dev Send2()&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+</ul>
+<p>注：<br>如果Spring容器中存在多个 PlatformTransactionManager 实例，并且没有实现接口<br>TransactionManagementConfigurer 指定默认值，在我们在方法上使用注解 @Transactional<br>的时候，就必须要用value指定，如果不指定，则会抛出异常。</p>
+<p>对于系统需要提供默认事务管理的情况下，实现接口 TransactionManagementConfigurer 指定。</p>
+<p>对有的系统，为了避免不必要的问题，在业务中必须要明确指定 @Transactional 的 value 值的情况下。不建议实现接口<br>TransactionManagementConfigurer，这样控制台会明确抛出异常，开发人员就不会忘记主动指定。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Spring Boot 事务的使用/#comments" id="sourceId::2018/04/20/Spring Boot 事务的使用/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/sqlserver汉字转拼音/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    sqlserver汉字转拼音
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Spring boot 使用Druid数据源/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Spring boot 使用Druid数据源</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Spring Boot 事务的使用/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

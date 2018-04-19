@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Spring Boot 动态数据源（多数据源自动切换） | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="本文实现案例场景：某系统除了需要从自己的主要  数据库 上读取和管理数据外，还有一部分业务涉及到其他多个数据库，要求可以在任何方法上可以灵活指定具体要操作的数据库。 为了在开发中以最简单的方法使用，本文基于注解和AOP的方法实现，在springboot框架的项目中，添加本文实现的代码类后，只需要配置好数据源就可以直接通过注解使用，简单方便。  一配置二使用  1. 启动类注册动态数据源  2. 配">
+<meta name="keywords" content="spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot 动态数据源（多数据源自动切换）">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Spring Boot 动态数据源（多数据源自动切换）/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="本文实现案例场景：某系统除了需要从自己的主要  数据库 上读取和管理数据外，还有一部分业务涉及到其他多个数据库，要求可以在任何方法上可以灵活指定具体要操作的数据库。 为了在开发中以最简单的方法使用，本文基于注解和AOP的方法实现，在springboot框架的项目中，添加本文实现的代码类后，只需要配置好数据源就可以直接通过注解使用，简单方便。  一配置二使用  1. 启动类注册动态数据源  2. 配">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:updated_time" content="2018-04-19T16:30:06.673Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Boot 动态数据源（多数据源自动切换）">
+<meta name="twitter:description" content="本文实现案例场景：某系统除了需要从自己的主要  数据库 上读取和管理数据外，还有一部分业务涉及到其他多个数据库，要求可以在任何方法上可以灵活指定具体要操作的数据库。 为了在开发中以最简单的方法使用，本文基于注解和AOP的方法实现，在springboot框架的项目中，添加本文实现的代码类后，只需要配置好数据源就可以直接通过注解使用，简单方便。  一配置二使用  1. 启动类注册动态数据源  2. 配">
+<meta name="twitter:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Spring Boot 动态数据源（多数据源自动切换）" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Spring Boot 动态数据源（多数据源自动切换）
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Spring Boot 动态数据源（多数据源自动切换）/">
+            <time datetime="2018-04-19T16:34:21.434Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Spring/">Spring</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/spring/">spring</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>本文实现案例场景：<br>某系统除了需要从自己的主要 <a href="http://lib.csdn.net/base/14" target="_blank" rel="noopener"> 数据库 </a><br>上读取和管理数据外，还有一部分业务涉及到其他多个数据库，要求可以在任何方法上可以灵活指定具体要操作的数据库。</p>
+<p>为了在开发中以最简单的方法使用，本文基于注解和AOP的方法实现，在spring<br>boot框架的项目中，添加本文实现的代码类后，只需要配置好数据源就可以直接通过注解使用，简单方便。</p>
+<p><strong> 一配置二使用 </strong><br><strong> 1. 启动类注册动态数据源 </strong><br><strong> 2. 配置文件中配置多个数据源 </strong><br><strong> 3. 在需要的方法上使用注解指定数据源 </strong></p>
+<p>1、在启动类添加 @Import({DynamicDataSourceRegister.class,<br>MProxyTransactionManagementConfiguration.class})</p>
+<pre><code>@SpringBootApplication
+@Import({DynamicDataSourceRegister.class}) // 注册动态多数据源
+public class SpringBootSampleApplication {
+
+    // 省略其他代码
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+</ul>
+<p>2、配置文件配置内容为：<br>（不包括项目中的其他配置，这里只是数据源相关的）</p>
+<pre><code># 主数据源，默认的
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+spring.datasource.url=jdbc:mysql://localhost:3306/test
+spring.datasource.username=root
+spring.datasource.password=123456
+
+# 更多数据源
+custom.datasource.names=ds1,ds2
+custom.datasource.ds1.driver-class-name=com.mysql.jdbc.Driver
+custom.datasource.ds1.url=jdbc:mysql://localhost:3306/test1
+custom.datasource.ds1.username=root
+custom.datasource.ds1.password=123456
+
+custom.datasource.ds2.driver-class-name=com.mysql.jdbc.Driver
+custom.datasource.ds2.url=jdbc:mysql://localhost:3306/test2
+custom.datasource.ds2.username=root
+custom.datasource.ds2.password=123456
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+</ul>
+<p>3、使用方法</p>
+<pre><code>package org.springboot.sample.service;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.springboot.sample.datasource.TargetDataSource;
+import org.springboot.sample.entity.Student;
+import org.springboot.sample.mapper.StudentMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Service;
+
+/**
+ * Student Service
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月12日
+ */
+@Service
+public class StudentService {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    // MyBatis的Mapper方法定义接口
+    @Autowired
+    private StudentMapper studentMapper;
+
+    @TargetDataSource(name=&quot;ds2&quot;)
+    public List&lt;Student&gt; likeName(String name){
+        return studentMapper.likeName(name);
+    }
+
+    public List&lt;Student&gt; likeNameByDefaultDataSource(String name){
+        return studentMapper.likeName(name);
+    }
+
+    /**
+     * 不指定数据源使用默认数据源
+     *
+     * @return
+     * @author SHANHY
+     * @create  2016年1月24日
+     */
+    public List&lt;Student&gt; getList(){
+        String sql = &quot;SELECT ID,NAME,SCORE_SUM,SCORE_AVG, AGE   FROM STUDENT&quot;;
+        return (List&lt;Student&gt;) jdbcTemplate.query(sql, new RowMapper&lt;Student&gt;(){
+
+            @Override
+            public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Student stu = new Student();
+                stu.setId(rs.getInt(&quot;ID&quot;));
+                stu.setAge(rs.getInt(&quot;AGE&quot;));
+                stu.setName(rs.getString(&quot;NAME&quot;));
+                stu.setSumScore(rs.getString(&quot;SCORE_SUM&quot;));
+                stu.setAvgScore(rs.getString(&quot;SCORE_AVG&quot;));
+                return stu;
+            }
+
+        });
+    }
+
+    /**
+     * 指定数据源
+     *
+     * @return
+     * @author SHANHY
+     * @create  2016年1月24日
+     */
+    @TargetDataSource(name=&quot;ds1&quot;)
+    public List&lt;Student&gt; getListByDs1(){
+        String sql = &quot;SELECT ID,NAME,SCORE_SUM,SCORE_AVG, AGE   FROM STUDENT&quot;;
+        return (List&lt;Student&gt;) jdbcTemplate.query(sql, new RowMapper&lt;Student&gt;(){
+
+            @Override
+            public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Student stu = new Student();
+                stu.setId(rs.getInt(&quot;ID&quot;));
+                stu.setAge(rs.getInt(&quot;AGE&quot;));
+                stu.setName(rs.getString(&quot;NAME&quot;));
+                stu.setSumScore(rs.getString(&quot;SCORE_SUM&quot;));
+                stu.setAvgScore(rs.getString(&quot;SCORE_AVG&quot;));
+                return stu;
+            }
+
+        });
+    }
+
+    /**
+     * 指定数据源
+     *
+     * @return
+     * @author SHANHY
+     * @create  2016年1月24日
+     */
+    @TargetDataSource(name=&quot;ds2&quot;)
+    public List&lt;Student&gt; getListByDs2(){
+        String sql = &quot;SELECT ID,NAME,SCORE_SUM,SCORE_AVG, AGE   FROM STUDENT&quot;;
+        return (List&lt;Student&gt;) jdbcTemplate.query(sql, new RowMapper&lt;Student&gt;(){
+
+            @Override
+            public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Student stu = new Student();
+                stu.setId(rs.getInt(&quot;ID&quot;));
+                stu.setAge(rs.getInt(&quot;AGE&quot;));
+                stu.setName(rs.getString(&quot;NAME&quot;));
+                stu.setSumScore(rs.getString(&quot;SCORE_SUM&quot;));
+                stu.setAvgScore(rs.getString(&quot;SCORE_AVG&quot;));
+                return stu;
+            }
+
+        });
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+</ul>
+<p>要注意的是，在使用MyBatis时，注解@TargetDataSource 不能直接在接口类Mapper上使用。<br>按上面的代码中StudentMapper为接口，代码如下：</p>
+<pre><code>package org.springboot.sample.mapper;
+
+import java.util.List;
+
+import org.springboot.sample.entity.Student;
+
+/**
+ * StudentMapper，映射SQL语句的接口，无逻辑实现
+ *
+ * @author 单红宇(365384722)
+ * @myblog http://blog.csdn.net/catoop/
+ * @create 2016年1月20日
+ */
+public interface StudentMapper {
+
+    // 注解 @TargetDataSource 不可以在这里使用
+    List&lt;Student&gt; likeName(String name);
+
+    Student getById(int id);
+
+    String getNameById(int id);
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<hr>
+<hr>
+<p>请将下面几个类放到Spring Boot项目中。<br>DynamicDataSource. <a href="http://lib.csdn.net/base/17" target="_blank" rel="noopener"> Java </a><br>DynamicDataSourceAspect.java<br>DynamicDataSourceContextHolder.java<br>DynamicDataSourceRegister.java<br>TargetDataSource.java</p>
+<pre><code>package org.springboot.sample.datasource;
+
+import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+
+/**
+ * 动态数据源
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月22日
+ */
+public class DynamicDataSource extends AbstractRoutingDataSource {
+
+    @Override
+    protected Object determineCurrentLookupKey() {
+        return DynamicDataSourceContextHolder.getDataSourceType();
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+</ul>
+<pre><code>package org.springboot.sample.datasource;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+/**
+ * 切换数据源Advice
+ *
+ * @author 单红宇(365384722)
+ * @myblog http://blog.csdn.net/catoop/
+ * @create 2016年1月23日
+ */
+@Aspect
+@Order(-1)// 保证该AOP在@Transactional之前执行
+@Component
+public class DynamicDataSourceAspect {
+
+    private static final Logger logger = LoggerFactory.getLogger(DynamicDataSourceAspect.class);
+
+    @Before(&quot;@annotation(ds)&quot;)
+    public void changeDataSource(JoinPoint point, TargetDataSource ds) throws Throwable {
+        String dsId = ds.name();
+        if (!DynamicDataSourceContextHolder.containsDataSource(dsId)) {
+            logger.error(&quot;数据源[{}]不存在，使用默认数据源 &gt; {}&quot;, ds.name(), point.getSignature());
+        } else {
+            logger.debug(&quot;Use DataSource : {} &gt; {}&quot;, ds.name(), point.getSignature());
+            DynamicDataSourceContextHolder.setDataSourceType(ds.name());
+        }
+    }
+
+    @After(&quot;@annotation(ds)&quot;)
+    public void restoreDataSource(JoinPoint point, TargetDataSource ds) {
+        logger.debug(&quot;Revert DataSource : {} &gt; {}&quot;, ds.name(), point.getSignature());
+        DynamicDataSourceContextHolder.clearDataSourceType();
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+</ul>
+<pre><code>package org.springboot.sample.datasource;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class DynamicDataSourceContextHolder {
+
+    private static final ThreadLocal&lt;String&gt; contextHolder = new ThreadLocal&lt;String&gt;();
+    public static List&lt;String&gt; dataSourceIds = new ArrayList&lt;&gt;();
+
+    public static void setDataSourceType(String dataSourceType) {
+        contextHolder.set(dataSourceType);
+    }
+
+    public static String getDataSourceType() {
+        return contextHolder.get();
+    }
+
+    public static void clearDataSourceType() {
+        contextHolder.remove();
+    }
+
+    /**
+     * 判断指定DataSrouce当前是否存在
+     *
+     * @param dataSourceId
+     * @return
+     * @author SHANHY
+     * @create  2016年1月24日
+     */
+    public static boolean containsDataSource(String dataSourceId){
+        return dataSourceIds.contains(dataSourceId);
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+</ul>
+<pre><code>package org.springboot.sample.datasource;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValues;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.bind.RelaxedDataBinder;
+import org.springframework.boot.bind.RelaxedPropertyResolver;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.env.Environment;
+import org.springframework.core.type.AnnotationMetadata;
+
+/**
+ * 动态数据源注册&lt;br/&gt;
+ * 启动动态数据源请在启动类中（如SpringBootSampleApplication）
+ * 添加 @Import(DynamicDataSourceRegister.class)
+ *
+ * @author 单红宇(365384722)
+ * @myblog http://blog.csdn.net/catoop/
+ * @create 2016年1月24日
+ */
+public class DynamicDataSourceRegister
+        implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+
+    private static final Logger logger = LoggerFactory.getLogger(DynamicDataSourceRegister.class);
+
+    private ConversionService conversionService = new DefaultConversionService(); 
+    private PropertyValues dataSourcePropertyValues;
+
+    // 如配置文件中未指定数据源类型，使用该默认值
+    private static final Object DATASOURCE_TYPE_DEFAULT = &quot;org.apache.tomcat.jdbc.pool.DataSource&quot;;
+    // private static final Object DATASOURCE_TYPE_DEFAULT =
+    // &quot;com.zaxxer.hikari.HikariDataSource&quot;;
+
+    // 数据源
+    private DataSource defaultDataSource;
+    private Map&lt;String, DataSource&gt; customDataSources = new HashMap&lt;&gt;();
+
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        Map&lt;Object, Object&gt; targetDataSources = new HashMap&lt;Object, Object&gt;();
+        // 将主数据源添加到更多数据源中
+        targetDataSources.put(&quot;dataSource&quot;, defaultDataSource);
+        DynamicDataSourceContextHolder.dataSourceIds.add(&quot;dataSource&quot;);
+        // 添加更多数据源
+        targetDataSources.putAll(customDataSources);
+        for (String key : customDataSources.keySet()) {
+            DynamicDataSourceContextHolder.dataSourceIds.add(key);
+        }
+
+        // 创建DynamicDataSource
+        GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+        beanDefinition.setBeanClass(DynamicDataSource.class);
+        beanDefinition.setSynthetic(true);
+        MutablePropertyValues mpv = beanDefinition.getPropertyValues();
+        mpv.addPropertyValue(&quot;defaultTargetDataSource&quot;, defaultDataSource);
+        mpv.addPropertyValue(&quot;targetDataSources&quot;, targetDataSources);
+        registry.registerBeanDefinition(&quot;dataSource&quot;, beanDefinition);
+
+        logger.info(&quot;Dynamic DataSource Registry&quot;);
+    }
+
+    /**
+     * 创建DataSource
+     *
+     * @param type
+     * @param driverClassName
+     * @param url
+     * @param username
+     * @param password
+     * @return
+     * @author SHANHY
+     * @create 2016年1月24日
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public DataSource buildDataSource(Map&lt;String, Object&gt; dsMap) {
+        try {
+            Object type = dsMap.get(&quot;type&quot;);
+            if (type == null)
+                type = DATASOURCE_TYPE_DEFAULT;// 默认DataSource
+
+            Class&lt;? extends DataSource&gt; dataSourceType;
+            dataSourceType = (Class&lt;? extends DataSource&gt;) Class.forName((String) type);
+
+            String driverClassName = dsMap.get(&quot;driver-class-name&quot;).toString();
+            String url = dsMap.get(&quot;url&quot;).toString();
+            String username = dsMap.get(&quot;username&quot;).toString();
+            String password = dsMap.get(&quot;password&quot;).toString();
+
+            DataSourceBuilder factory = DataSourceBuilder.create().driverClassName(driverClassName).url(url)
+                    .username(username).password(password).type(dataSourceType);
+            return factory.build();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 加载多数据源配置
+     */
+    @Override
+    public void setEnvironment(Environment env) {
+        initDefaultDataSource(env);
+        initCustomDataSources(env);
+    }
+
+    /**
+     * 初始化主数据源
+     *
+     * @author SHANHY
+     * @create 2016年1月24日
+     */
+    private void initDefaultDataSource(Environment env) {
+        // 读取主数据源
+        RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(env, &quot;spring.datasource.&quot;);
+        Map&lt;String, Object&gt; dsMap = new HashMap&lt;&gt;();
+        dsMap.put(&quot;type&quot;, propertyResolver.getProperty(&quot;type&quot;));
+        dsMap.put(&quot;driver-class-name&quot;, propertyResolver.getProperty(&quot;driver-class-name&quot;));
+        dsMap.put(&quot;url&quot;, propertyResolver.getProperty(&quot;url&quot;));
+        dsMap.put(&quot;username&quot;, propertyResolver.getProperty(&quot;username&quot;));
+        dsMap.put(&quot;password&quot;, propertyResolver.getProperty(&quot;password&quot;));
+
+        defaultDataSource = buildDataSource(dsMap);
+
+        dataBinder(defaultDataSource, env);
+    }
+
+    /**
+     * 为DataSource绑定更多数据
+     *
+     * @param dataSource
+     * @param env
+     * @author SHANHY
+     * @create  2016年1月25日
+     */
+    private void dataBinder(DataSource dataSource, Environment env){
+        RelaxedDataBinder dataBinder = new RelaxedDataBinder(dataSource);
+        //dataBinder.setValidator(new LocalValidatorFactory().run(this.applicationContext));
+        dataBinder.setConversionService(conversionService);
+        dataBinder.setIgnoreNestedProperties(false);//false
+        dataBinder.setIgnoreInvalidFields(false);//false
+        dataBinder.setIgnoreUnknownFields(true);//true
+        if(dataSourcePropertyValues == null){
+            Map&lt;String, Object&gt; rpr = new RelaxedPropertyResolver(env, &quot;spring.datasource&quot;).getSubProperties(&quot;.&quot;);
+            Map&lt;String, Object&gt; values = new HashMap&lt;&gt;(rpr);
+            // 排除已经设置的属性
+            values.remove(&quot;type&quot;);
+            values.remove(&quot;driver-class-name&quot;);
+            values.remove(&quot;url&quot;);
+            values.remove(&quot;username&quot;);
+            values.remove(&quot;password&quot;);
+            dataSourcePropertyValues = new MutablePropertyValues(values);
+        }
+        dataBinder.bind(dataSourcePropertyValues);
+    }
+
+    /**
+     * 初始化更多数据源
+     *
+     * @author SHANHY
+     * @create 2016年1月24日
+     */
+    private void initCustomDataSources(Environment env) {
+        // 读取配置文件获取更多数据源，也可以通过defaultDataSource读取数据库获取更多数据源
+        RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(env, &quot;custom.datasource.&quot;);
+        String dsPrefixs = propertyResolver.getProperty(&quot;names&quot;);
+        for (String dsPrefix : dsPrefixs.split(&quot;,&quot;)) {// 多个数据源
+            Map&lt;String, Object&gt; dsMap = propertyResolver.getSubProperties(dsPrefix + &quot;.&quot;);
+            DataSource ds = buildDataSource(dsMap);
+            customDataSources.put(dsPrefix, ds);
+            dataBinder(ds, env);
+        }
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+<li>121 </li>
+<li>122 </li>
+<li>123 </li>
+<li>124 </li>
+<li>125 </li>
+<li>126 </li>
+<li>127 </li>
+<li>128 </li>
+<li>129 </li>
+<li>130 </li>
+<li>131 </li>
+<li>132 </li>
+<li>133 </li>
+<li>134 </li>
+<li>135 </li>
+<li>136 </li>
+<li>137 </li>
+<li>138 </li>
+<li>139 </li>
+<li>140 </li>
+<li>141 </li>
+<li>142 </li>
+<li>143 </li>
+<li>144 </li>
+<li>145 </li>
+<li>146 </li>
+<li>147 </li>
+<li>148 </li>
+<li>149 </li>
+<li>150 </li>
+<li>151 </li>
+<li>152 </li>
+<li>153 </li>
+<li>154 </li>
+<li>155 </li>
+<li>156 </li>
+<li>157 </li>
+<li>158 </li>
+<li>159 </li>
+<li>160 </li>
+<li>161 </li>
+<li>162 </li>
+<li>163 </li>
+<li>164 </li>
+<li>165 </li>
+<li>166 </li>
+<li>167 </li>
+<li>168 </li>
+<li>169 </li>
+<li>170 </li>
+<li>171 </li>
+<li>172 </li>
+<li>173 </li>
+<li>174 </li>
+<li>175 </li>
+<li>176 </li>
+<li>177 </li>
+<li>178 </li>
+<li>179 </li>
+<li>180 </li>
+<li>181 </li>
+<li>182 </li>
+<li>183 </li>
+<li>184 </li>
+<li>185 </li>
+<li>186 </li>
+<li>187 </li>
+<li>188 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+<li>121 </li>
+<li>122 </li>
+<li>123 </li>
+<li>124 </li>
+<li>125 </li>
+<li>126 </li>
+<li>127 </li>
+<li>128 </li>
+<li>129 </li>
+<li>130 </li>
+<li>131 </li>
+<li>132 </li>
+<li>133 </li>
+<li>134 </li>
+<li>135 </li>
+<li>136 </li>
+<li>137 </li>
+<li>138 </li>
+<li>139 </li>
+<li>140 </li>
+<li>141 </li>
+<li>142 </li>
+<li>143 </li>
+<li>144 </li>
+<li>145 </li>
+<li>146 </li>
+<li>147 </li>
+<li>148 </li>
+<li>149 </li>
+<li>150 </li>
+<li>151 </li>
+<li>152 </li>
+<li>153 </li>
+<li>154 </li>
+<li>155 </li>
+<li>156 </li>
+<li>157 </li>
+<li>158 </li>
+<li>159 </li>
+<li>160 </li>
+<li>161 </li>
+<li>162 </li>
+<li>163 </li>
+<li>164 </li>
+<li>165 </li>
+<li>166 </li>
+<li>167 </li>
+<li>168 </li>
+<li>169 </li>
+<li>170 </li>
+<li>171 </li>
+<li>172 </li>
+<li>173 </li>
+<li>174 </li>
+<li>175 </li>
+<li>176 </li>
+<li>177 </li>
+<li>178 </li>
+<li>179 </li>
+<li>180 </li>
+<li>181 </li>
+<li>182 </li>
+<li>183 </li>
+<li>184 </li>
+<li>185 </li>
+<li>186 </li>
+<li>187 </li>
+<li>188 </li>
+</ul>
+<pre><code>package org.springboot.sample.datasource;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * 在方法上使用，用于指定使用哪个数据源
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月23日
+ */
+@Target({ ElementType.METHOD, ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface TargetDataSource {
+    String name();
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+</ul>
+<p>本文代码博主是经过测试后没有问题才发出来共享给大家的。对于连接池参数配置会应用到所有数据源上。<br>比如配置一个：</p>
+<pre><code>spring.datasource.maximum-pool-size=80
+</code></pre><ul>
+<li>1 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+</ul>
+<p>那么我们所有的数据源都会自动应用上。</p>
+<hr>
+<p>补充：<br>如果你使用的是SpringMVC，并集成了Shiro，一般按网上的配置你可能是：</p>
+<pre><code>&lt;bean class=&quot;org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator&quot; depends-on=&quot;lifecycleBeanPostProcessor&quot;&gt;
+    &lt;property name=&quot;proxyTargetClass&quot; value=&quot;true&quot; /&gt;
+&lt;/bean&gt;
+
+&lt;bean class=&quot;org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor&quot;&gt;
+    &lt;property name=&quot;securityManager&quot; ref=&quot;securityManager&quot;/&gt;
+&lt;/bean&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+</ul>
+<p>那么你请不要这样做，请按下面方法配置：</p>
+<pre><code>    &lt;!-- AOP式方法级权限检查  --&gt;
+    &lt;!-- 不要使用 DefaultAdvisorAutoProxyCreator 会出现二次代理的问题，这里不详述。 mark by shanhy 2016-05-15 --&gt;
+    &lt;aop:config proxy-target-class=&quot;true&quot;/&gt;
+    &lt;!-- 或者你使用了 &lt;aop:aspectj-autoproxy proxy-target-class=&quot;true&quot; /&gt; 也可以。 --&gt;
+
+    &lt;bean class=&quot;org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor&quot;&gt;
+        &lt;property name=&quot;securityManager&quot; ref=&quot;securityManager&quot;/&gt;
+&lt;/bean&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+</ul>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Spring Boot 动态数据源（多数据源自动切换）/#comments" id="sourceId::2018/04/20/Spring Boot 动态数据源（多数据源自动切换）/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Spring Boot 部署与服务配置/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Spring Boot 部署与服务配置
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Spring Boot Shiro 权限管理/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Spring Boot Shiro 权限管理</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Spring Boot 动态数据源（多数据源自动切换）/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

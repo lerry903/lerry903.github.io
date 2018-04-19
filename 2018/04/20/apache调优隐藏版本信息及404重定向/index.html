@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>apache调优隐藏版本信息及404重定向 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="apache调优隐藏版本信息及404重定向  本节所讲  内容：       实战：源码编译安装  apache  及调优技巧     实战环境：    生产环境中，部署了  apache  之后，我们应该从安全还是性能角度，在  apache  服务上线之前，对其做诸多的优化调试才行。     Apache    实验环境：    apache  版本：  httpd-2.2.31    源码包">
+<meta name="keywords" content="linux,Apache">
+<meta property="og:type" content="article">
+<meta property="og:title" content="apache调优隐藏版本信息及404重定向">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/apache调优隐藏版本信息及404重定向/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="apache调优隐藏版本信息及404重定向  本节所讲  内容：       实战：源码编译安装  apache  及调优技巧     实战环境：    生产环境中，部署了  apache  之后，我们应该从安全还是性能角度，在  apache  服务上线之前，对其做诸多的优化调试才行。     Apache    实验环境：    apache  版本：  httpd-2.2.31    源码包">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-04-19T16:30:17.020Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="apache调优隐藏版本信息及404重定向">
+<meta name="twitter:description" content="apache调优隐藏版本信息及404重定向  本节所讲  内容：       实战：源码编译安装  apache  及调优技巧     实战环境：    生产环境中，部署了  apache  之后，我们应该从安全还是性能角度，在  apache  服务上线之前，对其做诸多的优化调试才行。     Apache    实验环境：    apache  版本：  httpd-2.2.31    源码包">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-apache调优隐藏版本信息及404重定向" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            apache调优隐藏版本信息及404重定向
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/apache调优隐藏版本信息及404重定向/">
+            <time datetime="2018-04-19T16:34:21.415Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Linux/">Linux</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Apache/">Apache</a>, <a class="tag-link" href="/tags/linux/">linux</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>apache调优隐藏版本信息及404重定向</p>
+<p><strong> 本节所讲  内容：  </strong>   </p>
+<p><strong> 实战：源码编译安装  apache  及调优技巧  </strong></p>
+<hr>
+<p><strong> 实战环境：  </strong></p>
+<p><strong> 生产环境中，部署了  apache  之后，我们应该从安全还是性能角度，在  apache  服务上线之前，对其做诸多的优化调试才行。  </strong></p>
+<hr>
+<p><strong> Apache  </strong></p>
+<p><strong> 实验环境：  </strong></p>
+<p><strong> apache  版本：  httpd-2.2.31  </strong></p>
+<p><strong> 源码包存放位置：  /usr/local/src  </strong></p>
+<p><strong> 源码包编译安装位置：  apache  ：  /usr/local/apache2.2-xuegod/  </strong></p>
+<hr>
+<p><strong> 技巧  1  ：  </strong></p>
+<p><strong> 安装  apache  屏蔽  apache  版本等敏感信息  </strong></p>
+<hr>
+<p><strong> 查看  apache  版本信息：  </strong></p>
+<p><strong> [root@xuegod63 ~]# curl -I<a href="http://www.baidu.com" target="_blank" rel="noopener">www.baidu.com</a>  </strong></p>
+<p><strong> 。。。  </strong></p>
+<p><strong> X-Powered-By: HPHP  </strong></p>
+<p><strong> Server:  BWS/1.1  </strong></p>
+<p><strong> X-UA-Compatible:IE=Edge,chrome=1  </strong></p>
+<p><strong> BDPAGETYPE: 1  </strong></p>
+<p><strong> BDQID: 0xcfd31d8200026e11  </strong></p>
+<p><strong> BDUSERID: 0  </strong></p>
+<hr>
+<p><strong> 测试自己的网站看是什么版本？有没有相应的漏洞  </strong></p>
+<hr>
+<p><strong> [root@xuegod63 ~]# curl -I<a href="http://www.taobao.com" target="_blank" rel="noopener">www.taobao.com</a>  </strong></p>
+<p><strong> HTTP/1.1 302 Found  </strong></p>
+<p><strong> Server  :Tengine  基于  nginx  做了二次开发  </strong></p>
+<p><strong> Date: Tue, 17 Nov 201502:22:06 GMT  </strong></p>
+<p><strong> Content-Type: text/html  </strong></p>
+<p><strong> Content-Length: 258  </strong></p>
+<p><strong> Connection: keep-alive  </strong></p>
+<p><strong> Location: <a href="https://www.taobao.com/" target="_blank" rel="noopener"> https://www.taobao.com/ </a> </strong></p>
+<p><strong> 彻底让版本等敏感信息消失  </strong></p>
+<p><strong> 要彻底将版本之类的信息进行改头换面，需要在编译之前修改源码包下  include/ap_release.h  文件  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.25]#pwd  </strong></p>
+<p><strong> /usr/local/src  </strong></p>
+<p><strong> [root@xuegod63 src]# rm -rfhttpd-2.2.25  </strong></p>
+<p><strong> [root@xuegod63 src]# tar zxfhttpd-2.2.25.tar.gz  </strong></p>
+<p><strong> [root@xuegod63 src]# cdhttpd-2.2.25  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.25]#vim include/ap_release.h  #  修改源码中的版本信息为自己公司的相关信息，隐藏真实版本信息  </strong></p>
+<p><strong> 改：  </strong></p>
+<p><strong> 42 #define AP_SERVER_BASEVENDOR”Apache Software Foundation”  </strong></p>
+<p><strong> 43 #define AP_SERVER_BASEPROJECT “ApacheHTTP Server”  </strong></p>
+<p><strong> 44 #define AP_SERVER_BASEPRODUCT”Apache”  </strong></p>
+<p><strong> 45  </strong></p>
+<p><strong> 46 #define AP_SERVER_MAJORVERSION_NUMBER 2  </strong></p>
+<p><strong> 47 #define AP_SERVER_MINORVERSION_NUMBER 2  </strong></p>
+<p><strong> 48 #define AP_SERVER_PATCHLEVEL_NUMBER   25  </strong></p>
+<p><strong> 49 #define AP_SERVER_DEVBUILD_BOOLEAN    0  </strong></p>
+<p><strong> 为：  </strong></p>
+<p><strong> #defineAP_SERVER_BASEVENDOR “xuegod”  </strong></p>
+<p><strong> #defineAP_SERVER_BASEPROJECT “  </strong> <strong> web server”  </strong></p>
+<p><strong> #defineAP_SERVER_BASEPRODUCT “  </strong> <strong> xuegod web server”  </strong></p>
+<hr>
+<p><strong> #defineAP_SERVER_MAJORVERSION_NUMBER 8  </strong></p>
+<p><strong> #defineAP_SERVER_MINORVERSION_NUMBER 1  </strong></p>
+<p><strong> #defineAP_SERVER_PATCHLEVEL_NUMBER   2  </strong></p>
+<p><strong> #defineAP_SERVER_DEVBUILD_BOOLEAN    3  </strong></p>
+<p><strong> 注释：  </strong></p>
+<p><strong> #define AP_SERVER_BASEVENDOR”Apache Software Foundation” #  服务的供应商名称  </strong></p>
+<p><strong> #define AP_SERVER_BASEPROJECT”Apache HTTP Server”  #  服务的项目名称  </strong></p>
+<p><strong> #define AP_SERVER_BASEPRODUCT”Apache”        #  服务的产品名  </strong></p>
+<p><strong> #define AP_SERVER_MAJORVERSION_NUMBER2  #  主要版本号  </strong></p>
+<p><strong> #defineAP_SERVER_MINORVERSION_NUMBER 4  #  小版本号  </strong></p>
+<p><strong> #defineAP_SERVER_PATCHLEVEL_NUMBER  6  #  补丁级别  </strong></p>
+<p><strong> #defineAP_SERVER_DEVBUILD_BOOLEAN  0  #  </strong></p>
+<p><strong> 注：上述列出的行，大家可以修改成自己想要的，然后编译安装之后，再对  httpd-default.conf  文件进行修改，对方就彻底不知道你的版本号了。  </strong></p>
+<p><strong> 源码编译安装  apache  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.11]# yum installopenssl*  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.25]#./configure –prefix=/usr/local/apache2.2-xuegod –enable-so –enable-rewrite–enable-ssl   –enable-deflate  –enable-expires  #  检查安装环境并生成  Makefile  文件  </strong></p>
+<hr>
+<p><strong> 配置参数用途：  </strong></p>
+<p><strong> --prefix=/usr/local/apache2.2   #  指定安装路径  </strong></p>
+<p><strong> --enable-so  #  支持动态加载模  块  </strong></p>
+<p><strong> --enable-rewrite #  支持网站地址重写  </strong></p>
+<p><strong> --enable-ssl #  支持  ssl  加密  </strong></p>
+<p><strong> --enable-deflate #  支持页面传输前进行压缩  </strong></p>
+<p><strong> --enable-expires #  支持设置网页缓存的时间  </strong></p>
+<hr>
+<p><strong> 编译安装：  make&amp;&amp; make install  </strong></p>
+<hr>
+<p><strong> 查看安装后目录：  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.25]# ls/usr/local/apache2.2-xuegod/conf/httpd.conf  </strong></p>
+<p><strong> /usr/local/apache2.2-xuegod/conf/httpd.conf  </strong></p>
+<p><strong> 存放网站的根目录：  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.25]#ls /usr/local/apache2.2-xuegod/htdocs/  </strong></p>
+<p><strong> index.html  </strong></p>
+<p><strong> 修改默认首页内容：  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.25]# echo apache-xuegod&gt;&gt; /usr/local/apache2.2-xuegod/htdocs/index.html  </strong></p>
+<p><strong> 启动  apache  ：  </strong></p>
+<p><strong> 配置  apache  可以开机启动并且可以使用  service  命令启动  apache  服务器  </strong></p>
+<p><strong> [root@xuegod63 httpd-2.2.25]#cp /usr/local/apache2.2-xuegod/bin/apachectl /etc/init.d/apachectl-xuegod  </strong></p>
+<hr>
+<p><strong> 启动  apache  ：  </strong></p>
+<p><strong> [<a href="mailto:root@xuegod63httpd-2.2.25" target="_blank" rel="noopener">root@xuegod63httpd-2.2.25</a>]# /etc/init.d/apachectl-xuegod start  </strong></p>
+<p><strong> 测试：  </strong></p>
+<p><strong> 测试：隐藏  apache  版本信息  </strong></p>
+<p><strong> [root@xuegod63 ~]# curl -I192.168.1.63   #  看不到  apache  版本相关内容了  </strong></p>
+<p><strong> HTTP/1.1 200 OK  </strong></p>
+<p><strong> Date: Sat, 29 Aug 201509:43:44 GMT  </strong></p>
+<p><strong> Server:  xuegod web server/8.1.2-dev (Unix) mod_ssl/8.1.2-devOpenSSL/1.0.0-fips  </strong></p>
+<p><strong> Last-Modified: Sat, 29 Aug2015 09:37:36 GMT  </strong></p>
+<p><strong> ETag: “6d086-3a-51e6ff35dba19”  </strong></p>
+<p><strong> Accept-Ranges: bytes  </strong></p>
+<p><strong> Content-Length: 58  </strong></p>
+<p><strong> Content-Type: text/html  </strong></p>
+<hr>
+<p><strong> 再次隐藏版本号和系统类型  </strong></p>
+<p><strong> 接下来再次修改：  </strong></p>
+<hr>
+<p><strong> [root@xuegod63 ~]#  vim/usr/local/apache2.2-xuegod/conf/httpd.conf  </strong></p>
+<p><strong> 405 #Includeconf/extra/httpd-default.conf  </strong></p>
+<p><strong> 为：  </strong></p>
+<p><strong> Includeconf/extra/httpd-default.conf  </strong></p>
+<hr>
+<p><strong> 2  ）打开  httpd-default.conf  文件，修改如下两个地方  </strong></p>
+<p><strong> [root@xuegod63 ~]#  vim/usr/local/apache2.2-xuegod/conf/extra/httpd-default.conf  </strong></p>
+<p><strong> 改：  </strong></p>
+<p><strong> 55 ServerTokens Full  </strong></p>
+<p><strong> 65 ServerSignature On    signature  签名  </strong></p>
+<p><strong> 为：  </strong></p>
+<p><strong> ServerTokens Prod   #  不显示服务器操作系统类型  </strong></p>
+<p><strong> ServerSignature Off   #  不显示  web  服务器版本号  </strong></p>
+<hr>
+<p><strong> 让  apache  配置文件生效的方法：  </strong></p>
+<p><strong> 方法  1  ：重启服务：  restart  </strong></p>
+<p><strong> 方法  2  ：不重启服务，重新加载配置文件  </strong></p>
+<p><strong> reload  是  nginx  </strong></p>
+<p><strong> [root@xuegod63 ~]#/etc/init.d/apachectl-xuegod graceful  优雅的  </strong></p>
+<p><strong> 测试：  </strong></p>
+<p><strong> [root@xuegod63 ~]# curl -I192.168.1.63  </strong></p>
+<p><strong> HTTP/1.1 200 OK  </strong></p>
+<p><strong> Date: Thu, 14 Jan 201602:31:24 GMT  </strong></p>
+<p><strong> Server:  xuegod web server  </strong></p>
+<hr>
+<p><strong> 总结：  </strong></p>
+<p><strong> 1，  安装之前改  include/ap_release.h  </strong></p>
+<p><strong> 2，  Httpd.conf    extra/httpd-default.conf  去掉注释  </strong></p>
+<p><strong> 3，  修改  extra/httpd-default.conf  </strong></p>
+<p><strong> 55 ServerTokens Full  </strong></p>
+<p><strong> 65 ServerSignature On    signature  签名  </strong></p>
+<p><strong> 为：  </strong></p>
+<p><strong> ServerTokens Prod   #  不显示服务器操作系统类型  </strong></p>
+<p><strong> ServerSignature Off   #  不显示  web  服务器版本号  </strong></p>
+<hr>
+<p><strong> 2  、错误页面优雅显示  </strong></p>
+<p><strong> 为了提升网站的用户体验，避免  404  ，  403  之类的丑陋的默认错误提示出现。  </strong></p>
+<p><strong> <a href="http://192.18.1.63/a.html" target="_blank" rel="noopener"> http://192.18.1.63/a.html </a> </strong></p>
+<p><strong> 方法一：  </strong></p>
+<p><strong> [root@xuegod63 ~]# vim/usr/local/apache2.2-xuegod/conf/httpd.conf  #  在根目录的标签中添加以下红色标记内容。  </strong></p>
+<p><strong> 132 <directory" usr="" local="" apache2.2-xuegod="" htdocs"=""> </directory"></strong></p>
+<p><strong> 。。。  </strong></p>
+<p><strong> 在大约  159  行，插入：  </strong></p>
+<p><strong> ErrorDocument 404 /404.html  </strong></p>
+<p><strong> 160  </strong></p>
+<p><strong> 注：  #  将  404  错误跳转到  /usr/local/apache2.2-xuegod/htdocs  下的  404.html  页面上  </strong></p>
+<p><strong> 注：  ErrorDocument  的命令格式如下：  </strong></p>
+<p><strong> ErrorDocument  错误代码 跳转到的页面链接或文件  </strong></p>
+<hr>
+<p><strong> 创建  404  测试页：  </strong></p>
+<p><strong> [root@xuegod63 ~]# echo”404 go to home” &gt; /usr/local/apache2.2-xuegod/htdocs/404.html  </strong></p>
+<hr>
+<p><strong> 重启：  </strong></p>
+<p><strong> [root@xuegod63 ~]# /etc/init.d/apachectl-xuegodrestart  </strong></p>
+<hr>
+<hr>
+<p><strong> 方法  2  ： 出错后，跳转到一个链接  </strong></p>
+<p><strong> [root@xuegod63 ~]# vim/usr/local/apache2.2-xuegod/conf/httpd.conf  #  在根目录的标签中添加以下红色标记内容。  </strong></p>
+<p><strong> 132 <directory" usr="" local="" apache2.2-xuegod="" htdocs"=""> </directory"></strong></p>
+<p><strong> 。。。  </strong></p>
+<p><strong> 在大约  159  行，插入：  </strong></p>
+<p><strong> ErrorDocument 404 <a href="http://www.baidu.com" target="_blank" rel="noopener"> http://www.baidu.com </a> </strong></p>
+<p><strong> 160  </strong></p>
+<p><strong> 注：  #  将  404  错误跳转到  <a href="http://www.baidu.com" target="_blank" rel="noopener"> http://www.baidu.com </a> </strong></p>
+<hr>
+<p><strong> 重启：  </strong></p>
+<p><strong> [root@xuegod63 ~]#/etc/init.d/apachectl-xuegod restart  </strong></p>
+<hr>
+<hr>
+<p><strong> 总结：  ErrorDocument  的命令格式如下：  </strong></p>
+<p><strong> ErrorDocument  错误代码 跳转到的页面或文件  </strong></p>
+<p><strong> 另外这里需要注意，你若设置跳转到文件，必须要有这个文件才行。另外文件必须在站点目录内，不然会报错。  </strong></p>
+<hr>
+<p><strong> 终极总结：  </strong></p>
+<p><strong> 1、  隐藏  web  服务的版本信息  </strong></p>
+<p><strong> 2、  出现  404  错误，给它一个友好的提示  </strong></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/apache调优隐藏版本信息及404重定向/#comments" id="sourceId::2018/04/20/apache调优隐藏版本信息及404重定向/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Excel文件office2003 and office2007 操作/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Excel文件office2003 and office2007 操作
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Activiti工作流引擎使用/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Activiti工作流引擎使用</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/apache调优隐藏版本信息及404重定向/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

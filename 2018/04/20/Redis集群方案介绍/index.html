@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Redis集群方案介绍 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="本文节选自《App 后台开发运维和架构实践》一书  由于Redis出众的性能，其在众多的移动互联网企业中得到广泛的应用。Redis在3.0版本前只支持单实例模式，虽然现在的服务器内存可以到100GB、200GB的规模，但是单实例模式限制了Redis没法满足业务的需求（例如新浪微博就曾经用Redis存储了超过1TB的数据）。Redis的开发者Antirez早在博客上就提出在Redis3.0版本中加">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis集群方案介绍">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Redis集群方案介绍/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="本文节选自《App 后台开发运维和架构实践》一书  由于Redis出众的性能，其在众多的移动互联网企业中得到广泛的应用。Redis在3.0版本前只支持单实例模式，虽然现在的服务器内存可以到100GB、200GB的规模，但是单实例模式限制了Redis没法满足业务的需求（例如新浪微博就曾经用Redis存储了超过1TB的数据）。Redis的开发者Antirez早在博客上就提出在Redis3.0版本中加">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://img.mp.itc.cn/upload/20160602/cccf7954e02f4cd5bb4ccc0e4b41a41e_th.j
+pg">
+<meta property="og:image" content="http://img.mp.itc.cn/upload/20160602/0a782ef70afa460d862121a714811bf6_th.j
+pg">
+<meta property="og:image" content="http://img.mp.itc.cn/upload/20160602/ea48e6280d38466485a3c9fedb58d71a_th.j
+pg">
+<meta property="og:image" content="http://img.mp.itc.cn/upload/20160602/9bcc2b9eb8294561ad146c247c0b9d75_th.j
+pg">
+<meta property="og:updated_time" content="2018-04-19T16:30:26.601Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis集群方案介绍">
+<meta name="twitter:description" content="本文节选自《App 后台开发运维和架构实践》一书  由于Redis出众的性能，其在众多的移动互联网企业中得到广泛的应用。Redis在3.0版本前只支持单实例模式，虽然现在的服务器内存可以到100GB、200GB的规模，但是单实例模式限制了Redis没法满足业务的需求（例如新浪微博就曾经用Redis存储了超过1TB的数据）。Redis的开发者Antirez早在博客上就提出在Redis3.0版本中加">
+<meta name="twitter:image" content="http://img.mp.itc.cn/upload/20160602/cccf7954e02f4cd5bb4ccc0e4b41a41e_th.j
+pg">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Redis集群方案介绍" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Redis集群方案介绍
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Redis集群方案介绍/">
+            <time datetime="2018-04-19T16:34:21.428Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Redis/">Redis</a>
+    </div>
+
+                        
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p><strong> 本文节选自《App 后台开发运维和架构实践》一书 </strong></p>
+<p>由于Redis出众的性能，其在众多的移动互联网企业中得到广泛的应用。Redis在3.0版本前只支持单实例模式，虽然现在的服务器<br>内存可以到100GB、200GB的规模，但是单实例模式限制了Redis没法满足业务的需求（例如新浪微博就曾经用Redis存储了超过1TB的数<br>据）。Redis的开发者Antirez早在博客上就提出在Redis<br>3.0版本中加入集群的功能，但3.0版本等到2015年才发布正式版。各大企业在3.0版本还没发布前为了解决Redis的存储瓶颈，纷纷推出了各自的<br>Redis集群方案。这些方案的核心思想是把数据分片（sharding）存储在多个Redis实例中，每一片就是一个Redis实例。</p>
+<p>下面介绍Redis的集群方案。</p>
+<p><strong> 1.客户端分片 </strong></p>
+<p>客户端分片是把分片的逻辑放在Redis客户端实现，通过Redis客户端预先定义好的路由规则，把对Key的访问转发到不同的Redis实例中，最后把返回结果汇集<br>。这种方案的模式如图1所示。</p>
+<p><img src="http://img.mp.itc.cn/upload/20160602/cccf7954e02f4cd5bb4ccc0e4b41a41e_th.j
+pg" alt=""></p>
+<p>_ 图1 客户端分片的模式 _</p>
+<p>客户端分片的好处是所有的逻辑都是可控的，不依赖于第三方分布式中间件。开发人员清楚怎么实现分片、路由的规则，不用担心踩坑。</p>
+<p>客户端分片方案有下面这些缺点。</p>
+<ul>
+<li><p>这是一种静态的分片方案，需要增加或者减少Redis实例的数量，需要手工调整分片的程序。 </p>
+</li>
+<li><p>可运维性差，集群的数据出了任何问题都需要运维人员和开发人员一起合作，减缓了解决问题的速度，增加了跨部门沟通的成本。 </p>
+</li>
+<li><p>在不同的客户端程序中，维护相同的分片逻辑成本巨大。例如，系统中有两套业务系统共用一套Redis集群，一套业务系统用Java实现， 另一套业务系统用PHP实现。为了保证分片逻辑的一致性，在Java客户端中实现的分片逻辑也需要在PHP客户端实现一次。相同的逻辑在不同的系统中分别 实现，这种设计本来就非常糟糕，而且需要耗费巨大的开发成本保证两套业务系统分片逻辑的一致性。 </p>
+</li>
+</ul>
+<p><strong> 2.Twemproxy  </strong></p>
+<p>Twemproxy是由Twitter开源的Redis代理，其基本原理是：Redis客户端把请求发送到Twemproxy，Twemproxy根据路由规则发送到<br>正确的Redis实例，最后Twemproxy把结果汇集返回给客户端。</p>
+<p>Twemproxy通过引入一个代理层，将多个Redis实例进行统一管理，使Redis客户端只需要在Twemproxy上进行操作，而不需要关心后面有多少个Re<br>dis实例，从而实现了Redis集群。</p>
+<p>Twemproxy集群架构如图2所示。</p>
+<p><img src="http://img.mp.itc.cn/upload/20160602/0a782ef70afa460d862121a714811bf6_th.j
+pg" alt=""></p>
+<p>_ 图2Twemproxy集群架构  _</p>
+<p>Twemproxy的优点如下。</p>
+<ul>
+<li><p>客户端像连接Redis实例一样连接Twemproxy，不需要改任何的代码逻辑。 </p>
+</li>
+<li><p>支持无效Redis实例的自动删除。 </p>
+</li>
+<li><p>Twemproxy与Redis实例保持连接，减少了客户端与Redis实例的连接数。 </p>
+</li>
+</ul>
+<p>Twemproxy有如下不足。</p>
+<ul>
+<li><p>由于Redis客户端的每个请求都经过Twemproxy代理才能到达Redis服务器，这个过程中会产生性能损失。 </p>
+</li>
+<li><p>没有友好的监控管理后台界面，不利于运维监控。 </p>
+</li>
+<li><p>最大的问题是Twemproxy无法平滑地增加Redis实例。对于运维人员来说，当因为业务需要增加Redis实例时工作量非常大。 </p>
+</li>
+</ul>
+<p>Twemproxy作为最被广泛使用、最久经考验、稳定性最高的Redis代理，在业界被广泛使用。</p>
+<p><strong> 3.Codis  </strong></p>
+<p>Twemproxy不能平滑增加Redis实例的问题带来了很大的不便，于是豌豆荚自主研发了Codis，一个支持平滑增加Redis实例的Redis代理软件，其基<br>于Go和C语言开发，并于2014年11月在GitHub上开源。</p>
+<p>Codis包含下面4个部分。</p>
+<ul>
+<li><p>Codis Proxy：Redis客户端连接到Redis实例的代理，实现了Redis的协议，Redis客户端连接到Codis Proxy进行各种操作。Codis Proxy是无状态的，可以用Keepalived等负载均衡软件部署多个Codis Proxy实现高可用。 </p>
+</li>
+<li><p>CodisRedis：Codis项目维护的Redis分支，添加了slot和原子的数据迁移命令。Codis上层的 Codis Proxy和Codisconfig只有与这个版本的Redis通信才能正常运行。 </p>
+</li>
+<li><p>Codisconfig：Codis管理工具。可以执行添加删除CodisRedis节点、添加删除Codis Proxy、数据迁移等操作。另外，Codisconfig自带了HTTP server，里面集成了一个管理界面，方便运维人员观察Codis集群的状态和进行相关的操作，极大提高了运维的方便性，弥补了Twemproxy的缺 点。 </p>
+</li>
+<li><p>ZooKeeper：分布式的、开源的应用程序协调服务，是Hadoop和Hbase的重要组件，其为分布式应用提供一致性服务，提供的 功能包括：配置维护、名字服务、分布式同步、组服务等。Codis依赖于ZooKeeper存储数据路由表的信息和Codis Proxy节点的元信息。另外，Codisconfig发起的命令都会通过ZooKeeper同步到CodisProxy的节点。 </p>
+</li>
+</ul>
+<p>Codis的架构如图3所示。</p>
+<p><img src="http://img.mp.itc.cn/upload/20160602/ea48e6280d38466485a3c9fedb58d71a_th.j
+pg" alt=""></p>
+<p>_ 图3Codis的架构图 _</p>
+<p>在图3的Codis的架构图中，Codis引入了Redis Server<br>Group，其通过指定一个主CodisRedis和一个或多个从CodisRedis，实现了Redis集群的高可用。当一个主CodisRedis挂<br>掉时，Codis不会自动把一个从CodisRedis提升为主CodisRedis，这涉及数据的一致性问题（Redis本身的数据同步是采用主从异步<br>复制，当数据在主CodisRedis写入成功时，从CodisRedis是否已读入这个数据是没法保证的），需要管理员在管理界面上手动把从<br>CodisRedis提升为主CodisRedis。</p>
+<p>如果觉得麻烦，豌豆荚也提供了一个工具Codis-<br>ha，这个工具会在检测到主CodisRedis挂掉的时候将其下线并提升一个从CodisRedis为主CodisRedis。</p>
+<p>Codis中采用预分片的形式，启动的时候就创建了1024个slot，1个slot相当于1个箱子，每个箱子有固定的编号，范围是<br>1~1024。slot这个箱子用作存放Key，至于Key存放到哪个箱子，可以通过算法“crc32(key)%1024”获得一个数字，这个数字的范<br>围一定是1~1024之间，Key就放到这个数字对应的slot。例如，如果某个Key通过算法“crc32(key)%1024”得到的数字是5，就放<br>到编码为5的slot（箱子）。1个slot只能放1个Redis Server Group，不能把1个slot放到多个Redis Server<br>Group中。1个Redis Server<br>Group最少可以存放1个slot，最大可以存放1024个slot。因此，Codis中最多可以指定1024个Redis Server Group。</p>
+<p>Codis最大的优势在于支持平滑增加（减少）Redis Server Group（Redis实例），能安全、透明地迁移数据，这也是Codis<br>有别于Twemproxy等静态分布式 Redis 解决方案的地方。Codis增加了Redis Server<br>Group后，就牵涉到slot的迁移问题。例如，系统有两个Redis Server Group，Redis Server<br>Group和slot的对应关系如下。</p>
+<p>Redis Server Group</p>
+<p>slot</p>
+<p>1</p>
+<p>1~500</p>
+<p>2</p>
+<p>501~1024</p>
+<p>当增加了一个Redis Server Group，slot就要重新分配了。Codis分配slot有两种方法。</p>
+<p>第一种：通过Codis管理工具Codisconfig手动重新分配，指定每个Redis Server Group所对应的slot的范围，例如可以指定Redis<br>Server Group和slot的新的对应关系如下。</p>
+<p>Redis Server Group</p>
+<p>slot</p>
+<p>1</p>
+<p>1~500</p>
+<p>2</p>
+<p>501~700</p>
+<p>3</p>
+<p>701~1024</p>
+<p>第二种：通过Codis管理工具Codisconfig的rebalance功能，会自动根据每个Redis Server<br>Group的内存对slot进行迁移，以实现数据的均衡。</p>
+<p><strong> 4.Redis 3.0集群  </strong></p>
+<p>Redis 3.0集群采用了P2P的模式，完全去中心化。Redis把所有的Key分成了16384个slot，每个Redis实例负责其中一部分slot。集群中<br>的所有信息（节点、端口、slot等），都通过节点之间定期的数据交换而更新。</p>
+<p>Redis客户端在任意一个Redis实例发出请求，如果所需数据不在该实例中，通过重定向命令引导客户端访问所需的实例。</p>
+<p>Redis 3.0集群的工作流程如图4所示。</p>
+<p><img src="http://img.mp.itc.cn/upload/20160602/9bcc2b9eb8294561ad146c247c0b9d75_th.j
+pg" alt=""></p>
+<p>_ 图4Redis 3.0集群的工作流程图 _</p>
+<p>如图4所示Redis集群内的机器定期交换数据，工作流程如下。</p>
+<p>（1） Redis客户端在Redis2实例上访问某个数据。</p>
+<p>（2） 在Redis2内发现这个数据是在Redis3这个实例中，给Redis客户端发送一个重定向的命令。</p>
+<p>（3） Redis客户端收到重定向命令后，访问Redis3实例获取所需的数据。</p>
+<p>Redis 3.0的集群方案有以下两个问题。</p>
+<ul>
+<li><p>一个Redis实例具备了“数据存储”和“路由重定向”，完全去中心化的设计。这带来的好处是部署非常简单，直接部署Redis就行，不 像Codis有那么多的组件和依赖。但带来的问题是很难对业务进行无痛的升级，如果哪天Redis集群出了什么严重的Bug，就只能回滚整个Redis集 群。 </p>
+</li>
+<li><p>对协议进行了较大的修改，对应的Redis客户端也需要升级。升级Redis客户端后谁能确保没有Bug？而且对于线上已经大规模运行的业务，升级代码中的Redis客户端也是一个很麻烦的事情。 </p>
+</li>
+</ul>
+<p>综合上面所述的两个问题，Redis 3.0集群在业界并没有被大规模使用。</p>
+<p><strong> 5.云服务器上的集群服务  </strong></p>
+<p>国内的云服务器提供商阿里云、UCloud等均推出了基于Redis的云存储服务。</p>
+<p>这个服务的特性如下。</p>
+<p>（1）动态扩容</p>
+<p>用户可以通过控制面板升级所需的Redis存储空间，扩容的过程中服务部不需要中断或停止，整个扩容过程对用户透明、无感知，这点是非常实用的，在前面介绍的方案中，<br>解决Redis平滑扩容是个很烦琐的任务，现在按几下鼠标就能搞定，大大减少了运维的负担。</p>
+<p>（2）数据多备</p>
+<p>数据保存在一主一备两台机器中，其中一台机器宕机了，数据还在另外一台机器上有备份。</p>
+<p>（3）自动容灾</p>
+<p>主机宕机后系统能自动检测并切换到备机上，实现服务的高可用。</p>
+<p>（4）实惠</p>
+<p>很多情况下为了使Redis的性能更高，需要购买一台专门的服务器用于Redis的存储服务，但这样子CPU、内存等资源就浪费了，购买Redis云存储服务就很好地<br>解决了这个问题。</p>
+<p>有了Redis云存储服务，能使App后台开发人员从烦琐运维中解放出来。App后台要搭建一个高可用、高性能的Redis服务，需要投入相当的运维成本和精力。如果<br>使用云存储服务，就没必要投入这些成本和精力，可以让App后台开发人员更专注于业务。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Redis集群方案介绍/#comments" id="sourceId::2018/04/20/Redis集群方案介绍/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/SEO搜索引擎优化步骤建议/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    SEO搜索引擎优化步骤建议
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/nginx配置文件详解/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">nginx配置文件详解</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Redis集群方案介绍/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

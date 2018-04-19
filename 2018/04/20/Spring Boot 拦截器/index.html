@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Spring Boot 拦截器 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="上一篇对过滤器的定义做了说明，也比较简单。过滤器属于Servlet范畴的API，与Spring 没什么关系。Web开发中，我们除了使用 Filter 来过滤请web求外，还可以使用Spring提供的HandlerInterceptor（拦截器）。 HandlerInterceptor 的功能跟过滤器类似，但是提供更精细的的控制能力：在request被响应之前、request被响应之后、视图渲染之前">
+<meta name="keywords" content="spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot 拦截器">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Spring Boot 拦截器/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="上一篇对过滤器的定义做了说明，也比较简单。过滤器属于Servlet范畴的API，与Spring 没什么关系。Web开发中，我们除了使用 Filter 来过滤请web求外，还可以使用Spring提供的HandlerInterceptor（拦截器）。 HandlerInterceptor 的功能跟过滤器类似，但是提供更精细的的控制能力：在request被响应之前、request被响应之后、视图渲染之前">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20160112092114468">
+<meta property="og:updated_time" content="2018-04-19T16:30:12.925Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Boot 拦截器">
+<meta name="twitter:description" content="上一篇对过滤器的定义做了说明，也比较简单。过滤器属于Servlet范畴的API，与Spring 没什么关系。Web开发中，我们除了使用 Filter 来过滤请web求外，还可以使用Spring提供的HandlerInterceptor（拦截器）。 HandlerInterceptor 的功能跟过滤器类似，但是提供更精细的的控制能力：在request被响应之前、request被响应之后、视图渲染之前">
+<meta name="twitter:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Spring Boot 拦截器" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Spring Boot 拦截器
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Spring Boot 拦截器/">
+            <time datetime="2018-04-19T16:34:21.439Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Spring/">Spring</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/spring/">spring</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>上一篇对过滤器的定义做了说明，也比较简单。过滤器属于Servlet范畴的API，与Spring 没什么关系。<br>Web开发中，我们除了使用 Filter 来过滤请web求外，还可以使用Spring提供的HandlerInterceptor（拦截器）。</p>
+<p>HandlerInterceptor 的功能跟过滤器类似，但是提供更精细的的控制能力：在request被响应之前、request被响应之后、视图渲染之前以及<br>request全部结束之后。我们不能通过拦截器修改request内容，但是可以通过抛出异常（或者返回false）来暂停request的执行。</p>
+<p>实现 UserRoleAuthorizationInterceptor 的拦截器有：<br>ConversionServiceExposingInterceptor<br>CorsInterceptor<br>LocaleChangeInterceptor<br>PathExposingHandlerInterceptor<br>ResourceUrlProviderExposingInterceptor<br>ThemeChangeInterceptor<br>UriTemplateVariablesHandlerInterceptor<br>UserRoleAuthorizationInterceptor</p>
+<p>其中 LocaleChangeInterceptor 和 ThemeChangeInterceptor 比较常用。</p>
+<p>配置拦截器也很简单，Spring 为什么提供了基础类WebMvcConfigurerAdapter ，我们只需要重写 addInterceptors<br>方法添加注册拦截器。</p>
+<p>实现自定义拦截器只需要3步：<br>1、创建我们自己的拦截器类并实现 HandlerInterceptor 接口。<br>2、创建一个 <a href="http://lib.csdn.net/base/17" target="_blank" rel="noopener"> Java </a> 类继承WebMvcConfigurerAdapter，并重写<br>addInterceptors 方法。<br>2、实例化我们自定义的拦截器，然后将对像手动添加到拦截器链中（在addInterceptors方法中添加）。<br>PS：本文重点在如何在Spring-Boot中使用拦截器，关于拦截器的原理请大家查阅资料了解。</p>
+<p>代码示例：</p>
+<p>MyInterceptor1.java</p>
+<pre><code>package org.springboot.sample.interceptor;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
+
+/**
+ * 自定义拦截器1
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月7日
+ */
+public class MyInterceptor1 implements HandlerInterceptor {
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;MyInterceptor1&gt;&gt;&gt;&gt;&gt;&gt;&gt;在请求处理之前进行调用（Controller方法调用之前）&quot;);
+
+        return true;// 只有返回true才会继续向下执行，返回false取消当前请求
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+            ModelAndView modelAndView) throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;MyInterceptor1&gt;&gt;&gt;&gt;&gt;&gt;&gt;请求处理之后进行调用，但是在视图被渲染之前（Controller方法调用之后）&quot;);
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
+            throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;MyInterceptor1&gt;&gt;&gt;&gt;&gt;&gt;&gt;在整个请求结束之后被调用，也就是在DispatcherServlet 渲染了对应的视图之后执行（主要是用于进行资源清理工作）&quot;);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+</ul>
+<p>MyInterceptor2.java</p>
+<pre><code>package org.springboot.sample.interceptor;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
+
+/**
+ * 自定义拦截器2
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月7日
+ */
+public class MyInterceptor2 implements HandlerInterceptor {
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;MyInterceptor2&gt;&gt;&gt;&gt;&gt;&gt;&gt;在请求处理之前进行调用（Controller方法调用之前）&quot;);
+
+        return true;// 只有返回true才会继续向下执行，返回false取消当前请求
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+            ModelAndView modelAndView) throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;MyInterceptor2&gt;&gt;&gt;&gt;&gt;&gt;&gt;请求处理之后进行调用，但是在视图被渲染之前（Controller方法调用之后）&quot;);
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
+            throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;MyInterceptor2&gt;&gt;&gt;&gt;&gt;&gt;&gt;在整个请求结束之后被调用，也就是在DispatcherServlet 渲染了对应的视图之后执行（主要是用于进行资源清理工作）&quot;);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+</ul>
+<p>MyWebAppConfigurer.java</p>
+<pre><code>package org.springboot.sample.config;
+
+import org.springboot.sample.interceptor.MyInterceptor1;
+import org.springboot.sample.interceptor.MyInterceptor2;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+@Configuration
+public class MyWebAppConfigurer 
+        extends WebMvcConfigurerAdapter {
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 多个拦截器组成一个拦截器链
+        // addPathPatterns 用于添加拦截规则
+        // excludePathPatterns 用户排除拦截
+        registry.addInterceptor(new MyInterceptor1()).addPathPatterns(&quot;/**&quot;);
+        registry.addInterceptor(new MyInterceptor2()).addPathPatterns(&quot;/**&quot;);
+        super.addInterceptors(registry);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<p>然后在浏览器输入地址： <a href="http://localhost:8080/index" target="_blank" rel="noopener"> http://localhost:8080/index </a><br>后，控制台的输出为：</p>
+<pre><code>&gt;&gt;&gt;MyInterceptor1&gt;&gt;&gt;&gt;&gt;&gt;&gt;在请求处理之前进行调用（Controller方法调用之前）
+&gt;&gt;&gt;MyInterceptor2&gt;&gt;&gt;&gt;&gt;&gt;&gt;在请求处理之前进行调用（Controller方法调用之前）
+&gt;&gt;&gt;MyInterceptor2&gt;&gt;&gt;&gt;&gt;&gt;&gt;请求处理之后进行调用，但是在视图被渲染之前（Controller方法调用之后）
+&gt;&gt;&gt;MyInterceptor1&gt;&gt;&gt;&gt;&gt;&gt;&gt;请求处理之后进行调用，但是在视图被渲染之前（Controller方法调用之后）
+&gt;&gt;&gt;MyInterceptor2&gt;&gt;&gt;&gt;&gt;&gt;&gt;在整个请求结束之后被调用，也就是在DispatcherServlet 渲染了对应的视图之后执行（主要是用于进行资源清理工作）
+&gt;&gt;&gt;MyInterceptor1&gt;&gt;&gt;&gt;&gt;&gt;&gt;在整个请求结束之后被调用，也就是在DispatcherServlet 渲染了对应的视图之后执行（主要是用于进行资源清理工作）
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+</ul>
+<p>根据输出可以了解拦截器链的执行顺序（具体原理介绍，大家找度娘一问便知）</p>
+<p>最后强调一点：只有经过DispatcherServlet 的请求，才会走拦截器链，我们自定义的Servlet<br>请求是不会被拦截的，比如我们自定义的Servlet地址 <a href="http://localhost:8080/xs/myservlet" target="_blank" rel="noopener"> http://localhost:8080/xs/myservlet
+</a> 是不会被拦截器拦截的。并且不管是属于哪个Servlet<br>只要复合过滤器的过滤规则，过滤器都会拦截。</p>
+<p>最后说明下，我们上面用到的 WebMvcConfigurerAdapter 并非只是注册添加拦截器使用，其顾名思义是做Web配置用的，它还可以有很多其他作用<br>，通过下面截图便可以大概了解，具体每个方法都是干什么用的，留给大家自己研究（其实都大同小异也很简单）。<br><img src="https://img-blog.csdn.net/20160112092114468" alt="这里写图片描述"></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Spring Boot 拦截器/#comments" id="sourceId::2018/04/20/Spring Boot 拦截器/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Spring Boot 日志记录 SLF4J/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Spring Boot 日志记录 SLF4J
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Spring Boot 静态资源处理/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Spring Boot 静态资源处理</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Spring Boot 拦截器/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

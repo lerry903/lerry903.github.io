@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>sqlserver汉字转拼音 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="/* ————————————————————- 函数  : fn_GetPinyin 描述  :  汉字转拼音  (  无数据表版  ) 使用  : dbo.fn_GetPinyin(‘  中华人民共和国  ‘) = zhonghuarenmingongheguo 作者  :  流香羽  (  改编：  Tony) 博客  : http://hi.baidu.com/  流香羽 -———————">
+<meta name="keywords" content="sql server,汉字转拼音">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sqlserver汉字转拼音">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/sqlserver汉字转拼音/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="/* ————————————————————- 函数  : fn_GetPinyin 描述  :  汉字转拼音  (  无数据表版  ) 使用  : dbo.fn_GetPinyin(‘  中华人民共和国  ‘) = zhonghuarenmingongheguo 作者  :  流香羽  (  改编：  Tony) 博客  : http://hi.baidu.com/  流香羽 -———————">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-04-19T16:29:54.428Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="sqlserver汉字转拼音">
+<meta name="twitter:description" content="/* ————————————————————- 函数  : fn_GetPinyin 描述  :  汉字转拼音  (  无数据表版  ) 使用  : dbo.fn_GetPinyin(‘  中华人民共和国  ‘) = zhonghuarenmingongheguo 作者  :  流香羽  (  改编：  Tony) 博客  : http://hi.baidu.com/  流香羽 -———————">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-sqlserver汉字转拼音" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            sqlserver汉字转拼音
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/sqlserver汉字转拼音/">
+            <time datetime="2018-04-19T16:34:21.443Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/数据库/">数据库</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/sql-server/">sql server</a>, <a class="tag-link" href="/tags/汉字转拼音/">汉字转拼音</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>/* ————————————————————-</p>
+<p>函数  : fn_GetPinyin</p>
+<p>描述  :  汉字转拼音  (  无数据表版  )</p>
+<p>使用  : dbo.fn_GetPinyin(‘  中华人民共和国  ‘) = zhonghuarenmingongheguo</p>
+<p>作者  :  流香羽  (  改编：  Tony)</p>
+<p>博客  : <a href="http://hi.baidu.com/" target="_blank" rel="noopener">http://hi.baidu.com/</a>  流香羽</p>
+<p>-———————————————————— */</p>
+<p>--  创建函数</p>
+<p>IF  OBJECT_ID  (  ‘[fn_GetPinyin]’  )  IS  NOT  NULL</p>
+<p>DROP  FUNCTION  [fn_GetPinyin]</p>
+<p>GO</p>
+<p>create  function  [dbo]  .  [fn_GetPinyin]  (  @words  nvarchar  (  2000  ))</p>
+<p>returns  varchar  (  8000  )</p>
+<p>as</p>
+<p>begin</p>
+<p>declare  @word  nchar  (  1  )</p>
+<p>declare  @pinyin  varchar  (  8000  )</p>
+<p>declare  @i  int</p>
+<p>declare  @words_len  int</p>
+<p>declare  @unicode  int</p>
+<p>set  @i  =  1</p>
+<p>set  @words  =  ltrim  (  rtrim  (  @words  ))</p>
+<p>set  @words_len  =  len  (  @words  )</p>
+<p>while  (  @i  &lt;=  @words_len  )  --  循环取字符</p>
+<p>begin</p>
+<p>set  @word  =  substring  (  @words  ,  @i  ,  1  )</p>
+<p>set  @unicode  =  unicode  (  @word  )</p>
+<p>set  @pinyin  =  ISNULL  (  @pinyin  +  SPACE  (  1  ),  ‘’  )+</p>
+<p>(  case  when  unicode  (  @word  )  between  19968  and  19968  +  20901<br>then</p>
+<p>(  select  top  1 py  from  (</p>
+<p>select  ‘a’  as  py  ,  N  ‘  厑  ‘  as  word</p>
+<p>union  all  select  ‘ai’  ,  N  ‘  靉  ‘</p>
+<p>union  all  select  ‘an’  ,  N  ‘  黯  ‘</p>
+<p>union  all  select  ‘ang’  ,  N  ‘  醠  ‘</p>
+<p>union  all  select  ‘ao’  ,  N  ‘  驁  ‘</p>
+<p>union  all  select  ‘ba’  ,  N  ‘  欛  ‘</p>
+<p>union  all  select  ‘bai’  ,  N  ‘  瓸  ‘  --  韛兡瓸</p>
+<p>union  all  select  ‘ban’  ,  N  ‘  瓣  ‘</p>
+<p>union  all  select  ‘bang’  ,  N  ‘  鎊  ‘</p>
+<p>union  all  select  ‘bao’  ,  N  ‘  鑤  ‘</p>
+<p>union  all  select  ‘bei’  ,  N  ‘  鐾  ‘</p>
+<p>union  all  select  ‘ben’  ,  N  ‘  輽  ‘</p>
+<p>union  all  select  ‘beng’  ,  N  ‘  鏰  ‘</p>
+<p>union  all  select  ‘bi’  ,  N  ‘  鼊  ‘</p>
+<p>union  all  select  ‘bian’  ,  N  ‘  變  ‘</p>
+<p>union  all  select  ‘biao’  ,  N  ‘  鰾  ‘</p>
+<p>union  all  select  ‘bie’  ,  N  ‘  彆  ‘</p>
+<p>union  all  select  ‘bin’  ,  N  ‘  鬢  ‘</p>
+<p>union  all  select  ‘bing’  ,  N  ‘  靐  ‘</p>
+<p>union  all  select  ‘bo’  ,  N  ‘  蔔  ‘</p>
+<p>union  all  select  ‘bu’  ,  N  ‘  簿  ‘</p>
+<p>union  all  select  ‘ca’  ,  N  ‘  囃  ‘</p>
+<p>union  all  select  ‘cai’  ,  N  ‘  乲  ‘  --  縩乲</p>
+<p>union  all  select  ‘can’  ,  N  ‘  爘  ‘</p>
+<p>union  all  select  ‘cang’  ,  N  ‘  賶  ‘</p>
+<p>union  all  select  ‘cao’  ,  N  ‘  鼜  ‘</p>
+<p>union  all  select  ‘ce’  ,  N  ‘  簎  ‘</p>
+<p>union  all  select  ‘cen’  ,  N  ‘  笒  ‘</p>
+<p>union  all  select  ‘ceng’  ,  N  ‘  乽  ‘  --  硛硳岾猠乽</p>
+<p>union  all  select  ‘cha’  ,  N  ‘  詫  ‘</p>
+<p>union  all  select  ‘chai’  ,  N  ‘  囆  ‘</p>
+<p>union  all  select  ‘chan’  ,  N  ‘  顫  ‘</p>
+<p>union  all  select  ‘chang’  ,  N  ‘  韔  ‘</p>
+<p>union  all  select  ‘chao’  ,  N  ‘  觘  ‘</p>
+<p>union  all  select  ‘che’  ,  N  ‘  爡  ‘</p>
+<p>union  all  select  ‘chen’  ,  N  ‘  讖  ‘</p>
+<p>union  all  select  ‘cheng’  ,  N  ‘  秤  ‘</p>
+<p>union  all  select  ‘chi’  ,  N  ‘  鷘  ‘</p>
+<p>union  all  select  ‘chong’  ,  N  ‘  銃  ‘</p>
+<p>union  all  select  ‘chou’  ,  N  ‘  殠  ‘</p>
+<p>union  all  select  ‘chu’  ,  N  ‘  矗  ‘</p>
+<p>union  all  select  ‘chuai’  ,  N  ‘  踹  ‘</p>
+<p>union  all  select  ‘chuan’  ,  N  ‘  鶨  ‘</p>
+<p>union  all  select  ‘chuang’  ,  N  ‘  愴  ‘</p>
+<p>union  all  select  ‘chui’  ,  N  ‘  顀  ‘</p>
+<p>union  all  select  ‘chun’  ,  N  ‘  蠢  ‘</p>
+<p>union  all  select  ‘chuo’  ,  N  ‘  縒  ‘</p>
+<p>union  all  select  ‘ci’  ,  N  ‘  嗭  ‘  --  賜嗭</p>
+<p>union  all  select  ‘cong’  ,  N  ‘  謥  ‘</p>
+<p>union  all  select  ‘cou’  ,  N  ‘  輳  ‘</p>
+<p>union  all  select  ‘cu’  ,  N  ‘  顣  ‘</p>
+<p>union  all  select  ‘cuan’  ,  N  ‘  爨  ‘</p>
+<p>union  all  select  ‘cui’  ,  N  ‘  臎  ‘</p>
+<p>union  all  select  ‘cun’  ,  N  ‘  籿  ‘</p>
+<p>union  all  select  ‘cuo’  ,  N  ‘  錯  ‘</p>
+<p>union  all  select  ‘da’  ,  N  ‘  橽  ‘</p>
+<p>union  all  select  ‘dai’  ,  N  ‘  靆  ‘</p>
+<p>union  all  select  ‘dan’  ,  N  ‘  饏  ‘</p>
+<p>union  all  select  ‘dang’  ,  N  ‘  闣  ‘</p>
+<p>union  all  select  ‘dao’  ,  N  ‘  纛  ‘</p>
+<p>union  all  select  ‘de’  ,  N  ‘  的  ‘</p>
+<p>union  all  select  ‘den’  ,  N  ‘  扽  ‘</p>
+<p>union  all  select  ‘deng’  ,  N  ‘  鐙  ‘</p>
+<p>union  all  select  ‘di’  ,  N  ‘  螮  ‘</p>
+<p>union  all  select  ‘dia’  ,  N  ‘  嗲  ‘</p>
+<p>union  all  select  ‘dian’  ,  N  ‘  驔  ‘</p>
+<p>union  all  select  ‘diao’  ,  N  ‘  鑃  ‘</p>
+<p>union  all  select  ‘die’  ,  N  ‘  嚸  ‘  --  眰嚸</p>
+<p>union  all  select  ‘ding’  ,  N  ‘  顁  ‘</p>
+<p>union  all  select  ‘diu’  ,  N  ‘  銩  ‘</p>
+<p>union  all  select  ‘dong’  ,  N  ‘  霘  ‘</p>
+<p>union  all  select  ‘dou’  ,  N  ‘  鬭  ‘</p>
+<p>union  all  select  ‘du’  ,  N  ‘  蠹  ‘</p>
+<p>union  all  select  ‘duan’  ,  N  ‘  叾  ‘  --  籪叾</p>
+<p>union  all  select  ‘dui’  ,  N  ‘  譵  ‘</p>
+<p>union  all  select  ‘dun’  ,  N  ‘  踲  ‘</p>
+<p>union  all  select  ‘duo’  ,  N  ‘  鵽  ‘</p>
+<p>union  all  select  ‘e’  ,  N  ‘  鱷  ‘</p>
+<p>union  all  select  ‘en’  ,  N  ‘  摁  ‘</p>
+<p>union  all  select  ‘eng’  ,  N  ‘  鞥  ‘</p>
+<p>union  all  select  ‘er’  ,  N  ‘  樲  ‘</p>
+<p>union  all  select  ‘fa’  ,  N  ‘  髮  ‘</p>
+<p>union  all  select  ‘fan’  ,  N  ‘  瀪  ‘</p>
+<p>union  all  select  ‘fang’  ,  N  ‘  放  ‘</p>
+<p>union  all  select  ‘fei’  ,  N  ‘  靅  ‘</p>
+<p>union  all  select  ‘fen’  ,  N  ‘  鱝  ‘</p>
+<p>union  all  select  ‘feng’  ,  N  ‘  覅  ‘</p>
+<p>union  all  select  ‘fo’  ,  N  ‘  梻  ‘</p>
+<p>union  all  select  ‘fou’  ,  N  ‘  鴀  ‘</p>
+<p>union  all  select  ‘fu’  ,  N  ‘  猤  ‘  --  鰒猤</p>
+<p>union  all  select  ‘ga’  ,  N  ‘  魀  ‘</p>
+<p>union  all  select  ‘gai’  ,  N  ‘  瓂  ‘</p>
+<p>union  all  select  ‘gan’  ,  N  ‘  灨  ‘</p>
+<p>union  all  select  ‘gang’  ,  N  ‘  戇  ‘</p>
+<p>union  all  select  ‘gao’  ,  N  ‘  鋯  ‘</p>
+<p>union  all  select  ‘ge’  ,  N  ‘  獦  ‘</p>
+<p>union  all  select  ‘gei’  ,  N  ‘  給  ‘</p>
+<p>union  all  select  ‘gen’  ,  N  ‘  搄  ‘</p>
+<p>union  all  select  ‘geng’  ,  N  ‘  堩  ‘  --  亙堩啹喼嗰</p>
+<p>union  all  select  ‘gong’  ,  N  ‘  兣  ‘  --  熕贑兝兣</p>
+<p>union  all  select  ‘gou’  ,  N  ‘  購  ‘</p>
+<p>union  all  select  ‘gu’  ,  N  ‘  顧  ‘</p>
+<p>union  all  select  ‘gua’  ,  N  ‘  詿  ‘</p>
+<p>union  all  select  ‘guai’  ,  N  ‘  恠  ‘</p>
+<p>union  all  select  ‘guan’  ,  N  ‘  鱹  ‘</p>
+<p>union  all  select  ‘guang’  ,  N  ‘  撗  ‘</p>
+<p>union  all  select  ‘gui’  ,  N  ‘  鱥  ‘</p>
+<p>union  all  select  ‘gun’  ,  N  ‘  謴  ‘</p>
+<p>union  all  select  ‘guo’  ,  N  ‘  腂  ‘</p>
+<p>union  all  select  ‘ha’  ,  N  ‘  哈  ‘</p>
+<p>union  all  select  ‘hai’  ,  N  ‘  饚  ‘</p>
+<p>union  all  select  ‘han’  ,  N  ‘  鶾  ‘</p>
+<p>union  all  select  ‘hang’  ,  N  ‘  沆  ‘</p>
+<p>union  all  select  ‘hao’  ,  N  ‘  兞  ‘</p>
+<p>union  all  select  ‘he’  ,  N  ‘  靏  ‘</p>
+<p>union  all  select  ‘hei’  ,  N  ‘  嬒  ‘</p>
+<p>union  all  select  ‘hen’  ,  N  ‘  恨  ‘</p>
+<p>union  all  select  ‘heng’  ,  N  ‘  堼  ‘  --  堼囍</p>
+<p>union  all  select  ‘hong’  ,  N  ‘  鬨  ‘</p>
+<p>union  all  select  ‘hou’  ,  N  ‘  鱟  ‘</p>
+<p>union  all  select  ‘hu’  ,  N  ‘  鸌  ‘</p>
+<p>union  all  select  ‘hua’  ,  N  ‘  蘳  ‘</p>
+<p>union  all  select  ‘huai’  ,  N  ‘  蘾  ‘</p>
+<p>union  all  select  ‘huan’  ,  N  ‘  鰀  ‘</p>
+<p>union  all  select  ‘huang’  ,  N  ‘  鎤  ‘</p>
+<p>union  all  select  ‘hui’  ,  N  ‘  顪  ‘</p>
+<p>union  all  select  ‘hun’  ,  N  ‘  諢  ‘</p>
+<p>union  all  select  ‘huo’  ,  N  ‘  夻  ‘</p>
+<p>union  all  select  ‘ji’  ,  N  ‘  驥  ‘</p>
+<p>union  all  select  ‘jia’  ,  N  ‘  嗧  ‘</p>
+<p>union  all  select  ‘jian’  ,  N  ‘  鑳  ‘</p>
+<p>union  all  select  ‘jiang’  ,  N  ‘  謽  ‘</p>
+<p>union  all  select  ‘jiao’  ,  N  ‘  釂  ‘</p>
+<p>union  all  select  ‘jie’  ,  N  ‘  繲  ‘</p>
+<p>union  all  select  ‘jin’  ,  N  ‘  齽  ‘</p>
+<p>union  all  select  ‘jing’  ,  N  ‘  竸  ‘</p>
+<p>union  all  select  ‘jiong’  ,  N  ‘  蘔  ‘</p>
+<p>union  all  select  ‘jiu’  ,  N  ‘  欍  ‘</p>
+<p>union  all  select  ‘ju’  ,  N  ‘  爠  ‘</p>
+<p>union  all  select  ‘juan’  ,  N  ‘  羂  ‘</p>
+<p>union  all  select  ‘jue’  ,  N  ‘  钁  ‘</p>
+<p>union  all  select  ‘jun’  ,  N  ‘  攈  ‘</p>
+<p>union  all  select  ‘ka’  ,  N  ‘  鉲  ‘</p>
+<p>union  all  select  ‘kai’  ,  N  ‘  乫  ‘  --  鎎乫</p>
+<p>union  all  select  ‘kan’  ,  N  ‘  矙  ‘</p>
+<p>union  all  select  ‘kang’  ,  N  ‘  閌  ‘</p>
+<p>union  all  select  ‘kao’  ,  N  ‘  鯌  ‘</p>
+<p>union  all  select  ‘ke’  ,  N  ‘  騍  ‘</p>
+<p>union  all  select  ‘ken’  ,  N  ‘  褃  ‘</p>
+<p>union  all  select  ‘keng’  ,  N  ‘  鏗  ‘  --  巪乬唟厼怾</p>
+<p>union  all  select  ‘kong’  ,  N  ‘  廤  ‘</p>
+<p>union  all  select  ‘kou’  ,  N  ‘  鷇  ‘</p>
+<p>union  all  select  ‘ku’  ,  N  ‘  嚳  ‘</p>
+<p>union  all  select  ‘kua’  ,  N  ‘  骻  ‘</p>
+<p>union  all  select  ‘kuai’  ,  N  ‘  鱠  ‘</p>
+<p>union  all  select  ‘kuan’  ,  N  ‘  窾  ‘</p>
+<p>union  all  select  ‘kuang’  ,  N  ‘  鑛  ‘</p>
+<p>union  all  select  ‘kui’  ,  N  ‘  鑎  ‘</p>
+<p>union  all  select  ‘kun’  ,  N  ‘  睏  ‘</p>
+<p>union  all  select  ‘kuo’  ,  N  ‘  穒  ‘</p>
+<p>union  all  select  ‘la’  ,  N  ‘  鞡  ‘</p>
+<p>union  all  select  ‘lai’  ,  N  ‘  籟  ‘</p>
+<p>union  all  select  ‘lan’  ,  N  ‘  糷  ‘</p>
+<p>union  all  select  ‘lang’  ,  N  ‘  唥  ‘</p>
+<p>union  all  select  ‘lao’  ,  N  ‘  軂  ‘</p>
+<p>union  all  select  ‘le’  ,  N  ‘  餎  ‘</p>
+<p>union  all  select  ‘lei’  ,  N  ‘  脷  ‘  --  嘞脷</p>
+<p>union  all  select  ‘leng’  ,  N  ‘  睖  ‘</p>
+<p>union  all  select  ‘li’  ,  N  ‘  瓈  ‘</p>
+<p>union  all  select  ‘lia’  ,  N  ‘  倆  ‘</p>
+<p>union  all  select  ‘lian’  ,  N  ‘  纞  ‘</p>
+<p>union  all  select  ‘liang’  ,  N  ‘  鍄  ‘</p>
+<p>union  all  select  ‘liao’  ,  N  ‘  瞭  ‘</p>
+<p>union  all  select  ‘lie’  ,  N  ‘  鱲  ‘</p>
+<p>union  all  select  ‘lin’  ,  N  ‘  轥  ‘  --  轥拎</p>
+<p>union  all  select  ‘ling’  ,  N  ‘  炩  ‘</p>
+<p>union  all  select  ‘liu’  ,  N  ‘  咯  ‘  --  瓼甅囖咯</p>
+<p>union  all  select  ‘long’  ,  N  ‘  贚  ‘</p>
+<p>union  all  select  ‘lou’  ,  N  ‘  鏤  ‘</p>
+<p>union  all  select  ‘lu’  ,  N  ‘  氇  ‘</p>
+<p>union  all  select  ‘lv’  ,  N  ‘  鑢  ‘</p>
+<p>union  all  select  ‘luan’  ,  N  ‘  亂  ‘</p>
+<p>union  all  select  ‘lue’  ,  N  ‘  擽  ‘</p>
+<p>union  all  select  ‘lun’  ,  N  ‘  論  ‘</p>
+<p>union  all  select  ‘luo’  ,  N  ‘  鱳  ‘</p>
+<p>union  all  select  ‘ma’  ,  N  ‘  嘛  ‘</p>
+<p>union  all  select  ‘mai’  ,  N  ‘  霢  ‘</p>
+<p>union  all  select  ‘man’  ,  N  ‘  蘰  ‘</p>
+<p>union  all  select  ‘mang’  ,  N  ‘  蠎  ‘</p>
+<p>union  all  select  ‘mao’  ,  N  ‘  唜  ‘</p>
+<p>union  all  select  ‘me’  ,  N  ‘  癦  ‘  --  癦呅</p>
+<p>union  all  select  ‘mei’  ,  N  ‘  嚜  ‘</p>
+<p>union  all  select  ‘men’  ,  N  ‘  們  ‘</p>
+<p>union  all  select  ‘meng’  ,  N  ‘  霥  ‘  --  霿踎</p>
+<p>union  all  select  ‘mi’  ,  N  ‘  羃  ‘</p>
+<p>union  all  select  ‘mian’  ,  N  ‘  麵  ‘</p>
+<p>union  all  select  ‘miao’  ,  N  ‘  廟  ‘</p>
+<p>union  all  select  ‘mie’  ,  N  ‘  鱴  ‘  --  鱴瓱</p>
+<p>union  all  select  ‘min’  ,  N  ‘  鰵  ‘</p>
+<p>union  all  select  ‘ming’  ,  N  ‘  詺  ‘</p>
+<p>union  all  select  ‘miu’  ,  N  ‘  謬  ‘</p>
+<p>union  all  select  ‘mo’  ,  N  ‘  耱  ‘  --  耱乮</p>
+<p>union  all  select  ‘mou’  ,  N  ‘  麰  ‘  --  麰蟱</p>
+<p>union  all  select  ‘mu’  ,  N  ‘  旀  ‘</p>
+<p>union  all  select  ‘na’  ,  N  ‘  魶  ‘</p>
+<p>union  all  select  ‘nai’  ,  N  ‘  錼  ‘</p>
+<p>union  all  select  ‘nan’  ,  N  ‘  婻  ‘</p>
+<p>union  all  select  ‘nang’  ,  N  ‘  齉  ‘</p>
+<p>union  all  select  ‘nao’  ,  N  ‘  臑  ‘</p>
+<p>union  all  select  ‘ne’  ,  N  ‘  呢  ‘</p>
+<p>union  all  select  ‘nei’  ,  N  ‘  焾  ‘  --  嫩焾</p>
+<p>union  all  select  ‘nen’  ,  N  ‘  嫩  ‘</p>
+<p>union  all  select  ‘neng’  ,  N  ‘  能  ‘  --  莻嗯鈪銰啱</p>
+<p>union  all  select  ‘ni’  ,  N  ‘  嬺  ‘</p>
+<p>union  all  select  ‘nian’  ,  N  ‘  艌  ‘</p>
+<p>union  all  select  ‘niang’  ,  N  ‘  釀  ‘</p>
+<p>union  all  select  ‘niao’  ,  N  ‘  脲  ‘</p>
+<p>union  all  select  ‘nie’  ,  N  ‘  钀  ‘</p>
+<p>union  all  select  ‘nin’  ,  N  ‘  拰  ‘</p>
+<p>union  all  select  ‘ning’  ,  N  ‘  濘  ‘</p>
+<p>union  all  select  ‘niu’  ,  N  ‘  靵  ‘</p>
+<p>union  all  select  ‘nong’  ,  N  ‘  齈  ‘</p>
+<p>union  all  select  ‘nou’  ,  N  ‘  譳  ‘</p>
+<p>union  all  select  ‘nu’  ,  N  ‘  搙  ‘</p>
+<p>union  all  select  ‘nv’  ,  N  ‘  衄  ‘</p>
+<p>union  all  select  ‘nue’  ,  N  ‘  瘧  ‘</p>
+<p>union  all  select  ‘nuan’  ,  N  ‘  燶  ‘  --  硸黁燶郍</p>
+<p>union  all  select  ‘nuo’  ,  N  ‘  桛  ‘</p>
+<p>union  all  select  ‘o’  ,  N  ‘  鞰  ‘  --  毮夞乯鞰</p>
+<p>union  all  select  ‘ou’  ,  N  ‘  漚  ‘</p>
+<p>union  all  select  ‘pa’  ,  N  ‘  袙  ‘</p>
+<p>union  all  select  ‘pai’  ,  N  ‘  磗  ‘  --  鎃磗</p>
+<p>union  all  select  ‘pan’  ,  N  ‘  鑻  ‘</p>
+<p>union  all  select  ‘pang’  ,  N  ‘  胖  ‘</p>
+<p>union  all  select  ‘pao’  ,  N  ‘  礮  ‘</p>
+<p>union  all  select  ‘pei’  ,  N  ‘  轡  ‘</p>
+<p>union  all  select  ‘pen’  ,  N  ‘  喯  ‘</p>
+<p>union  all  select  ‘peng’  ,  N  ‘  喸  ‘  --  浌巼闏乶喸</p>
+<p>union  all  select  ‘pi’  ,  N  ‘  鸊  ‘</p>
+<p>union  all  select  ‘pian’  ,  N  ‘  騙  ‘</p>
+<p>union  all  select  ‘piao’  ,  N  ‘  慓  ‘</p>
+<p>union  all  select  ‘pie’  ,  N  ‘  嫳  ‘</p>
+<p>union  all  select  ‘pin’  ,  N  ‘  聘  ‘</p>
+<p>union  all  select  ‘ping’  ,  N  ‘  蘋  ‘</p>
+<p>union  all  select  ‘po’  ,  N  ‘  魄  ‘</p>
+<p>union  all  select  ‘pou’  ,  N  ‘  哛  ‘  --  兺哛</p>
+<p>union  all  select  ‘pu’  ,  N  ‘  曝  ‘</p>
+<p>union  all  select  ‘qi’  ,  N  ‘  蟿  ‘</p>
+<p>union  all  select  ‘qia’  ,  N  ‘  髂  ‘</p>
+<p>union  all  select  ‘qian’  ,  N  ‘  縴  ‘</p>
+<p>union  all  select  ‘qiang’  ,  N  ‘  瓩  ‘  --  羻兛瓩</p>
+<p>union  all  select  ‘qiao’  ,  N  ‘  躈  ‘</p>
+<p>union  all  select  ‘qie’  ,  N  ‘  籡  ‘</p>
+<p>union  all  select  ‘qin’  ,  N  ‘  藽  ‘</p>
+<p>union  all  select  ‘qing’  ,  N  ‘  櫦  ‘</p>
+<p>union  all  select  ‘qiong’  ,  N  ‘  瓗  ‘</p>
+<p>union  all  select  ‘qiu’  ,  N  ‘  糗  ‘</p>
+<p>union  all  select  ‘qu’  ,  N  ‘  覻  ‘</p>
+<p>union  all  select  ‘quan’  ,  N  ‘  勸  ‘</p>
+<p>union  all  select  ‘que’  ,  N  ‘  礭  ‘</p>
+<p>union  all  select  ‘qun’  ,  N  ‘  囕  ‘</p>
+<p>union  all  select  ‘ran’  ,  N  ‘  橪  ‘</p>
+<p>union  all  select  ‘rang’  ,  N  ‘  讓  ‘</p>
+<p>union  all  select  ‘rao’  ,  N  ‘  繞  ‘</p>
+<p>union  all  select  ‘re’  ,  N  ‘  熱  ‘</p>
+<p>union  all  select  ‘ren’  ,  N  ‘  餁  ‘</p>
+<p>union  all  select  ‘reng’  ,  N  ‘  陾  ‘</p>
+<p>union  all  select  ‘ri’  ,  N  ‘  馹  ‘</p>
+<p>union  all  select  ‘rong’  ,  N  ‘  穃  ‘</p>
+<p>union  all  select  ‘rou’  ,  N  ‘  嶿  ‘</p>
+<p>union  all  select  ‘ru’  ,  N  ‘  擩  ‘</p>
+<p>union  all  select  ‘ruan’  ,  N  ‘  礝  ‘</p>
+<p>union  all  select  ‘rui’  ,  N  ‘  壡  ‘</p>
+<p>union  all  select  ‘run’  ,  N  ‘  橍  ‘  --  橍挼</p>
+<p>union  all  select  ‘ruo’  ,  N  ‘  鶸  ‘</p>
+<p>union  all  select  ‘sa’  ,  N  ‘  栍  ‘  --  櫒栍</p>
+<p>union  all  select  ‘sai’  ,  N  ‘  虄  ‘  --  簺虄</p>
+<p>union  all  select  ‘san’  ,  N  ‘  閐  ‘</p>
+<p>union  all  select  ‘sang’  ,  N  ‘  喪  ‘</p>
+<p>union  all  select  ‘sao’  ,  N  ‘  髞  ‘</p>
+<p>union  all  select  ‘se’  ,  N  ‘  飋  ‘  --  裇聓</p>
+<p>union  all  select  ‘sen’  ,  N  ‘  篸  ‘</p>
+<p>union  all  select  ‘seng’  ,  N  ‘  縇  ‘  --  閪縇</p>
+<p>union  all  select  ‘sha’  ,  N  ‘  霎  ‘</p>
+<p>union  all  select  ‘shai’  ,  N  ‘  曬  ‘</p>
+<p>union  all  select  ‘shan’  ,  N  ‘  鱔  ‘</p>
+<p>union  all  select  ‘shang’  ,  N  ‘  緔  ‘</p>
+<p>union  all  select  ‘shao’  ,  N  ‘  潲  ‘</p>
+<p>union  all  select  ‘she’  ,  N  ‘  欇  ‘</p>
+<p>union  all  select  ‘shen’  ,  N  ‘  瘮  ‘</p>
+<p>union  all  select  ‘sheng’  ,  N  ‘  賸  ‘</p>
+<p>union  all  select  ‘shi’  ,  N  ‘  瓧  ‘  --  鰘齛兙瓧</p>
+<p>union  all  select  ‘shou’  ,  N  ‘  鏉  ‘</p>
+<p>union  all  select  ‘shu’  ,  N  ‘  虪  ‘</p>
+<p>union  all  select  ‘shua’  ,  N  ‘  誜  ‘</p>
+<p>union  all  select  ‘shuai’  ,  N  ‘  卛  ‘</p>
+<p>union  all  select  ‘shuan’  ,  N  ‘  腨  ‘</p>
+<p>union  all  select  ‘shuang’  ,  N  ‘  灀  ‘</p>
+<p>union  all  select  ‘shui’  ,  N  ‘  睡  ‘</p>
+<p>union  all  select  ‘shun’  ,  N  ‘  鬊  ‘</p>
+<p>union  all  select  ‘shuo’  ,  N  ‘  鑠  ‘</p>
+<p>union  all  select  ‘si’  ,  N  ‘  乺  ‘  --  瀃螦乺</p>
+<p>union  all  select  ‘song’  ,  N  ‘  鎹  ‘</p>
+<p>union  all  select  ‘sou’  ,  N  ‘  瘶  ‘</p>
+<p>union  all  select  ‘su’  ,  N  ‘  鷫  ‘</p>
+<p>union  all  select  ‘suan’  ,  N  ‘  算  ‘</p>
+<p>union  all  select  ‘sui’  ,  N  ‘  鐩  ‘</p>
+<p>union  all  select  ‘sun’  ,  N  ‘  潠  ‘</p>
+<p>union  all  select  ‘suo’  ,  N  ‘  蜶  ‘</p>
+<p>union  all  select  ‘ta’  ,  N  ‘  襨  ‘  --  躢襨</p>
+<p>union  all  select  ‘tai’  ,  N  ‘  燤  ‘</p>
+<p>union  all  select  ‘tan’  ,  N  ‘  賧  ‘</p>
+<p>union  all  select  ‘tang’  ,  N  ‘  燙  ‘</p>
+<p>union  all  select  ‘tao’  ,  N  ‘  畓  ‘  --  討畓</p>
+<p>union  all  select  ‘te’  ,  N  ‘  蟘  ‘</p>
+<p>union  all  select  ‘teng’  ,  N  ‘  朰  ‘  --  霯唞朰</p>
+<p>union  all  select  ‘ti’  ,  N  ‘  趯  ‘</p>
+<p>union  all  select  ‘tian’  ,  N  ‘  舚  ‘</p>
+<p>union  all  select  ‘tiao’  ,  N  ‘  糶  ‘</p>
+<p>union  all  select  ‘tie’  ,  N  ‘  餮  ‘</p>
+<p>union  all  select  ‘ting’  ,  N  ‘  乭  ‘  --  濎乭</p>
+<p>union  all  select  ‘tong’  ,  N  ‘  憅  ‘</p>
+<p>union  all  select  ‘tou’  ,  N  ‘  透  ‘</p>
+<p>union  all  select  ‘tu’  ,  N  ‘  鵵  ‘</p>
+<p>union  all  select  ‘tuan’  ,  N  ‘  褖  ‘</p>
+<p>union  all  select  ‘tui’  ,  N  ‘  駾  ‘</p>
+<p>union  all  select  ‘tun’  ,  N  ‘  坉  ‘</p>
+<p>union  all  select  ‘tuo’  ,  N  ‘  籜  ‘</p>
+<p>union  all  select  ‘wa’  ,  N  ‘  韤  ‘</p>
+<p>union  all  select  ‘wai’  ,  N  ‘  顡  ‘</p>
+<p>union  all  select  ‘wan’  ,  N  ‘  贎  ‘</p>
+<p>union  all  select  ‘wang’  ,  N  ‘  朢  ‘</p>
+<p>union  all  select  ‘wei’  ,  N  ‘  躛  ‘</p>
+<p>union  all  select  ‘wen’  ,  N  ‘  璺  ‘</p>
+<p>union  all  select  ‘weng’  ,  N  ‘  齆  ‘</p>
+<p>union  all  select  ‘wo’  ,  N  ‘  齷  ‘</p>
+<p>union  all  select  ‘wu’  ,  N  ‘  鶩  ‘</p>
+<p>union  all  select  ‘xi’  ,  N  ‘  衋  ‘</p>
+<p>union  all  select  ‘xia’  ,  N  ‘  鏬  ‘</p>
+<p>union  all  select  ‘xian’  ,  N  ‘  鼸  ‘</p>
+<p>union  all  select  ‘xiang’  ,  N  ‘  鱌  ‘</p>
+<p>union  all  select  ‘xiao’  ,  N  ‘  斆  ‘</p>
+<p>union  all  select  ‘xie’  ,  N  ‘  躞  ‘</p>
+<p>union  all  select  ‘xin’  ,  N  ‘  釁  ‘</p>
+<p>union  all  select  ‘xing’  ,  N  ‘  臖  ‘</p>
+<p>union  all  select  ‘xiong’  ,  N  ‘  敻  ‘</p>
+<p>union  all  select  ‘xiu’  ,  N  ‘  齅  ‘</p>
+<p>union  all  select  ‘xu’  ,  N  ‘  蓿  ‘</p>
+<p>union  all  select  ‘xuan’  ,  N  ‘  贙  ‘</p>
+<p>union  all  select  ‘xue’  ,  N  ‘  瀥  ‘</p>
+<p>union  all  select  ‘xun’  ,  N  ‘  鑂  ‘</p>
+<p>union  all  select  ‘ya’  ,  N  ‘  齾  ‘</p>
+<p>union  all  select  ‘yan’  ,  N  ‘  灩  ‘</p>
+<p>union  all  select  ‘yang’  ,  N  ‘  樣  ‘</p>
+<p>union  all  select  ‘yao’  ,  N  ‘  鑰  ‘</p>
+<p>union  all  select  ‘ye’  ,  N  ‘  岃  ‘  --  鸈膶岃</p>
+<p>union  all  select  ‘yi’  ,  N  ‘  齸  ‘</p>
+<p>union  all  select  ‘yin’  ,  N  ‘  檼  ‘</p>
+<p>union  all  select  ‘ying’  ,  N  ‘  譍  ‘</p>
+<p>union  all  select  ‘yo’  ,  N  ‘  喲  ‘</p>
+<p>union  all  select  ‘yong’  ,  N  ‘  醟  ‘</p>
+<p>union  all  select  ‘you’  ,  N  ‘  鼬  ‘</p>
+<p>union  all  select  ‘yu’  ,  N  ‘  爩  ‘</p>
+<p>union  all  select  ‘yuan’  ,  N  ‘  願  ‘</p>
+<p>union  all  select  ‘yue’  ,  N  ‘  鸙  ‘</p>
+<p>union  all  select  ‘yun’  ,  N  ‘  韻  ‘</p>
+<p>union  all  select  ‘za’  ,  N  ‘  雥  ‘</p>
+<p>union  all  select  ‘zai’  ,  N  ‘  縡  ‘</p>
+<p>union  all  select  ‘zan’  ,  N  ‘  饡  ‘</p>
+<p>union  all  select  ‘zang’  ,  N  ‘  臟  ‘</p>
+<p>union  all  select  ‘zao’  ,  N  ‘  竈  ‘</p>
+<p>union  all  select  ‘ze’  ,  N  ‘  稄  ‘</p>
+<p>union  all  select  ‘zei’  ,  N  ‘  鱡  ‘</p>
+<p>union  all  select  ‘zen’  ,  N  ‘  囎  ‘</p>
+<p>union  all  select  ‘zeng’  ,  N  ‘  贈  ‘</p>
+<p>union  all  select  ‘zha’  ,  N  ‘  醡  ‘</p>
+<p>union  all  select  ‘zhai’  ,  N  ‘  瘵  ‘</p>
+<p>union  all  select  ‘zhan’  ,  N  ‘  驏  ‘</p>
+<p>union  all  select  ‘zhang’  ,  N  ‘  瞕  ‘</p>
+<p>union  all  select  ‘zhao’  ,  N  ‘  羄  ‘</p>
+<p>union  all  select  ‘zhe’  ,  N  ‘  鷓  ‘</p>
+<p>union  all  select  ‘zhen’  ,  N  ‘  黮  ‘</p>
+<p>union  all  select  ‘zheng’  ,  N  ‘  證  ‘</p>
+<p>union  all  select  ‘zhi’  ,  N  ‘  豒  ‘</p>
+<p>union  all  select  ‘zhong’  ,  N  ‘  諥  ‘</p>
+<p>union  all  select  ‘zhou’  ,  N  ‘  驟  ‘</p>
+<p>union  all  select  ‘zhu’  ,  N  ‘  鑄  ‘</p>
+<p>union  all  select  ‘zhua’  ,  N  ‘  爪  ‘</p>
+<p>union  all  select  ‘zhuai’  ,  N  ‘  跩  ‘</p>
+<p>union  all  select  ‘zhuan’  ,  N  ‘  籑  ‘</p>
+<p>union  all  select  ‘zhuang’  ,  N  ‘  戅  ‘</p>
+<p>union  all  select  ‘zhui’  ,  N  ‘  鑆  ‘</p>
+<p>union  all  select  ‘zhun’  ,  N  ‘  稕  ‘</p>
+<p>union  all  select  ‘zhuo’  ,  N  ‘  籱  ‘</p>
+<p>union  all  select  ‘zi’  ,  N  ‘  漬  ‘  --  漬唨</p>
+<p>union  all  select  ‘zong’  ,  N  ‘  縱  ‘</p>
+<p>union  all  select  ‘zou’  ,  N  ‘  媰  ‘</p>
+<p>union  all  select  ‘zu’  ,  N  ‘  謯  ‘</p>
+<p>union  all  select  ‘zuan’  ,  N  ‘  攥  ‘</p>
+<p>union  all  select  ‘zui’  ,  N  ‘  欈  ‘</p>
+<p>union  all  select  ‘zun’  ,  N  ‘  銌  ‘</p>
+<p>union  all  select  ‘zuo’  ,  N  ‘  咗  ‘  )  t</p>
+<p>where  word  &gt;=  @word  collate  Chinese_PRC_CS_AS_KS_WS</p>
+<p>order  by  word  collate  Chinese_PRC_CS_AS_KS_WS  ASC  )  else  @word  end  )</p>
+<p>set  @i  =  @i  +  1</p>
+<p>end</p>
+<p>return  @pinyin</p>
+<p>END</p>
+<p>GO</p>
+<p>--  测试示例</p>
+<p>SELECT  dbo  .  fn_GetPinyin  (  ‘  欢迎访问叶子的博客  ‘  )</p>
+<p>--  运行结果</p>
+<p>/*</p>
+<p>huan ying fang wen ye zi de bo ke</p>
+<p>*/ </p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/sqlserver汉字转拼音/#comments" id="sourceId::2018/04/20/sqlserver汉字转拼音/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/程序猿技能表/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    程序猿技能表
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Spring Boot 事务的使用/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Spring Boot 事务的使用</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/sqlserver汉字转拼音/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

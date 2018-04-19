@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Spring Boot MyBatis 连接数据库 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="最近比较忙，没来得及抽时间把MyBatis的集成发出来，其实mybatis官网在2015年11月底就已经发布了对SpringBoot集成的Release版本，Github上有代码：  https://github.com/mybatis/mybatis-spring-boot 前面对JPA和JDBC连接  数据库  做了说明，本文也是参考官方的代码做个总结。 先说个题外话，SpringBoot默认">
+<meta name="keywords" content="spring,mybatis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot MyBatis 连接数据库">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Spring Boot MyBatis 连接数据库/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="最近比较忙，没来得及抽时间把MyBatis的集成发出来，其实mybatis官网在2015年11月底就已经发布了对SpringBoot集成的Release版本，Github上有代码：  https://github.com/mybatis/mybatis-spring-boot 前面对JPA和JDBC连接  数据库  做了说明，本文也是参考官方的代码做个总结。 先说个题外话，SpringBoot默认">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:updated_time" content="2018-04-19T16:30:10.117Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Boot MyBatis 连接数据库">
+<meta name="twitter:description" content="最近比较忙，没来得及抽时间把MyBatis的集成发出来，其实mybatis官网在2015年11月底就已经发布了对SpringBoot集成的Release版本，Github上有代码：  https://github.com/mybatis/mybatis-spring-boot 前面对JPA和JDBC连接  数据库  做了说明，本文也是参考官方的代码做个总结。 先说个题外话，SpringBoot默认">
+<meta name="twitter:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Spring Boot MyBatis 连接数据库" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Spring Boot MyBatis 连接数据库
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Spring Boot MyBatis 连接数据库/">
+            <time datetime="2018-04-19T16:34:21.432Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Spring/">Spring</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/mybatis/">mybatis</a>, <a class="tag-link" href="/tags/spring/">spring</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>最近比较忙，没来得及抽时间把MyBatis的集成发出来，其实mybatis官网在2015年11月底就已经发布了对SpringBoot集成的Release版本<br>，Github上有代码： <a href="https://github.com/mybatis/mybatis-spring-boot" target="_blank" rel="noopener"> https://github.com/mybatis/mybatis-spring-boot
+</a><br>前面对JPA和JDBC连接 <a href="http://lib.csdn.net/base/14" target="_blank" rel="noopener"> 数据库 </a> 做了说明，本文也是参考官方的代码做个总结。</p>
+<p>先说个题外话，SpringBoot默认使用 org.apache.tomcat.jdbc.pool.DataSource<br>现在有个叫 HikariCP 的JDBC连接池组件，据说其性能比常用的 c3p0、tomcat、bone、vibur 这些要高很多。<br>我打算把工程中的DataSource变更为HirakiDataSource，做法很简单：<br>首先在application.properties配置文件中指定dataSourceType</p>
+<pre><code>spring.datasource.type=com.zaxxer.hikari.HikariDataSource
+</code></pre><ul>
+<li>1 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+</ul>
+<p>然后在pom中添加Hikari的依赖</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;com.zaxxer&lt;/groupId&gt;
+    &lt;artifactId&gt;HikariCP&lt;/artifactId&gt;
+    &lt;!-- 版本号可以不用指定，Spring Boot会选用合适的版本 --&gt;
+&lt;/dependency&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+</ul>
+<p>言归正传，下面说在Spring Boot中配置MyBatis。<br>关于在Spring Boot中集成MyBatis，可以选用基于注解的方式，也可以选择xml文件配置的方式。通过对两者进行实际的使用，还是建议使用XML的方式<br>（官方也建议使用XML）。</p>
+<p>下面将介绍通过xml的方式来实现查询，其次会简单说一下注解方式，最后会附上分页插件（PageHelper）的集成。</p>
+<h3 id="一、通过xml配置文件方式"><a href="#一、通过xml配置文件方式" class="headerlink" title="一、通过xml配置文件方式"></a>一、通过xml配置文件方式</h3><h4 id="1、添加pom依赖"><a href="#1、添加pom依赖" class="headerlink" title="1、添加pom依赖"></a>1、添加pom依赖</h4><pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.mybatis.spring.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;mybatis-spring-boot-starter&lt;/artifactId&gt;
+    &lt;!-- 请不要使用1.0.0版本，因为还不支持拦截器插件，1.0.1-SNAPSHOT 是博主写帖子时候的版本，大家使用最新版本即可 --&gt;
+    &lt;version&gt;1.0.1-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+</ul>
+<h4 id="2、创建接口Mapper（不是类）和对应的Mapper-xml文件"><a href="#2、创建接口Mapper（不是类）和对应的Mapper-xml文件" class="headerlink" title="2、创建接口Mapper（不是类）和对应的Mapper.xml文件"></a>2、创建接口Mapper（不是类）和对应的Mapper.xml文件</h4><p>定义相关方法，注意方法名称要和Mapper.xml文件中的id一致，这样会自动对应上<br>StudentMapper. <a href="http://lib.csdn.net/base/17" target="_blank" rel="noopener"> Java </a></p>
+<pre><code>package org.springboot.sample.mapper;
+
+import java.util.List;
+
+import org.springboot.sample.entity.Student;
+
+/**
+ * StudentMapper，映射SQL语句的接口，无逻辑实现
+ *
+ * @author 单红宇(365384722)
+ * @myblog http://blog.csdn.net/catoop/
+ * @create 2016年1月20日
+ */
+public interface StudentMapper extends MyMapper&lt;Student&gt; {
+
+    List&lt;Student&gt; likeName(String name);
+
+    Student getById(int id);
+
+    String getNameById(int id);
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+</ul>
+<p>MyMapper.java</p>
+<pre><code>package org.springboot.sample.config.mybatis;
+
+import tk.mybatis.mapper.common.Mapper;
+import tk.mybatis.mapper.common.MySqlMapper;
+
+/**
+ * 被继承的Mapper，一般业务Mapper继承它
+ *
+ */
+public interface MyMapper&lt;T&gt; extends Mapper&lt;T&gt;, MySqlMapper&lt;T&gt; {
+    //TODO
+    //FIXME 特别注意，该接口不能被扫描到，否则会出错
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+</ul>
+<p>StudentMapper.xml</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; 
+&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;org.springboot.sample.mapper.StudentMapper&quot;&gt;
+
+    &lt;!-- type为实体类Student，包名已经配置，可以直接写类名 --&gt;
+    &lt;resultMap id=&quot;stuMap&quot; type=&quot;Student&quot;&gt;
+        &lt;id property=&quot;id&quot; column=&quot;id&quot; /&gt;
+        &lt;result property=&quot;name&quot; column=&quot;name&quot; /&gt;
+        &lt;result property=&quot;sumScore&quot; column=&quot;score_sum&quot; /&gt;
+        &lt;result property=&quot;avgScore&quot; column=&quot;score_avg&quot; /&gt;
+        &lt;result property=&quot;age&quot; column=&quot;age&quot; /&gt;
+    &lt;/resultMap&gt;
+
+    &lt;select id=&quot;getById&quot; resultMap=&quot;stuMap&quot; resultType=&quot;Student&quot;&gt;
+        SELECT *
+        FROM STUDENT
+        WHERE ID = #{id}
+    &lt;/select&gt;
+
+    &lt;select id=&quot;likeName&quot; resultMap=&quot;stuMap&quot; parameterType=&quot;string&quot; resultType=&quot;list&quot;&gt;
+        SELECT *
+        FROM STUDENT
+        WHERE NAME LIKE CONCAT(&apos;%&apos;,#{name},&apos;%&apos;)
+    &lt;/select&gt;
+
+    &lt;select id=&quot;getNameById&quot; resultType=&quot;string&quot;&gt;
+        SELECT NAME
+        FROM STUDENT
+        WHERE ID = #{id}
+    &lt;/select&gt;
+
+
+&lt;/mapper&gt; 
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+</ul>
+<h4 id="3、实体类"><a href="#3、实体类" class="headerlink" title="3、实体类"></a>3、实体类</h4><pre><code>package org.springboot.sample.entity;
+
+import java.io.Serializable;
+
+/**
+ * 学生实体
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月12日
+ */
+public class Student implements Serializable{
+
+    private static final long serialVersionUID = 2120869894112984147L;
+
+    private int id;
+    private String name;
+    private String sumScore;
+    private String avgScore;
+    private int age;
+
+    // get set 方法省略
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<h4 id="4、修改application-properties-配置文件"><a href="#4、修改application-properties-配置文件" class="headerlink" title="4、修改application.properties 配置文件"></a>4、修改application.properties 配置文件</h4><pre><code>mybatis.mapper-locations=classpath*:org/springboot/sample/mapper/sql/mysql/*Mapper.xml
+mybatis.type-aliases-package=org.springboot.sample.entity
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+</ul>
+<h4 id="5、在Controller或Service调用方法测试"><a href="#5、在Controller或Service调用方法测试" class="headerlink" title="5、在Controller或Service调用方法测试"></a>5、在Controller或Service调用方法测试</h4><pre><code>@Autowired
+private StudentMapper stuMapper;
+
+@RequestMapping(&quot;/likeName&quot;)
+public List&lt;Student&gt; likeName(@RequestParam String name){
+    return stuMapper.likeName(name);
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+</ul>
+<h3 id="二、使用注解方式"><a href="#二、使用注解方式" class="headerlink" title="二、使用注解方式"></a>二、使用注解方式</h3><p>查看官方git上的代码使用注解方式，配置上很简单，使用上要对注解多做了解。至于xml和注解这两种哪种方法好，众口难调还是要看每个人吧。</p>
+<h4 id="1、启动类（我的）中添加-MapperScan注解"><a href="#1、启动类（我的）中添加-MapperScan注解" class="headerlink" title="1、启动类（我的）中添加@MapperScan注解"></a>1、启动类（我的）中添加@MapperScan注解</h4><pre><code>@SpringBootApplication
+@MapperScan(&quot;sample.mybatis.mapper&quot;)
+public class SampleMybatisApplication implements CommandLineRunner {
+
+    @Autowired
+    private CityMapper cityMapper;
+
+    public static void main(String[] args) {
+        SpringApplication.run(SampleMybatisApplication.class, args);
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        System.out.println(this.cityMapper.findByState(&quot;CA&quot;));
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+</ul>
+<h4 id="2、在接口上使用注解定义CRUD语句"><a href="#2、在接口上使用注解定义CRUD语句" class="headerlink" title="2、在接口上使用注解定义CRUD语句"></a>2、在接口上使用注解定义CRUD语句</h4><pre><code>package sample.mybatis.mapper;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import sample.mybatis.domain.City;
+
+/**
+ * @author Eddú Meléndez
+ */
+public interface CityMapper {
+
+    @Select(&quot;SELECT * FROM CITY WHERE state = #{state}&quot;)
+    City findByState(@Param(&quot;state&quot;) String state);
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+</ul>
+<p>其中City就是一个普通Java类。<br>关于MyBatis的注解，有篇文章讲的很清楚，可以参考： <a href="http://blog.csdn.net/luanlouis/article/details/35780175" target="_blank" rel="noopener"><br>http://blog.csdn.net/luanlouis/article/details/35780175
+</a></p>
+<h3 id="三、集成分页插件"><a href="#三、集成分页插件" class="headerlink" title="三、集成分页插件"></a>三、集成分页插件</h3><p>这里与其说集成分页插件，不如说是介绍如何集成一个plugin。MyBatis提供了拦截器接口，我们可以实现自己的拦截器，将其作为一个plugin装入到Sql<br>SessionFactory中。<br>Github上有位开发者写了一个分页插件，我觉得使用起来还可以，挺方便的。<br>Github项目地址： <a href="https://github.com/pagehelper/Mybatis-PageHelper" target="_blank" rel="noopener"> https://github.com/pagehelper/Mybatis-PageHelper
+</a></p>
+<p>下面简单介绍下：<br>首先要说的是，Spring在依赖注入bean的时候，会把所有实现MyBatis中Interceptor接口的所有类都注入到SqlSessionFactory<br>中，作为plugin存在。既然如此，我们集成一个plugin便很简单了，只需要使用@Bean创建PageHelper对象即可。</p>
+<h4 id="1、添加pom依赖-1"><a href="#1、添加pom依赖-1" class="headerlink" title="1、添加pom依赖"></a>1、添加pom依赖</h4><pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;com.github.pagehelper&lt;/groupId&gt;
+    &lt;artifactId&gt;pagehelper&lt;/artifactId&gt;
+    &lt;version&gt;4.1.0&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+</ul>
+<h4 id="2、新增MyBatisConfiguration-java"><a href="#2、新增MyBatisConfiguration-java" class="headerlink" title="2、新增MyBatisConfiguration.java"></a>2、新增MyBatisConfiguration.java</h4><pre><code>package org.springboot.sample.config;
+
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.github.pagehelper.PageHelper;
+
+/**
+ * MyBatis 配置
+ *
+ * @author 单红宇(365384722)
+ * @myblog http://blog.csdn.net/catoop/
+ * @create 2016年1月21日
+ */
+@Configuration
+public class MyBatisConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(MyBatisConfiguration.class);
+
+    @Bean
+    public PageHelper pageHelper() {
+        logger.info(&quot;注册MyBatis分页插件PageHelper&quot;);
+        PageHelper pageHelper = new PageHelper();
+        Properties p = new Properties();
+        p.setProperty(&quot;offsetAsPageNum&quot;, &quot;true&quot;);
+        p.setProperty(&quot;rowBoundsWithCount&quot;, &quot;true&quot;);
+        p.setProperty(&quot;reasonable&quot;, &quot;true&quot;);
+        pageHelper.setProperties(p);
+        return pageHelper;
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+</ul>
+<h4 id="3、分页查询测试"><a href="#3、分页查询测试" class="headerlink" title="3、分页查询测试"></a>3、分页查询测试</h4><pre><code>@RequestMapping(&quot;/likeName&quot;)
+public List&lt;Student&gt; likeName(@RequestParam String name){
+    PageHelper.startPage(1, 1);
+    return stuMapper.likeName(name);
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+</ul>
+<p>更多参数使用方法，详见PageHelper说明文档（上面的Github地址）。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Spring Boot MyBatis 连接数据库/#comments" id="sourceId::2018/04/20/Spring Boot MyBatis 连接数据库/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Spring Boot Servlet/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Spring Boot Servlet
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Spring Boot JPA 连接数据库/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Spring Boot JPA 连接数据库</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Spring Boot MyBatis 连接数据库/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

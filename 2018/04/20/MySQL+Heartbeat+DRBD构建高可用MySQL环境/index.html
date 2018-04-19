@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>MySQL+Heartbeat+DRBD构建高可用MySQL环境 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="Distributed Replicated Block Device(DRBD)是一个用软件实现的、无共享的、服务器之间镜像块设备内容的存储复制解决方案。数据镜像：实时、透明、同步（所有服务器都成功后返回）、异步（本地服务器成功后返回） DBRD的核心功能通过Linux的内核实现，最接近系统的IO栈，但它不能神奇地添加上层的功能比如检测到EXT3文件系统的崩溃。 DBRD的位置处于文件系统以下，">
+<meta name="keywords" content="mysql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL+Heartbeat+DRBD构建高可用MySQL环境">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/MySQL+Heartbeat+DRBD构建高可用MySQL环境/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="Distributed Replicated Block Device(DRBD)是一个用软件实现的、无共享的、服务器之间镜像块设备内容的存储复制解决方案。数据镜像：实时、透明、同步（所有服务器都成功后返回）、异步（本地服务器成功后返回） DBRD的核心功能通过Linux的内核实现，最接近系统的IO栈，但它不能神奇地添加上层的功能比如检测到EXT3文件系统的崩溃。 DBRD的位置处于文件系统以下，">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_1318
+941951sZET.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18941960nzKW.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18941963zcXu.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_131
+894196393ni.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18941974XLR4.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+1894197650rB.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18941983UU3T.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_131
+8941989pSUV.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_131
+89419945gMv.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_131
+8941994iO5A.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18941997Bqw3.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_131
+8942004Bt9m.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18942008sp6F.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18942011pQOs.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+18942013G2Ny.png">
+<meta property="og:image" content="http://img1.51cto.com/attachment/201110/18/508999_13
+189420167pAp.png">
+<meta property="og:updated_time" content="2018-04-19T16:30:05.246Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL+Heartbeat+DRBD构建高可用MySQL环境">
+<meta name="twitter:description" content="Distributed Replicated Block Device(DRBD)是一个用软件实现的、无共享的、服务器之间镜像块设备内容的存储复制解决方案。数据镜像：实时、透明、同步（所有服务器都成功后返回）、异步（本地服务器成功后返回） DBRD的核心功能通过Linux的内核实现，最接近系统的IO栈，但它不能神奇地添加上层的功能比如检测到EXT3文件系统的崩溃。 DBRD的位置处于文件系统以下，">
+<meta name="twitter:image" content="http://img1.51cto.com/attachment/201110/18/508999_1318
+941951sZET.png">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-MySQL+Heartbeat+DRBD构建高可用MySQL环境" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            MySQL+Heartbeat+DRBD构建高可用MySQL环境
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/MySQL+Heartbeat+DRBD构建高可用MySQL环境/">
+            <time datetime="2018-04-19T16:34:21.425Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/数据库/">数据库</a><i class="fa fa-angle-right"></i><a class="article-category-link" href="/categories/数据库/集群/">集群</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/mysql/">mysql</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>Distributed Replicated Block Device(DRBD)是一个用软件实现的、无共享的、服务器之间镜像块设备内容的存储复制解决方案。<br>数据镜像：实时、透明、同步（所有服务器都成功后返回）、异步（本地服务器成功后返回）</p>
+<p>DBRD的核心功能通过Linux的内核实现，最接近系统的IO栈，但它不能神奇地添加上层的功能比如检测到EXT3文件系统的崩溃。</p>
+<p>DBRD的位置处于文件系统以下，比文件系统更加靠近操作系统内核及IO栈。</p>
+<p>——《百度百科》</p>
+<p>实验环境：</p>
+<p>主 192.168.43.128 drbd-M   CentOS 5.4 64bit</p>
+<p>从 192.168.43.129 drbd-S    CentOS5.4 64bit</p>
+<p>准备工作：</p>
+<p>Vim /etc/hosts</p>
+<p>192.168.43.129 drbd-M</p>
+<p>192.168.43.130 drbd-S</p>
+<p>修改hostname名，</p>
+<p>主：hostname drbd-M</p>
+<p>从：hostname drbd-S</p>
+<p>确保与uname -n输出一致。PS：很重要，后面的drbd和heartbeat都要依赖于主机名来通信。</p>
+<p>搭建环境，采用yum安装：</p>
+<pre><code>    1. # yum install -y drbd83 kmod-drbd83 
+2.  
+3. # yum search heartbeat* 
+4.  
+5. heartbeat所需的安装包主要有以下几个： 
+6.  
+7. heartbeat-devel-2.1.3-3.el5.centos 
+8.  
+9. heartbeat-stonith-2.1.3-3.el5.centos 
+10.  
+11. heartbeat-gui-2.1.3-3.el5.centos 
+12.  
+13. heartbeat-ldirectord-2.1.3-3.el5.centos 
+14.  
+15. heartbeat-pils-2.1.3-3.el5.centos 
+16.  
+17. heartbeat-2.1.3-3.el5.centos 
+</code></pre><p>一 DRBD的安装使用</p>
+<p>加载安装drbd模块：</p>
+<pre><code>1. # modprobe drbd 
+</code></pre><p>检查是否加载成功：</p>
+<pre><code>    1. # modprobe drbd 
+2. drbd                  277272  2 
+</code></pre><p>PS：一般使用yum安装的话系统会自动加载的，此步可以跳过，如果使用源码包编译就一定要记得这一步。</p>
+<p>添加一块硬盘，存放数据，主从服务器的硬盘大小可以不一致，但是如果数据超过小的硬盘，后果自己考虑吧！这里添加的是一块2G的硬盘，设备名称为/dev/sdb2，<br>注意先别急着格式化。</p>
+<p>开始drbd的配置：</p>
+<p>drbd主配置文件，很重要：</p>
+<pre><code>    1. global {  
+2. }  
+3. common {  
+4. syncer { rate 100M; }    //设置两个节点间的同步速率；  
+5. } 
+6.  
+7. resource db {  
+8. protocol C;     //定义当数据被写入块设备时候的一致性级别（数据同步协议），A、B、C三个级别，C为数据被确认写到本地磁盘和远程磁盘后返回，确认成功  
+9. startup { wfc-timeout 0; degr-wfc-timeout 120; } 
+10. disk { on-io-error detach; } 
+11. syncer { rate 100M; } 
+12.  
+13. on drbd-M {  //节点名称一定要与hostname保持一致； 
+14.   device /dev/drbd0;     //创建的虚拟磁盘 
+15.   disk   /dev/sdb2;      //物理分区 
+16.   address 192.168.43.129:7788;    //监听端口 
+17.   meta-disk internal;         //局域网类型 
+18.  
+19. } 
+20.  
+21. on drbd-S { 
+22.    device /dev/drbd0; 
+23.    disk   /dev/sdb2; 
+24.    address 192.168.43.130:7788; 
+25.    meta-disk internal; 
+26.    } 
+27.  } 
+</code></pre><p>检测配置文件：</p>
+<pre><code>1. #drbdadm ajust db 
+</code></pre><p>至此drbd已经配置完毕，以上步骤在主从服务器上都要做，而且drbd的配置文件要保持一致。</p>
+<p>主服务器和从服务器上创建matadata：</p>
+<pre><code>1. # drbdadm create-md all 
+</code></pre><p>主从服务器启动drbd：</p>
+<pre><code>1. # /etc/init.d/drbd start 
+</code></pre><p>此时主从服务器之间开始同步数据，第一次的话时间会稍微长一些。</p>
+<p>将drbd-M 设为主节点</p>
+<p>第一次的话要使用：</p>
+<pre><code>1. # drbdsetup /dev/drbd0 primary -o 
+</code></pre><p>以后可以使用drbdadm  primary all命令。</p>
+<p>将新创建的设备格式化并且挂载：</p>
+<pre><code>    1. # mkfs.ext3 /dev/drbd0  //破坏文件系统：dd if=/dev/zero bs=1M of=/dev/sdb2;sync 
+2. # mount /dev/drbd0 /data/  
+3. # df –H 
+</code></pre><p><img src="http://img1.51cto.com/attachment/201110/18/508999_1318
+941951sZET.png" alt="wps_clip_image-17319"></p>
+<p>在/data目录下创建文件进行测试：</p>
+<pre><code>    1. # cd /data/ 
+2. # mkdir linna 
+3. # touch database 
+4. # ls 
+5. database  linna  lost+found 
+</code></pre><p>下面进行测试：</p>
+<p>drbd-M：</p>
+<p>将主服务器降为从：</p>
+<p>先卸载设备：</p>
+<pre><code>    1. # umount /data/ 
+2. # drbdadm secondary all 
+</code></pre><p>PS:临时切断节点之间的连接可以使用：#drbdadm connect all</p>
+<p>查看系统日志/var/log/message:</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941953DHE2.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18941960nzKW.png" alt="wps_clip_image-27705">
+</a></p>
+<p>Drbd-S：</p>
+<p>我们再将从服务器提升为主服务器看下数据能否同步过来：</p>
+<pre><code>1. # drbdadm primary all 
+</code></pre><p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941962MTDi.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18941963zcXu.png" alt="wps_clip_image-11042">
+</a></p>
+<pre><code>    1. # mount /dev/drbd0 /data 
+2. # cd /data/ 
+</code></pre><p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941963A4Be.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_131
+894196393ni.png" alt="wps_clip_image-5498">
+</a></p>
+<p>看，数据已经同步过来了！</p>
+<p>我们可以通过查看/proc/drbd来监控主从节点间之间数据同步的过程：</p>
+<pre><code>1. #Watch  -n 10 ‘cat /proc/drbd’ 
+</code></pre><p>二 MySQL+Heartbeat+DRBD构建高可用环境</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941969Cg0A.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18941974XLR4.png" alt="wps_clip_image-11886">
+</a></p>
+<p>图 MySQL+Heartbeat+DRBD构建高可用MySQL</p>
+<p>1 Heartbeat主配置文件/etc/ha.d/ha.cf：</p>
+<pre><code>    1. # cat /etc/ha.d/ha.cf 
+2. logfacility local0       //定义日志，使用syslog； 
+3. keepalive 2           //定义心跳频率； 
+4. deadtime 15          //如果其他节点15S内没有回应，则确认其死     亡；       
+5. warntime 5           //确认一个节点连接不上5S之后将警告信息写入日志；   
+6. initdead 120          //在其他节点死掉之后，系统启动前需要等待的时间，一般为deadtime的两倍； 
+7. udpport 694          // 用来通信的端口； 
+8. bcast eth0            // 在eth0上进行心跳测试 
+9. watchdog /dev/watchdog  //可选项 
+10. auto_failback off        // 设置当死亡节点恢复正常之后是否重新启用；容易发生数据不一致的情况，必须项，不然后面hb_standby命令无法使用； 
+11. node drbd-M 
+12. node drbd-S 
+13. respawn hacluster /usr/lib64/heartbeat/ipfail 
+</code></pre><p>2 设置两个节点之间的通信密钥：</p>
+<pre><code>    1. #cat authkeys 
+2. auth 3 
+3. 3 md5 Hello! 
+</code></pre><p>3 定义资源：</p>
+<pre><code>    1. # cat haresources 
+2. drbd-M drbddisk Filesystem::/dev/drbd0::/data::ext3 mysqld 192.168.43.20  
+</code></pre><p>drbd-M    //主节点；</p>
+<p>drbddisk  Filesystem::/dev/drbd0::/data::ext3 mysqld   //定义Heartbeat需要管理的资源，并且<br>每一部分在/etc/ha.d/haresources.d下有对应的脚本；如果主节点失效，备节点将通过执行这些脚本来启用资源；如果脚本有参数可以使用“：：”来<br>进行分割；</p>
+<p>drbddisk  管理drbd资源的脚本；</p>
+<p>filesystem 管理文件系统资源的脚本，后面参数定义drbd设备，挂载点，文件系统类型</p>
+<p>mysqld  管理mysql的脚本，需要从/etc/init.d/mysqld 拷贝</p>
+<p>192.168.43.20  //VIP,用来连接MySQL的IP，当Heartbeat启用之后会自动分配；</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941974BcIu.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+1894197650rB.png" alt="wps_clip_image-13327">
+</a></p>
+<p>图 Resource.d 下的内容</p>
+<p>在主从节点上启动Heartbeat</p>
+<pre><code>1. # /etc/init.d/heartbeat start 
+</code></pre><p>查看下资源启动情况：</p>
+<p>先看下主节点drbd-M的日志：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941979QZD3.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18941983UU3T.png" alt="wps_clip_image-26722">
+</a></p>
+<p>再看下drbd-S的日志，已经处在监听等待状态：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941985KsoM.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_131
+8941989pSUV.png" alt="wps_clip_image-6070">
+</a></p>
+<p>虚拟IP已经启动：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941992fcfZ.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_131
+89419945gMv.png" alt="wps_clip_image-4355">
+</a></p>
+<p>Drbd和MySQL的端口已经在监听：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941994NkcE.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_131
+8941994iO5A.png" alt="wps_clip_image-2739">
+</a></p>
+<p>主节点/data目录下：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318941997DeFl.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18941997Bqw3.png" alt="wps_clip_image-17322">
+</a></p>
+<p>我们切换到drbd-S来试一下，看资源能不能切换过来：</p>
+<p>使用/usr/lib64/heartbeat/hb_standby命令可以来模拟主节点死掉的情况。</p>
+<pre><code>1. 2011/07/18_20:49:53 Going standby [all]. 
+</code></pre><p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318942000LO98.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_131
+8942004Bt9m.png" alt="wps_clip_image-5686">
+</a></p>
+<p>从服务器drbd-S日志：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318942005EJwm.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18942008sp6F.png" alt="wps_clip_image-28906">
+</a></p>
+<p>再看下资源是否已经抢占过来：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318942010VtKs.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18942011pQOs.png" alt="wps_clip_image-29561">
+</a></p>
+<p>/data目录下的文件：</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318942011tszz.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+18942013G2Ny.png" alt="wps_clip_image-22200">
+</a></p>
+<p>PS:Heartbeat启动之前必须保证drbd服务已经启动，并且主服务器已经设置为primary并成功挂载/dev/drbd0.不然主服务器Heartbe<br>at在启动的时候会提示找不到/dev/drbd0设备，并造成其他的资源也无法启动的情况。</p>
+<p><a href="http://img1.51cto.com/attachment/201110/18/508999_1318942014IJ56.png" target="_blank" rel="noopener"> <img src="http://img1.51cto.com/attachment/201110/18/508999_13
+189420167pAp.png" alt="wps_clip_image-17254">
+</a></p>
+<p>PS：心跳探测和数据复制不建议在同一个网卡上进行，本实验只是为了方便采取了这样的方式。</p>
+<p>dopd进程：当主从节点之间的失去连接，那么主从节点之间的数据就无法同步，就会发生从节点的数据过期的情况（数据不一致的情况）。如果此时主服务器发生宕机的情况<br>，那么dopd进程会阻止从服务器提升为主服务器。具体实现：</p>
+<p>1 修改/etc/ha.d/ha.cf 文件：</p>
+<pre><code>    1. respawn  hacluster /usr/lib64/heartbeat/dopd 
+2. apiauth  dopd gid=haclient uid=hacluster  
+</code></pre><p>2 修改/etc/drbd.conf 文件：</p>
+<pre><code>    1. common { 
+2. handlers { 
+3.          outdate-peer “/usr/lib64/heartbeat/drbd-peer-outdater”; 
+4.       } 
+5. } 
+6. resource db { 
+7. disk { 
+8. Fencing resource-only; 
+9.      } 
+10.    } 
+</code></pre><p>3 重新加载配置文件：</p>
+<pre><code>    1. # /etc/init.d/heartbeat reload 
+2. #/drbdadm adjust all 
+</code></pre><p>MySQL+Heartbeat+DRBD方案可以单独使用，也可以在构建MySQL主从架构时实现主服务器的高可用，在此不再详细实现，有兴趣的朋友可以尝试一下（<br>完）！</p>
+<p>参考文章：MySQL and DRBD Guide</p>
+<p>本文出自 “ <a href="http://lyp0909.blog.51cto.com" target="_blank" rel="noopener"> 諸葛草廬 </a> ” 博客，请务必保留此出处 <a href="http://lyp0909.blog.51cto.com/508999/691435" target="_blank" rel="noopener"><br>http://lyp0909.blog.51cto.com/508999/691435
+</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/MySQL+Heartbeat+DRBD构建高可用MySQL环境/#comments" id="sourceId::2018/04/20/MySQL+Heartbeat+DRBD构建高可用MySQL环境/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/MySQL集群/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    MySQL集群
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Linux命令之find/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Linux命令之find</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/MySQL+Heartbeat+DRBD构建高可用MySQL环境/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,3061 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Spring Boot Shiro 权限管理 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="本来是打算接着写关于  数据库 方面，集成MyBatis的，刚好赶上朋友问到Shiro权限管理，就先总结下发出来了。 使用Shiro之前用在Spring MVC中，是通过XML文件进行配置。既然现在在写Spring Boot的帖子，就将Shiro应用到SpringBoot中，我本地已经完成了SpringBoot使用Shiro的实例，将配置方法共享一下。 先简单介绍一下Shiro，对于没有用过Shi">
+<meta name="keywords" content="spring,shiro">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot Shiro 权限管理">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Spring Boot Shiro 权限管理/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="本来是打算接着写关于  数据库 方面，集成MyBatis的，刚好赶上朋友问到Shiro权限管理，就先总结下发出来了。 使用Shiro之前用在Spring MVC中，是通过XML文件进行配置。既然现在在写Spring Boot的帖子，就将Shiro应用到SpringBoot中，我本地已经完成了SpringBoot使用Shiro的实例，将配置方法共享一下。 先简单介绍一下Shiro，对于没有用过Shi">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://img-blog.csdn.net/20160114233958301">
+<meta property="og:image" content="https://img-blog.csdn.net/20160114234018824">
+<meta property="og:image" content="https://img-blog.csdn.net/20160114234036103">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:image" content="http://static.blog.csdn.net/images/save_snippets.png">
+<meta property="og:updated_time" content="2018-04-19T16:30:08.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Boot Shiro 权限管理">
+<meta name="twitter:description" content="本来是打算接着写关于  数据库 方面，集成MyBatis的，刚好赶上朋友问到Shiro权限管理，就先总结下发出来了。 使用Shiro之前用在Spring MVC中，是通过XML文件进行配置。既然现在在写Spring Boot的帖子，就将Shiro应用到SpringBoot中，我本地已经完成了SpringBoot使用Shiro的实例，将配置方法共享一下。 先简单介绍一下Shiro，对于没有用过Shi">
+<meta name="twitter:image" content="https://img-blog.csdn.net/20160114233958301">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Spring Boot Shiro 权限管理" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Spring Boot Shiro 权限管理
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Spring Boot Shiro 权限管理/">
+            <time datetime="2018-04-19T16:34:21.433Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Spring/">Spring</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/shiro/">shiro</a>, <a class="tag-link" href="/tags/spring/">spring</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>本来是打算接着写关于 <a href="http://lib.csdn.net/base/14" target="_blank" rel="noopener"> 数据库 </a><br>方面，集成MyBatis的，刚好赶上朋友问到Shiro权限管理，就先总结下发出来了。</p>
+<p>使用Shiro之前用在Spring MVC中，是通过XML文件进行配置。<br>既然现在在写Spring Boot的帖子，就将Shiro应用到Spring<br>Boot中，我本地已经完成了SpringBoot使用Shiro的实例，将配置方法共享一下。</p>
+<p>先简单介绍一下Shiro，对于没有用过Shiro的朋友，也算是做个简介吧。<br>Shiro是Apache下的一个开源项目，我们称之为Apache Shiro。它是一个很易用与 <a href="http://lib.csdn.net/base/17" target="_blank" rel="noopener"> Java
+</a> 项目的的安全框架，提供了认证、授权、加密、会话管理，与 Spring Security<br>一样都是做一个权限的安全框架，但是与Spring Security 相比，在于 Shiro 使用了比较简单易懂易于使用的授权方式。</p>
+<p>Apache Shiro 的三大核心组件<br><img src="https://img-blog.csdn.net/20160114233958301" alt="这里写图片描述"><br>- Subject 当前用户操作<br>- SecurityManager 用于管理所有的Subject<br>- Realms 用于进行权限信息的验证，也是我们需要自己实现的。</p>
+<p>我们需要实现Realms的Authentication 和 Authorization。其中 Authentication<br>是用来验证用户身份，Authorization 是授权访问控制，用于对用户进行的操作授权，证明该用户是否允许进行当前操作，如访问某个链接，某个资源文件等。</p>
+<p>Apache Shiro 核心通过 Filter 来实现，就好像SpringMvc 通过DispachServlet 来主控制一样。<br>既然是使用 Filter 一般也就能猜到，是通过URL规则来进行过滤和权限校验，所以我们需要定义一系列关于URL的规则和访问权限。</p>
+<p>另外我们可以通过Shiro 提供的会话管理来获取Session中的信息。Shiro 也提供了缓存支持，使用 CacheManager 来管理。</p>
+<p>官方网站： <a href="http://shiro.apache.org/" target="_blank" rel="noopener"> http://shiro.apache.org/ </a><br>完整 <a href="http://lib.csdn.net/base/16" target="_blank" rel="noopener"> 架构 </a> 图：<br><img src="https://img-blog.csdn.net/20160114234018824" alt="这里写图片描述"></p>
+<p>下面我们通过代码实战来看下Spring Boot 中应用Shiro：<br>1、创建数据库表<br><img src="https://img-blog.csdn.net/20160114234036103" alt="这里写图片描述"></p>
+<pre><code>表（t_permission）
+    id  permissionname  role_id  
+------  --------------  ---------
+     1  add                     2
+     2  del                     1
+     3  update                  2
+     4  query                   3
+     5  user:query              1
+     6  user:edit               2
+
+表（t_role）
+    id  rolename  
+------  ----------
+     1  admin     
+     2  manager   
+     3  normal    
+
+表（t_user）
+    id  username  password  
+------  --------  ----------
+     1  tom       123456    
+     2  jack      123456    
+     3  rose      123456  
+
+表（t_user_role）
+user_id  role_id  
+-------  ---------
+      1          1
+      1          3
+      2          2
+      2          3
+      3          3
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+</ul>
+<p>看截图，上面3张表是我测试别的用的，可以忽略。</p>
+<p>下面是，数据库脚本和测试数据。</p>
+<pre><code>/*
+SQLyog Ultimate v10.00 Beta1
+MySQL - 5.5.28 : Database - test
+*********************************************************************
+*/
+
+
+/*!40101 SET NAMES utf8 */;
+
+/*!40101 SET SQL_MODE=&apos;&apos;*/;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE=&apos;NO_AUTO_VALUE_ON_ZERO&apos; */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`test` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+USE `test`;
+
+/*Table structure for table `t_permission` */
+
+DROP TABLE IF EXISTS `t_permission`;
+
+CREATE TABLE `t_permission` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `permissionname` varchar(32) DEFAULT NULL,
+  `role_id` int(11) DEFAULT NULL,
+  KEY `id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+
+/*Data for the table `t_permission` */
+
+insert  into `t_permission`(`id`,`permissionname`,`role_id`) values (1,&apos;add&apos;,2),(2,&apos;del&apos;,1),(3,&apos;update&apos;,2),(4,&apos;query&apos;,3),(5,&apos;user:query&apos;,1),(6,&apos;user:edit&apos;,2);
+
+/*Table structure for table `t_role` */
+
+DROP TABLE IF EXISTS `t_role`;
+
+CREATE TABLE `t_role` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rolename` varchar(32) DEFAULT NULL,
+  KEY `id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+/*Data for the table `t_role` */
+
+insert  into `t_role`(`id`,`rolename`) values (1,&apos;admin&apos;),(2,&apos;manager&apos;),(3,&apos;normal&apos;);
+
+/*Table structure for table `t_user` */
+
+DROP TABLE IF EXISTS `t_user`;
+
+CREATE TABLE `t_user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(32) DEFAULT NULL,
+  `password` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+/*Data for the table `t_user` */
+
+insert  into `t_user`(`id`,`username`,`password`) values (1,&apos;tom&apos;,&apos;123456&apos;),(2,&apos;jack&apos;,&apos;123456&apos;),(3,&apos;rose&apos;,&apos;123456&apos;);
+
+/*Table structure for table `t_user_role` */
+
+DROP TABLE IF EXISTS `t_user_role`;
+
+CREATE TABLE `t_user_role` (
+  `user_id` int(11) DEFAULT NULL,
+  `role_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `t_user_role` */
+
+insert  into `t_user_role`(`user_id`,`role_id`) values (1,1),(1,3),(2,2),(2,3),(3,3);
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+</ul>
+<p>2、创建对应实体类<br>User.java</p>
+<pre><code>package org.springboot.sample.entity;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+/**
+ * 用户
+ *
+ * @author 单红宇(365384722)
+ * @myblog http://blog.csdn.net/catoop/
+ * @create 2016年1月13日
+ */
+@Entity
+@Table(name = &quot;t_user&quot;)
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @NotEmpty(message = &quot;用户名不能为空&quot;)
+    private String username;
+    @NotEmpty(message = &quot;密码不能为空&quot;)
+    private String password;    
+    @ManyToMany(fetch=FetchType.EAGER)
+    @JoinTable(name = &quot;t_user_role&quot;, joinColumns = { @JoinColumn(name = &quot;user_id&quot;) }, inverseJoinColumns = {
+            @JoinColumn(name = &quot;role_id&quot;) })
+    private List&lt;Role&gt; roleList;// 一个用户具有多个角色
+
+    public User() {
+        super();
+    }
+
+    public User(String username, String password) {
+        super();
+        this.username = username;
+        this.password = password;
+    }
+
+    // 省略 get set 方法
+
+    @Transient
+    public Set&lt;String&gt; getRolesName() {
+        List&lt;Role&gt; roles = getRoleList();
+        Set&lt;String&gt; set = new HashSet&lt;String&gt;();
+        for (Role role : roles) {
+            set.add(role.getRolename());
+        }
+        return set;
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+</ul>
+<p>Role.java</p>
+<pre><code>package org.springboot.sample.entity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+/**
+ * 角色（管理员，普通用户等）
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月13日
+ */
+@Entity
+@Table(name = &quot;t_role&quot;)
+public class Role {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String rolename;
+    @OneToMany(mappedBy = &quot;role&quot;, fetch=FetchType.EAGER)
+    private List&lt;Permission&gt; permissionList;// 一个角色对应多个权限
+    @ManyToMany
+    @JoinTable(name = &quot;t_user_role&quot;, joinColumns = { @JoinColumn(name = &quot;role_id&quot;) }, inverseJoinColumns = {
+            @JoinColumn(name = &quot;user_id&quot;) })
+    private List&lt;User&gt; userList;// 一个角色对应多个用户
+
+    // 省略 get set 方法
+
+    @Transient
+    public List&lt;String&gt; getPermissionsName() {
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        List&lt;Permission&gt; perlist = getPermissionList();
+        for (Permission per : perlist) {
+            list.add(per.getPermissionname());
+        }
+        return list;
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+</ul>
+<p>Permission.java</p>
+<pre><code>package org.springboot.sample.entity;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+/**
+ * 权限（增删改查等）
+ *
+ * @author 单红宇(365384722)
+ * @myblog http://blog.csdn.net/catoop/
+ * @create 2016年1月13日
+ */
+@Entity
+@Table(name = &quot;t_permission&quot;)
+public class Permission {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String permissionname;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;role_id&quot;)
+    private Role role;// 一个权限对应一个角色
+
+    // 省略 get set
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+</ul>
+<p>3、Shiro 配置，相当于SpringMVC 中的XML配置<br>ShiroConfiguration.java</p>
+<pre><code>package org.springboot.sample.config;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.shiro.cache.ehcache.EhCacheManager;
+import org.apache.shiro.spring.LifecycleBeanPostProcessor;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
+import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springboot.sample.dao.IScoreDao;
+import org.springboot.sample.security.MyShiroRealm;
+import org.springboot.sample.service.StudentService;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.filter.DelegatingFilterProxy;
+
+/**
+ * Shiro 配置
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月13日
+ */
+@Configuration
+public class ShiroConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShiroConfiguration.class);
+
+    @Bean
+    public EhCacheManager getEhCacheManager() {  
+        EhCacheManager em = new EhCacheManager();  
+        em.setCacheManagerConfigFile(&quot;classpath:ehcache-shiro.xml&quot;);  
+        return em;  
+    }  
+
+    @Bean(name = &quot;myShiroRealm&quot;)
+    public MyShiroRealm myShiroRealm(EhCacheManager cacheManager) {  
+        MyShiroRealm realm = new MyShiroRealm(); 
+        realm.setCacheManager(cacheManager);
+        return realm;
+    }  
+
+    /**
+     * 注册DelegatingFilterProxy（Shiro）
+     * 集成Shiro有2种方法：
+     * 1. 按这个方法自己组装一个FilterRegistrationBean（这种方法更为灵活，可以自己定义UrlPattern，
+     * 在项目使用中你可能会因为一些很但疼的问题最后采用它， 想使用它你可能需要看官网或者已经很了解Shiro的处理原理了）
+     * 2. 直接使用ShiroFilterFactoryBean（这种方法比较简单，其内部对ShiroFilter做了组装工作，无法自己定义UrlPattern，
+     * 默认拦截 /*）
+     *
+     * @param dispatcherServlet
+     * @return
+     * @author SHANHY
+     * @create  2016年1月13日
+     */
+//  @Bean
+//  public FilterRegistrationBean filterRegistrationBean() {
+//      FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
+//      filterRegistration.setFilter(new DelegatingFilterProxy(&quot;shiroFilter&quot;));
+//      //  该值缺省为false,表示生命周期由SpringApplicationContext管理,设置为true则表示由ServletContainer管理  
+//      filterRegistration.addInitParameter(&quot;targetFilterLifecycle&quot;, &quot;true&quot;);
+//      filterRegistration.setEnabled(true);
+//      filterRegistration.addUrlPatterns(&quot;/*&quot;);// 可以自己灵活的定义很多，避免一些根本不需要被Shiro处理的请求被包含进来
+//      return filterRegistration;
+//  }
+
+    @Bean(name = &quot;lifecycleBeanPostProcessor&quot;)
+    public LifecycleBeanPostProcessor getLifecycleBeanPostProcessor() {
+        return new LifecycleBeanPostProcessor();
+    }
+
+    @Bean
+    public DefaultAdvisorAutoProxyCreator getDefaultAdvisorAutoProxyCreator() {
+        DefaultAdvisorAutoProxyCreator daap = new DefaultAdvisorAutoProxyCreator();
+        daap.setProxyTargetClass(true);
+        return daap;
+    }
+
+    @Bean(name = &quot;securityManager&quot;)
+    public DefaultWebSecurityManager getDefaultWebSecurityManager(MyShiroRealm myShiroRealm) {
+        DefaultWebSecurityManager dwsm = new DefaultWebSecurityManager();
+        dwsm.setRealm(myShiroRealm);
+//      &lt;!-- 用户授权/认证信息Cache, 采用EhCache 缓存 --&gt; 
+        dwsm.setCacheManager(getEhCacheManager());
+        return dwsm;
+    }
+
+    @Bean
+    public AuthorizationAttributeSourceAdvisor getAuthorizationAttributeSourceAdvisor(DefaultWebSecurityManager securityManager) {
+        AuthorizationAttributeSourceAdvisor aasa = new AuthorizationAttributeSourceAdvisor();
+        aasa.setSecurityManager(securityManager);
+        return aasa;
+    }
+
+    /**
+     * 加载shiroFilter权限控制规则（从数据库读取然后配置）
+     *
+     * @author SHANHY
+     * @create  2016年1月14日
+     */
+    private void loadShiroFilterChain(ShiroFilterFactoryBean shiroFilterFactoryBean, StudentService stuService, IScoreDao scoreDao){
+        /////////////////////// 下面这些规则配置最好配置到配置文件中 ///////////////////////
+        Map&lt;String, String&gt; filterChainDefinitionMap = new LinkedHashMap&lt;String, String&gt;();
+        // authc：该过滤器下的页面必须验证后才能访问，它是Shiro内置的一个拦截器org.apache.shiro.web.filter.authc.FormAuthenticationFilter
+        filterChainDefinitionMap.put(&quot;/user&quot;, &quot;authc&quot;);// 这里为了测试，只限制/user，实际开发中请修改为具体拦截的请求规则
+        // anon：它对应的过滤器里面是空的,什么都没做
+        logger.info(&quot;##################从数据库读取权限规则，加载到shiroFilter中##################&quot;);
+        filterChainDefinitionMap.put(&quot;/user/edit/**&quot;, &quot;authc,perms[user:edit]&quot;);// 这里为了测试，固定写死的值，也可以从数据库或其他配置中读取
+
+        filterChainDefinitionMap.put(&quot;/login&quot;, &quot;anon&quot;);
+        filterChainDefinitionMap.put(&quot;/**&quot;, &quot;anon&quot;);//anon 可以理解为不拦截
+
+        shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
+    }
+
+    /**
+     * ShiroFilter&lt;br/&gt;
+     * 注意这里参数中的 StudentService 和 IScoreDao 只是一个例子，因为我们在这里可以用这样的方式获取到相关访问数据库的对象，
+     * 然后读取数据库相关配置，配置到 shiroFilterFactoryBean 的访问规则中。实际项目中，请使用自己的Service来处理业务逻辑。
+     *
+     * @param myShiroRealm
+     * @param stuService
+     * @param scoreDao
+     * @return
+     * @author SHANHY
+     * @create  2016年1月14日
+     */
+    @Bean(name = &quot;shiroFilter&quot;)
+    public ShiroFilterFactoryBean getShiroFilterFactoryBean(DefaultWebSecurityManager securityManager, StudentService stuService, IScoreDao scoreDao) {
+
+        ShiroFilterFactoryBean shiroFilterFactoryBean = new MShiroFilterFactoryBean();
+        // 必须设置 SecurityManager  
+        shiroFilterFactoryBean.setSecurityManager(securityManager);
+        // 如果不设置默认会自动寻找Web工程根目录下的&quot;/login.jsp&quot;页面
+        shiroFilterFactoryBean.setLoginUrl(&quot;/login&quot;);
+        // 登录成功后要跳转的连接
+        shiroFilterFactoryBean.setSuccessUrl(&quot;/user&quot;);
+        shiroFilterFactoryBean.setUnauthorizedUrl(&quot;/403&quot;);
+
+        loadShiroFilterChain(shiroFilterFactoryBean, stuService, scoreDao);
+        return shiroFilterFactoryBean;
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+<li>121 </li>
+<li>122 </li>
+<li>123 </li>
+<li>124 </li>
+<li>125 </li>
+<li>126 </li>
+<li>127 </li>
+<li>128 </li>
+<li>129 </li>
+<li>130 </li>
+<li>131 </li>
+<li>132 </li>
+<li>133 </li>
+<li>134 </li>
+<li>135 </li>
+<li>136 </li>
+<li>137 </li>
+<li>138 </li>
+<li>139 </li>
+<li>140 </li>
+<li>141 </li>
+<li>142 </li>
+<li>143 </li>
+<li>144 </li>
+<li>145 </li>
+<li>146 </li>
+<li>147 </li>
+<li>148 </li>
+<li>149 </li>
+<li>150 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+<li>121 </li>
+<li>122 </li>
+<li>123 </li>
+<li>124 </li>
+<li>125 </li>
+<li>126 </li>
+<li>127 </li>
+<li>128 </li>
+<li>129 </li>
+<li>130 </li>
+<li>131 </li>
+<li>132 </li>
+<li>133 </li>
+<li>134 </li>
+<li>135 </li>
+<li>136 </li>
+<li>137 </li>
+<li>138 </li>
+<li>139 </li>
+<li>140 </li>
+<li>141 </li>
+<li>142 </li>
+<li>143 </li>
+<li>144 </li>
+<li>145 </li>
+<li>146 </li>
+<li>147 </li>
+<li>148 </li>
+<li>149 </li>
+<li>150 </li>
+</ul>
+<pre><code>/**
+ * 继承 ShiroFilterFactoryBean 处理拦截资源文件问题。
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年3月8日
+ */
+public class MShiroFilterFactoryBean extends ShiroFilterFactoryBean {
+
+    // 对ShiroFilter来说，需要直接忽略的请求
+    private Set&lt;String&gt; ignoreExt;
+
+    public MShiroFilterFactoryBean() {
+        super();
+        ignoreExt = new HashSet&lt;&gt;();
+        ignoreExt.add(&quot;.jpg&quot;);
+        ignoreExt.add(&quot;.png&quot;);
+        ignoreExt.add(&quot;.gif&quot;);
+        ignoreExt.add(&quot;.bmp&quot;);
+        ignoreExt.add(&quot;.js&quot;);
+        ignoreExt.add(&quot;.css&quot;);
+    }
+
+    @Override
+    protected AbstractShiroFilter createInstance() throws Exception {
+
+        SecurityManager securityManager = getSecurityManager();
+        if (securityManager == null) {
+            String msg = &quot;SecurityManager property must be set.&quot;;
+            throw new BeanInitializationException(msg);
+        }
+
+        if (!(securityManager instanceof WebSecurityManager)) {
+            String msg = &quot;The security manager does not implement the WebSecurityManager interface.&quot;;
+            throw new BeanInitializationException(msg);
+        }
+
+        FilterChainManager manager = createFilterChainManager();
+
+        PathMatchingFilterChainResolver chainResolver = new PathMatchingFilterChainResolver();
+        chainResolver.setFilterChainManager(manager);
+
+        return new MSpringShiroFilter((WebSecurityManager) securityManager, chainResolver);
+    }
+
+    private final class MSpringShiroFilter extends AbstractShiroFilter {
+
+        protected MSpringShiroFilter(WebSecurityManager webSecurityManager, FilterChainResolver resolver) {
+            super();
+            if (webSecurityManager == null) {
+                throw new IllegalArgumentException(&quot;WebSecurityManager property cannot be null.&quot;);
+            }
+            setSecurityManager(webSecurityManager);
+            if (resolver != null) {
+                setFilterChainResolver(resolver);
+            }
+        }
+
+        @Override
+        protected void doFilterInternal(ServletRequest servletRequest, ServletResponse servletResponse,
+                FilterChain chain) throws ServletException, IOException {
+            HttpServletRequest request = (HttpServletRequest)servletRequest;
+            String str = request.getRequestURI().toLowerCase();
+            // 因为ShiroFilter 拦截所有请求（在上面我们配置了urlPattern 为 * ，当然你也可以在那里精确的添加要处理的路径，这样就不需要这个类了），而在每次请求里面都做了session的读取和更新访问时间等操作，这样在集群部署session共享的情况下，数量级的加大了处理量负载。
+            // 所以我们这里将一些能忽略的请求忽略掉。
+            // 当然如果你的集群系统使用了动静分离处理，静态资料的请求不会到Filter这个层面，便可以忽略。
+            boolean flag = true;
+            int idx = 0;
+            if(( idx = str.indexOf(&quot;.&quot;)) &gt; 0){
+                str = str.substring(idx);
+                if(ignoreExt.contains(str.toLowerCase()))
+                    flag = false;
+            }
+            if(flag){
+                super.doFilterInternal(servletRequest, servletResponse, chain);
+            }else{
+                chain.doFilter(servletRequest, servletResponse);
+            }
+        }
+
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+</ul>
+<p>其中的 ehcache-shiro.xml 在 src/main/resources 下面，内容为：</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;ehcache updateCheck=&quot;false&quot; name=&quot;shiroCache&quot;&gt;
+
+    &lt;defaultCache
+            maxElementsInMemory=&quot;10000&quot;
+            eternal=&quot;false&quot;
+            timeToIdleSeconds=&quot;120&quot;
+            timeToLiveSeconds=&quot;120&quot;
+            overflowToDisk=&quot;false&quot;
+            diskPersistent=&quot;false&quot;
+            diskExpiryThreadIntervalSeconds=&quot;120&quot;
+            /&gt;
+&lt;/ehcache&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+</ul>
+<p>4、继承 AuthorizingRealm 实现认证和授权2个方法<br>MyShiroRealm.java</p>
+<pre><code>package org.springboot.sample.security;
+
+import java.util.List;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springboot.sample.dao.IUserDao;
+import org.springboot.sample.entity.Role;
+import org.springboot.sample.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * MyShiroRealm
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月13日
+ */
+public class MyShiroRealm extends AuthorizingRealm{
+
+    private static final Logger logger = LoggerFactory.getLogger(MyShiroRealm.class);
+
+    @Autowired
+    private IUserDao userDao; 
+
+    /**
+     * 权限认证，为当前登录的Subject授予角色和权限 
+     * @see 经测试：本例中该方法的调用时机为需授权资源被访问时 
+     * @see 经测试：并且每次访问需授权资源时都会执行该方法中的逻辑，这表明本例中默认并未启用AuthorizationCache 
+     * @see 经测试：如果连续访问同一个URL（比如刷新），该方法不会被重复调用，Shiro有一个时间间隔（也就是cache时间，在ehcache-shiro.xml中配置），超过这个时间间隔再刷新页面，该方法会被执行
+     */
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+        logger.info(&quot;##################执行Shiro权限认证##################&quot;);
+        //获取当前登录输入的用户名，等价于(String) principalCollection.fromRealm(getName()).iterator().next();
+        String loginName = (String)super.getAvailablePrincipal(principalCollection); 
+        //到数据库查是否有此对象
+        User user=userDao.findByName(loginName);// 实际项目中，这里可以根据实际情况做缓存，如果不做，Shiro自己也是有时间间隔机制，2分钟内不会重复执行该方法
+        if(user!=null){
+            //权限信息对象info,用来存放查出的用户的所有的角色（role）及权限（permission）
+            SimpleAuthorizationInfo info=new SimpleAuthorizationInfo();
+            //用户的角色集合
+            info.setRoles(user.getRolesName());
+            //用户的角色对应的所有权限，如果只使用角色定义访问权限，下面的四行可以不要
+            List&lt;Role&gt; roleList=user.getRoleList();
+            for (Role role : roleList) {
+                info.addStringPermissions(role.getPermissionsName());
+            }
+            // 或者按下面这样添加
+            //添加一个角色,不是配置意义上的添加,而是证明该用户拥有admin角色    
+//            simpleAuthorInfo.addRole(&quot;admin&quot;);  
+            //添加权限  
+//            simpleAuthorInfo.addStringPermission(&quot;admin:manage&quot;);  
+//            logger.info(&quot;已为用户[mike]赋予了[admin]角色和[admin:manage]权限&quot;);
+            return info;
+        }
+        // 返回null的话，就会导致任何用户访问被拦截的请求时，都会自动跳转到unauthorizedUrl指定的地址
+        return null;
+    }
+
+    /**
+     * 登录认证
+     */
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(
+            AuthenticationToken authenticationToken) throws AuthenticationException {
+        //UsernamePasswordToken对象用来存放提交的登录信息
+        UsernamePasswordToken token=(UsernamePasswordToken) authenticationToken;
+
+        logger.info(&quot;验证当前Subject时获取到token为：&quot; + ReflectionToStringBuilder.toString(token, ToStringStyle.MULTI_LINE_STYLE)); 
+
+        //查出是否有此用户
+        User user=userDao.findByName(token.getUsername());
+        if(user!=null){
+            // 若存在，将此用户存放到登录认证info中，无需自己做密码对比，Shiro会为我们进行密码对比校验
+            return new SimpleAuthenticationInfo(user.getUsername(), user.getPassword(), getName());
+        }
+        return null;
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+</ul>
+<p>注意：其中 userDao.findByName 这个代码就不贴上了，也没啥可贴的，根据姓名查询一个对象而已。</p>
+<p>5、编写测试的 Controller 和测试 jsp 页面<br>ShiroController.java</p>
+<pre><code>package org.springboot.sample.controller;
+
+import java.util.Map;
+
+import javax.validation.Valid;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.ExcessiveAttemptsException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springboot.sample.dao.IUserDao;
+import org.springboot.sample.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+/**
+ * Shiro测试Controller
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月13日
+ */
+@Controller
+public class ShiroController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShiroController.class);
+
+    @Autowired
+    private IUserDao userDao;
+
+    @RequestMapping(value=&quot;/login&quot;,method=RequestMethod.GET)
+    public String loginForm(Model model){
+        model.addAttribute(&quot;user&quot;, new User());
+        return &quot;login&quot;;
+    }
+
+    @RequestMapping(value=&quot;/login&quot;,method=RequestMethod.POST)
+    public String login(@Valid User user,BindingResult bindingResult,RedirectAttributes redirectAttributes){
+        if(bindingResult.hasErrors()){
+            return &quot;login&quot;;
+        }
+
+        String username = user.getUsername();
+        UsernamePasswordToken token = new UsernamePasswordToken(user.getUsername(), user.getPassword());
+        //获取当前的Subject  
+        Subject currentUser = SecurityUtils.getSubject();  
+        try {  
+            //在调用了login方法后,SecurityManager会收到AuthenticationToken,并将其发送给已配置的Realm执行必须的认证检查  
+            //每个Realm都能在必要时对提交的AuthenticationTokens作出反应  
+            //所以这一步在调用login(token)方法时,它会走到MyRealm.doGetAuthenticationInfo()方法中,具体验证方式详见此方法  
+            logger.info(&quot;对用户[&quot; + username + &quot;]进行登录验证..验证开始&quot;);  
+            currentUser.login(token);  
+            logger.info(&quot;对用户[&quot; + username + &quot;]进行登录验证..验证通过&quot;);  
+        }catch(UnknownAccountException uae){  
+            logger.info(&quot;对用户[&quot; + username + &quot;]进行登录验证..验证未通过,未知账户&quot;);  
+            redirectAttributes.addFlashAttribute(&quot;message&quot;, &quot;未知账户&quot;);  
+        }catch(IncorrectCredentialsException ice){  
+            logger.info(&quot;对用户[&quot; + username + &quot;]进行登录验证..验证未通过,错误的凭证&quot;);  
+            redirectAttributes.addFlashAttribute(&quot;message&quot;, &quot;密码不正确&quot;);  
+        }catch(LockedAccountException lae){  
+            logger.info(&quot;对用户[&quot; + username + &quot;]进行登录验证..验证未通过,账户已锁定&quot;);  
+            redirectAttributes.addFlashAttribute(&quot;message&quot;, &quot;账户已锁定&quot;);  
+        }catch(ExcessiveAttemptsException eae){  
+            logger.info(&quot;对用户[&quot; + username + &quot;]进行登录验证..验证未通过,错误次数过多&quot;);  
+            redirectAttributes.addFlashAttribute(&quot;message&quot;, &quot;用户名或密码错误次数过多&quot;);  
+        }catch(AuthenticationException ae){  
+            //通过处理Shiro的运行时AuthenticationException就可以控制用户登录失败或密码错误时的情景  
+            logger.info(&quot;对用户[&quot; + username + &quot;]进行登录验证..验证未通过,堆栈轨迹如下&quot;);  
+            ae.printStackTrace();  
+            redirectAttributes.addFlashAttribute(&quot;message&quot;, &quot;用户名或密码不正确&quot;);  
+        }  
+        //验证是否登录成功  
+        if(currentUser.isAuthenticated()){  
+            logger.info(&quot;用户[&quot; + username + &quot;]登录认证通过(这里可以进行一些认证通过后的一些系统参数初始化操作)&quot;);  
+            return &quot;redirect:/user&quot;;
+        }else{  
+            token.clear();  
+            return &quot;redirect:/login&quot;;
+        }  
+    }
+
+    @RequestMapping(value=&quot;/logout&quot;,method=RequestMethod.GET)  
+    public String logout(RedirectAttributes redirectAttributes ){ 
+        //使用权限管理工具进行用户的退出，跳出登录，给出提示信息
+        SecurityUtils.getSubject().logout();  
+        redirectAttributes.addFlashAttribute(&quot;message&quot;, &quot;您已安全退出&quot;);  
+        return &quot;redirect:/login&quot;;
+    } 
+
+    @RequestMapping(&quot;/403&quot;)
+    public String unauthorizedRole(){
+        logger.info(&quot;------没有权限-------&quot;);
+        return &quot;403&quot;;
+    }
+
+    @RequestMapping(&quot;/user&quot;)
+    public String getUserList(Map&lt;String, Object&gt; model){
+        model.put(&quot;userList&quot;, userDao.getList());
+        return &quot;user&quot;;
+    }
+
+    @RequestMapping(&quot;/user/edit/{userid}&quot;)
+    public String getUserList(@PathVariable int userid){
+        logger.info(&quot;------进入用户信息修改-------&quot;);
+        return &quot;user_edit&quot;;
+    }
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+</ul>
+<p>login.jsp</p>
+<pre><code>&lt;%@ page language=&quot;java&quot; import=&quot;java.util.*&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;%@ taglib prefix=&quot;form&quot; uri=&quot;http://www.springframework.org/tags/form&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Login&lt;/title&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+    &lt;h1&gt;登录页面----${message }&lt;/h1&gt;
+    &lt;img alt=&quot;&quot; src=&quot;${pageContext.request.contextPath }/pic.jpg&quot;&gt;
+    &lt;form:form action=&quot;${pageContext.request.contextPath }/login&quot;
+        commandName=&quot;user&quot; method=&quot;post&quot;&gt;
+        用户名：&lt;form:input path=&quot;username&quot; /&gt;
+        &lt;form:errors path=&quot;username&quot; cssClass=&quot;error&quot; /&gt;
+        &lt;br /&gt;
+        密码：&lt;form:password path=&quot;password&quot; /&gt;
+        &lt;form:errors path=&quot;password&quot; cssClass=&quot;error&quot; /&gt;
+        &lt;br /&gt;
+        &lt;form:button name=&quot;button&quot;&gt;提交&lt;/form:button&gt;
+    &lt;/form:form&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+</ul>
+<p>user.jsp</p>
+<pre><code>&lt;%@ page language=&quot;java&quot; import=&quot;java.util.*&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;%@ taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot; %&gt;
+&lt;%@ taglib prefix=&quot;shiro&quot; uri=&quot;http://shiro.apache.org/tags&quot; %&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;用户列表&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;${message }&lt;/h1&gt;
+    &lt;h1&gt;用户列表--&lt;a href=&quot;${pageContext.request.contextPath }/logout&quot;&gt;退出登录&lt;/a&gt;    &lt;/h1&gt;
+    &lt;h2&gt;权限列表&lt;/h2&gt;
+    &lt;shiro:authenticated&gt;用户已经登录显示此内容&lt;br/&gt;&lt;/shiro:authenticated&gt;&lt;br/&gt;
+    &lt;shiro:hasRole name=&quot;manager&quot;&gt;manager角色登录显示此内容&lt;br/&gt;&lt;/shiro:hasRole&gt;
+    &lt;shiro:hasRole name=&quot;admin&quot;&gt;admin角色登录显示此内容&lt;br/&gt;&lt;/shiro:hasRole&gt;
+    &lt;shiro:hasRole name=&quot;normal&quot;&gt;normal角色登录显示此内容&lt;br/&gt;&lt;/shiro:hasRole&gt;&lt;br/&gt;
+
+    &lt;shiro:hasAnyRoles name=&quot;manager,admin&quot;&gt;manager or admin 角色用户登录显示此内容&lt;br/&gt;&lt;/shiro:hasAnyRoles&gt;&lt;br/&gt;
+    &lt;shiro:principal/&gt;-显示当前登录用户名&lt;br/&gt;&lt;br/&gt;
+    &lt;shiro:hasPermission name=&quot;add&quot;&gt;add权限用户显示此内容&lt;br/&gt;&lt;/shiro:hasPermission&gt;
+    &lt;shiro:hasPermission name=&quot;user:query&quot;&gt;user:query权限用户显示此内容&lt;br/&gt;&lt;/shiro:hasPermission&gt;
+    &lt;shiro:lacksPermission name=&quot;user:query&quot;&gt;不具有user:query权限的用户显示此内容 &lt;br/&gt;&lt;/shiro:lacksPermission&gt;
+
+    &lt;br/&gt;所有用户列表：&lt;br/&gt;
+    &lt;ul&gt;
+        &lt;c:forEach items=&quot;${userList }&quot; var=&quot;user&quot;&gt;
+            &lt;li&gt;用户名：${user.username }----密码：${user.password }----&lt;a href=&quot;${pageContext.request.contextPath }/user/edit/${user.id}&quot;&gt;修改用户（测试根据不同用户可访问权限不同，本例tom无权限，jack有权限）&lt;/a&gt;&lt;/li&gt;
+        &lt;/c:forEach&gt;
+    &lt;/ul&gt;
+    &lt;img alt=&quot;&quot; src=&quot;${pageContext.request.contextPath }/pic.jpg&quot;&gt;
+    &lt;script type=&quot;text/javascript&quot; src=&quot;${pageContext.request.contextPath }/webjarslocator/jquery/jquery.js&quot;&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+</ul>
+<p>user_edit.jsp</p>
+<pre><code>&lt;%@ page language=&quot;java&quot; import=&quot;java.util.*&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;%@ taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot; %&gt;
+&lt;%@ taglib prefix=&quot;shiro&quot; uri=&quot;http://shiro.apache.org/tags&quot; %&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;用户信息 - 修改&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h2&gt;修改用户信息页面&lt;/h2&gt;&lt;br/&gt;
+    &lt;a href=&quot;${pageContext.request.contextPath }/user&quot;&gt;返回用户列表&lt;/a&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+</ul>
+<p>403.jsp</p>
+<pre><code>&lt;%@ page language=&quot;java&quot; import=&quot;java.util.*&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;%@ taglib prefix=&quot;form&quot; uri=&quot;http://www.springframework.org/tags/form&quot; %&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;权限错误&lt;/title&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+    &lt;h1&gt;对不起，您没有权限请求此连接！&lt;/h1&gt;
+    &lt;img alt=&quot;&quot; src=&quot;${pageContext.request.contextPath }/pic.jpg&quot;&gt;
+
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+</ul>
+<p>其中的pic.jpg 是测试代码遗留的，没有任何用处。关于 Controller 和 JSP 页面本文不做介绍，关于Spring Boot<br>使用Controller 和 JSP ，前面已经有文章介绍。</p>
+<p>启动服务后访问 <a href="http://localhost:8080/myspringboot/user" target="_blank" rel="noopener"> http://localhost:8080/myspringboot/user
+</a> 会自动跳到 login 页面。<br>登录成功后，会打开 user 页面（关于默认登录页、成功成功URL、没有权限URL，在 ShiroConfiguration 中已经配置）。<br>在 user 页面上，不同用户会根据权限不同显示不同的内容，下面的修改操作也已经有文字说明，更换账号测试便知。</p>
+<p>然后我们在实际项目中：不但要在页面上控制不同权限隐藏或将某些操作设置为不可用状态，还要在实际上控制那个操作背后的请求是真的不可以使用的。（例如：页面上的修改<br>按钮已经灰化了，而我知道了修改按钮正常情况下点击会触发的请求，此时我直接模拟这个修改请求，应当是没有权限的才对，这样才算是真正的控制了权限。）</p>
+<hr>
+<p>附：<br><strong> Filter Chain定义说明 </strong><br>1、一个URL可以配置多个Filter，使用逗号分隔<br>2、当设置多个过滤器时，全部验证通过，才视为通过<br>3、部分过滤器可指定参数，如perms，roles</p>
+<p><strong> Shiro内置的FilterChain </strong></p>
+<p>Filter Name  Class</p>
+<p>anon</p>
+<p>org.apache.shiro.web.filter.authc.AnonymousFilter</p>
+<p>authc</p>
+<p>org.apache.shiro.web.filter.authc.FormAuthenticationFilter</p>
+<p>authcBasic</p>
+<p>org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter</p>
+<p>perms</p>
+<p>org.apache.shiro.web.filter.authz.PermissionsAuthorizationFilter</p>
+<p>port</p>
+<p>org.apache.shiro.web.filter.authz.PortFilter</p>
+<p>rest</p>
+<p>org.apache.shiro.web.filter.authz.HttpMethodPermissionFilter</p>
+<p>roles</p>
+<p>org.apache.shiro.web.filter.authz.RolesAuthorizationFilter</p>
+<p>ssl</p>
+<p>org.apache.shiro.web.filter.authz.SslFilter</p>
+<p>user</p>
+<p>org.apache.shiro.web.filter.authc.UserFilter</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Spring Boot Shiro 权限管理/#comments" id="sourceId::2018/04/20/Spring Boot Shiro 权限管理/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Spring Boot 动态数据源（多数据源自动切换）/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Spring Boot 动态数据源（多数据源自动切换）
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Spring Boot Servlet/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Spring Boot Servlet</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Spring Boot Shiro 权限管理/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

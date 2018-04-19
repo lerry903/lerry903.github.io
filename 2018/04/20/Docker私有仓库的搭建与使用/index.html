@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Docker私有仓库的搭建与使用 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="和Maven一样，Docker不仅提供了一个中央仓库，同时也允许我们搭建私有仓库。如果读者对Maven有所了解，将会很容易理解私有仓库的优势：  节省带宽，镜像无需从中央仓库下载，只需从私有仓库中下载即可  对于私有仓库中已有的镜像，提升了下载速度  便于内部镜像的统一管理   下面我们来讲解一下如何搭建、使用私有仓库 准备工作准备两台安装有Docker的CentOS7的机器，主机规划如下（仅供参">
+<meta name="keywords" content="docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker私有仓库的搭建与使用">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Docker私有仓库的搭建与使用/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="和Maven一样，Docker不仅提供了一个中央仓库，同时也允许我们搭建私有仓库。如果读者对Maven有所了解，将会很容易理解私有仓库的优势：  节省带宽，镜像无需从中央仓库下载，只需从私有仓库中下载即可  对于私有仓库中已有的镜像，提升了下载速度  便于内部镜像的统一管理   下面我们来讲解一下如何搭建、使用私有仓库 准备工作准备两台安装有Docker的CentOS7的机器，主机规划如下（仅供参">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-04-19T16:29:55.158Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker私有仓库的搭建与使用">
+<meta name="twitter:description" content="和Maven一样，Docker不仅提供了一个中央仓库，同时也允许我们搭建私有仓库。如果读者对Maven有所了解，将会很容易理解私有仓库的优势：  节省带宽，镜像无需从中央仓库下载，只需从私有仓库中下载即可  对于私有仓库中已有的镜像，提升了下载速度  便于内部镜像的统一管理   下面我们来讲解一下如何搭建、使用私有仓库 准备工作准备两台安装有Docker的CentOS7的机器，主机规划如下（仅供参">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Docker私有仓库的搭建与使用" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Docker私有仓库的搭建与使用
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Docker私有仓库的搭建与使用/">
+            <time datetime="2018-04-19T16:34:21.416Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/docker/">docker</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>和Maven一样，Docker不仅提供了一个中央仓库，同时也允许我们搭建私有仓库。如果读者对Maven有所了解，将会很容易理解私有仓库的优势：</p>
+<ul>
+<li>节省带宽，镜像无需从中央仓库下载，只需从私有仓库中下载即可 </li>
+<li>对于私有仓库中已有的镜像，提升了下载速度 </li>
+<li>便于内部镜像的统一管理 </li>
+</ul>
+<p>下面我们来讲解一下如何搭建、使用私有仓库</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>准备两台安装有Docker的CentOS7的机器，主机规划如下（仅供参考）：</p>
+<p>主机  IP  角色</p>
+<p>node0</p>
+<p>192.168.11.143</p>
+<p>Docker开发机</p>
+<p>node1</p>
+<p>192.168.11.144</p>
+<p>Docker私有仓库</p>
+<h2 id="安装、使用私有仓库"><a href="#安装、使用私有仓库" class="headerlink" title="安装、使用私有仓库"></a>安装、使用私有仓库</h2><p>网上有很多 <code>docker-registry</code> 的教程，但是 <code>docker-registry</code> 已经过时，并且已经2年不维护了。详见 <a href="https://github.com/docker/docker-
+registry" target="_blank" rel="noopener"><br>https://github.com/docker/docker-registry </a> ，故而本文不做探讨，对 <code>docker-registry</code> 有兴趣的童鞋可以查阅本节的参考文档。</p>
+<p>本节讲解registry V2，registry V2需要Docker版本高于1.6.0。registry<br>V2要求使用https访问，那么我们先做一些准备，为了方便，这边模拟以域名 <code>reg.itmuch.com</code> 进行讲解。</p>
+<h3 id="使用域名搭建https的私有仓库"><a href="#使用域名搭建https的私有仓库" class="headerlink" title="使用域名搭建https的私有仓库"></a>使用域名搭建https的私有仓库</h3><ul>
+<li>首先修改两台机器的hosts，配置 <code>192.168.11.144</code> 到 <code>reg.itmuch.com</code> 的映射 </li>
+</ul>
+<pre><code>echo &apos;192.168.11.144 reg.itmuch.com&apos;&gt;&gt; /etc/hosts
+</code></pre><ul>
+<li>既然使用https，那么我们需要生成证书，本文讲解的是使用openssl自签名证书，当然也可以使用诸如 <code>Let’s Encrypt</code> 等工具生成证书，首先在node1机器上生成key： </li>
+</ul>
+<pre><code>mkdir -p ~/certs
+cd ~/certs
+openssl genrsa -out reg.itmuch.com.key 2048
+</code></pre><p>再生成密钥文件：  </p>
+<pre><code>openssl req -newkey rsa:4096 -nodes -sha256 -keyout reg.itmuch.com.key -x509 -days 365 -out reg.itmuch.com.crt
+</code></pre><p>会有一些信息需要填写：  </p>
+<pre><code>Country Name (2 letter code) [XX]:CN                                    # 你的国家名称
+State or Province Name (full name) []:JS                                # 省份
+Locality Name (eg, city) [Default City]:NJ                                # 所在城市
+Organization Name (eg, company) [Default Company Ltd]:ITMUCH            # 组织名称
+Organizational Unit Name (eg, section) []:ITMUCH                        # 组织单元名称
+Common Name (eg, your name or your server&apos;s hostname) []:reg.itmuch.com # 域名
+Email Address []:eacdy0000@126.com                                        # 邮箱
+</code></pre><p>这样自签名证书就制作完成了。</p>
+<ul>
+<li>由于是自签名证书，默认是不受Docker信任的，故而需要将证书添加到Docker的根证书中，Docker在CentOS 7中，证书存放路径是 <code>/etc/docker/certs.d/域名</code> ： </li>
+</ul>
+<p><code>node1</code> 端：</p>
+<pre><code>mkdir -p /etc/docker/certs.d/reg.itmuch.com
+cp ~/certs/reg.itmuch.com.crt /etc/docker/certs.d/reg.itmuch.com/
+</code></pre><p><code>node0</code> 端：将生成的证书下载到根证书路径</p>
+<pre><code>mkdir -p /etc/docker/certs.d/reg.itmuch.com
+scp root@192.168.11.144:/root/certs/reg.itmuch.com.crt /etc/docker/certs.d/reg.itmuch.com/
+</code></pre><ul>
+<li>重新启动 <code>node0</code> 和 <code>node1</code> 的Docker </li>
+</ul>
+<pre><code>service docker restart
+</code></pre><ul>
+<li>在 <code>node1</code> 上启动私有仓库 </li>
+</ul>
+<p>首先切换到家目录中，这一步不能少，原因是下面的-v 挂载了证书，如果不切换，将会引用不到证书文件。</p>
+<pre><code>cd ~
+</code></pre><p>启动Docker私有仓库（注意：如果直接粘贴运行，请删除掉注释）：  </p>
+<pre><code>docker run -d -p 443:5000 --restart=always --name registry \
+  -v `pwd`/certs:/certs \                                # 将“当前目录/certs”挂载到容器的“/certs”
+  -v /opt/docker-image:/opt/docker-image \                            
+  -e STORAGE_PATH=/opt/docker-image \                                # 指定容器内存储镜像的路径
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/reg.itmuch.com.crt \        # 指定证书文件
+  -e REGISTRY_HTTP_TLS_KEY=/certs/reg.itmuch.com.key \                # 指定key文件
+  registry:2
+</code></pre><p>其中，之所以挂载/opt/docker-image目录，是为了防止私有仓库容器被删除，私有仓库中的镜像也会丢失。</p>
+<ul>
+<li>在 <code>node0</code> 上测试，将镜像push到私服 </li>
+</ul>
+<pre><code>docker pull kitematic/hello-world-nginx
+docker tag kitematic/hello-world-nginx reg.itmuch.com/kitematic/hello-world-nginx # 为本地镜像打标签
+docker push reg.itmuch.com/kitematic/hello-world-nginx            # 将镜像push到私服
+</code></pre><p>会发现如下内容：  </p>
+<pre><code>The push refers to a repository [reg.itmuch.com/kitematic/hello-world-nginx]
+5f70bf18a086: Pushed 
+b51acdd3ef48: Pushed 
+3f47ff454588: Pushed 
+....
+latest: digest: sha256:d3e1883b703c39556f2f09da14cc3b820f69a43436655c882c0c0ded0dda6a4b size: 3226
+</code></pre><p>说明已经push成功。</p>
+<ul>
+<li>从私服中下载镜像： </li>
+</ul>
+<pre><code>docker pull reg.itmuch.com/kitematic/hello-world-nginx
+</code></pre><h3 id="配置登录认证"><a href="#配置登录认证" class="headerlink" title="配置登录认证"></a>配置登录认证</h3><p>在很多场景下，我们需要用户登录后才能访问私有仓库，那么我们可以如下操作：</p>
+<p>建立在上文生成证书，同时重启过Docker服务的前提下，我们讲解一下如何配置：</p>
+<ul>
+<li>为防止端口冲突，我们首先删除或停止之前启动好的私有仓库： </li>
+</ul>
+<pre><code>docker kill registry
+</code></pre><ul>
+<li>在node1机器上安装 <code>httpd-tools</code> ： </li>
+</ul>
+<pre><code>yum install httpd-tools
+</code></pre><ul>
+<li>在node机器上创建密码文件，并添加一个用户 <code>testuser</code> ，密码是 <code>testpassword</code> ： </li>
+</ul>
+<pre><code>cd ~
+mkdir auth
+htpasswd -Bbn testuser testpassword &gt; auth/htpasswd
+</code></pre><ul>
+<li>在node1机器上切换到 <code>~</code> 目录，并启动私有仓库（注意：如果直接粘贴运行，请删除掉注释）： </li>
+</ul>
+<pre><code>docker run -d -p 443:5000 --restart=always --name registry2 \
+  -v /opt/docker-image:/var/lib/registry \                            # 挂载容器内存储镜像路径到宿主机
+  -v `pwd`/certs:/certs \
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/reg.itmuch.com.crt \
+  -e REGISTRY_HTTP_TLS_KEY=/certs/reg.itmuch.com.key \
+  -v `pwd`/auth:/auth \
+  -e &quot;REGISTRY_AUTH=htpasswd&quot; \
+  -e &quot;REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm&quot; \
+  -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+  registry:2
+</code></pre><ul>
+<li>测试： </li>
+</ul>
+<pre><code>docker push reg.itmuch.com/kitematic/hello-world-nginx
+</code></pre><p>提示：  </p>
+<pre><code>461f75075df2: Image push failed 
+no basic auth credentials
+</code></pre><p>说明需要认证。</p>
+<p>我们登陆一下，执行：</p>
+<pre><code>docker login reg.imuch.com
+</code></pre><p>再次执行  </p>
+<pre><code>docker push reg.itmuch.com/kitematic/hello-world-nginx
+</code></pre><p>就可以正常push镜像到私有仓库了。</p>
+<p>注意：  如果想要从私有仓库上下载镜像，同样需要登录。</p>
+<h2 id="参考文档："><a href="#参考文档：" class="headerlink" title="参考文档："></a>参考文档：</h2><p>官方文档： <a href="https://docs.docker.com/registry/deploying/#/running-a-domain-registry" target="_blank" rel="noopener"> https://docs.docker.com/registry/deploying/#/running-a-domain-registry
+</a></p>
+<p>Docker Registry V2 htpasswd认证方式搭建： <a href="http://www.tuicool.com/articles/vMZZveM" target="_blank" rel="noopener"> http://www.tuicool.com/articles/vMZZveM
+</a></p>
+<p>Docker Registry V2搭建： <a href="http://www.tuicool.com/articles/6jEJZj" target="_blank" rel="noopener"> http://www.tuicool.com/articles/6jEJZj
+</a></p>
+<p>Docker Registry V2搭建： <a href="http://tomhat.iteye.com/blog/2304098" target="_blank" rel="noopener"> http://tomhat.iteye.com/blog/2304098
+</a></p>
+<p>Docker Registry V1搭建： <a href="http://blog.csdn.net/wsscy2004/article/details/26279569" target="_blank" rel="noopener"><br>http://blog.csdn.net/wsscy2004/article/details/26279569
+</a></p>
+<p>非认证的Docker Registry V1搭建： <a href="http://blog.csdn.net/wangtaoking1/article/details/44180901" target="_blank" rel="noopener"><br>http://blog.csdn.net/wangtaoking1/article/details/44180901
+</a></p>
+<p>带认证的Docker Registry V1搭建： <a href="http://snoopyxdy.blog.163.com/blog/static/601174402015823741997/" target="_blank" rel="noopener"><br>http://snoopyxdy.blog.163.com/blog/static/601174402015823741997/
+</a></p>
+<p>Docker专题汇总： <a href="http://www.zimug.com/360.html" target="_blank" rel="noopener"> http://www.zimug.com/360.html </a></p>
+<p>Docker疑难解答： <a href="https://segmentfault.com/q/1010000000938076" target="_blank" rel="noopener"> https://segmentfault.com/q/1010000000938076
+</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Docker私有仓库的搭建与使用/#comments" id="sourceId::2018/04/20/Docker私有仓库的搭建与使用/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Ext JS 6学习文档–第1章–ExtJS入门指南/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Ext JS 6学习文档–第1章–ExtJS入门指南
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Excel文件office2003 and office2007 操作/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Excel文件office2003 and office2007 操作</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Docker私有仓库的搭建与使用/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Ext JS 6学习文档–第1章–ExtJS入门指南 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="## Ext JS 入门指南 前言本来我是打算自己写一个系列的 ExtJS 6 学习笔记的，因为 ExtJS 6 目前的中文学习资料还很少。google 搜索资料时找到了一本国外牛人写的关于ExtJS 6 的电子书 [Ext JS 6 By Example]。这份资料在  PACKT  上卖 35.99 刀的，当然了万能的 google还是帮我下载到了 PDF文档。大概看了一下，讲的很详细，例子也">
+<meta name="keywords" content="ext,extjs,javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ext JS 6学习文档–第1章–ExtJS入门指南">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Ext JS 6学习文档–第1章–ExtJS入门指南/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="## Ext JS 入门指南 前言本来我是打算自己写一个系列的 ExtJS 6 学习笔记的，因为 ExtJS 6 目前的中文学习资料还很少。google 搜索资料时找到了一本国外牛人写的关于ExtJS 6 的电子书 [Ext JS 6 By Example]。这份资料在  PACKT  上卖 35.99 刀的，当然了万能的 google还是帮我下载到了 PDF文档。大概看了一下，讲的很详细，例子也">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.jeeboot.com/wp-
+content/uploads/2015/12/%E6%9C%AA%E6%A0%87%E9%A2%98-1.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/1.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/11.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/12.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/13.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/14.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/15.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/16.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/17.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/18.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/19.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/110.jpg">
+<meta property="og:image" content="http://www.jeeboot.com/wp-content/uploads/2015/12/111.jpg">
+<meta property="og:updated_time" content="2018-04-19T16:29:58.004Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ext JS 6学习文档–第1章–ExtJS入门指南">
+<meta name="twitter:description" content="## Ext JS 入门指南 前言本来我是打算自己写一个系列的 ExtJS 6 学习笔记的，因为 ExtJS 6 目前的中文学习资料还很少。google 搜索资料时找到了一本国外牛人写的关于ExtJS 6 的电子书 [Ext JS 6 By Example]。这份资料在  PACKT  上卖 35.99 刀的，当然了万能的 google还是帮我下载到了 PDF文档。大概看了一下，讲的很详细，例子也">
+<meta name="twitter:image" content="http://www.jeeboot.com/wp-
+content/uploads/2015/12/%E6%9C%AA%E6%A0%87%E9%A2%98-1.jpg">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Ext JS 6学习文档–第1章–ExtJS入门指南" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Ext JS 6学习文档–第1章–ExtJS入门指南
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Ext JS 6学习文档–第1章–ExtJS入门指南/">
+            <time datetime="2018-04-19T16:34:21.417Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/ExtJs/">ExtJs</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/ext/">ext</a>, <a class="tag-link" href="/tags/extjs/">extjs</a>, <a class="tag-link" href="/tags/javascript/">javascript</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>##</p>
+<p>Ext JS 入门指南</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本来我是打算自己写一个系列的 ExtJS 6 学习笔记的，因为 ExtJS 6 目前的中文学习资料还很少。google 搜索资料时找到了一本国外牛人写的关于<br>ExtJS 6 的电子书 [Ext JS 6 By Example]。这份资料在 <a href="https://www.packtpub.com/all/?search=ext%20js%206" target="_blank" rel="noopener"> PACKT
+</a> 上卖 35.99 刀的，当然了万能的 google<br>还是帮我下载到了 PDF<br>文档。大概看了一下，讲的很详细，例子也比较简单，容易理解，现我准备利用工作之余翻译这份文档，为自己学习加深理解，也希望能帮助更多的人学习。</p>
+<p>翻译时，我并不会 100%<br>按照原文照搬，而是可能加上我的理解和我自己的看法，所谓求其上而得其中，求其中而得其下，如果你看到这个文章，也不要以此作为标准，保持你的意见和思想。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>现在如果你打算学习 Ext JS 了，那你应该告别使用普通的 JavaScript 了。JavaScript 是一个伟大，卓越的语言，但是随着 web<br>应用越来越大，我们的代码也越来越难以维护，这是十分困难并耗费时间的。</p>
+<p>普通的 JavaScript 非常的灵活，这有很多优点，同时这样也会带来很多问题，随着你的应用越来越大，参与的人就越来越多，普通的 JavaScript 让<br>10 个人来写，就会有 10 种不同的风格，往往有些代码只有写代码的当事人知道为什么这么写，如果这个人不再负责这个功能，就会成为后来人的坑。所以在代码上的约<br>束和规范是十分有必要的。这也是为什么我一直喜欢 ExtJS 的原因，ExtJS 写起来代码就像 Java 一样，非常严谨，非常面向对象。缺点就是在前端 JS<br>库中属于比较重量级，学习曲线相对陡峭。</p>
+<p>当涉及到 JavaScript 框架时，有客户端的 JavaScript 框架以及服务端的 JavaScript 框架。Ext JS 就是一个客户端的<br>JavaScript 框架。</p>
+<p>在本章基本上是讲述关于如何使用我们所需的工具来设置开发环境以及Ext JS 的基本介绍。在这一章，我们主要涉及以下几点  ：</p>
+<ul>
+<li>使用 Ext JS 的优点 </li>
+<li>对 Ext JS 的介绍 </li>
+<li>安装设置 Sencha Cmd 和 Ext JS </li>
+<li>使用 SenchaCmd 搭建 Ext JS 应用 </li>
+<li>Ext JS 应用的体系结构 </li>
+<li>探索 Sencha Cmd 命令 </li>
+<li>如何调试 Ext JS 应用 </li>
+<li>使用开发工具 IDE </li>
+</ul>
+<h3 id="为什么使用-Ext-JS"><a href="#为什么使用-Ext-JS" class="headerlink" title="为什么使用 Ext JS?"></a>为什么使用 Ext JS?</h3><p>既然推荐你使用，自然要告诉你使用 Ext JS 都有哪些看得见的好处。现在让我们瞧一瞧，在你的应用里使用 Ext JS 相较普通 JavaScript<br>有哪些优点。</p>
+<h4 id="跨浏览器支持"><a href="#跨浏览器支持" class="headerlink" title="跨浏览器支持"></a>跨浏览器支持</h4><p>只要你做 web 开发，你一定解决过浏览器兼容问题，这有多么消耗时间和影响工作进度你一定有体会，你可能会花上几小时甚至几天来解决跨浏览器<br>bug。你为什么不把这些时间用来关注你的业务功能呢？相反，如果使用 Ext JS 这个 JavaScript<br>框架，这种事情将由它去考虑，而你可以专注于业务功能。</p>
+<h4 id="丰富的-UI-组件"><a href="#丰富的-UI-组件" class="headerlink" title="丰富的 UI 组件"></a>丰富的 UI 组件</h4><p>Ext JS 提供了大量丰富的 UI 控件，如 data grid ，tab panels,tree 控件，日期选择工具，图表 等等，Ext JS<br>作为一站式的前端框架，有很多优秀且实用的控件，尤其是表格对复杂数据展示的支持是其他的 JavaScript 框架不具备的， 这些都能大量节省你的开发时间。</p>
+<h4 id="双向数据绑定"><a href="#双向数据绑定" class="headerlink" title="双向数据绑定"></a>双向数据绑定</h4><p>双向数据绑定意味着当视图 view 的数据发生变化，你的模型 model 将自动更新。同样的，当你的应用更新这个模型 model，这个数据也将自动传递到<br>view。</p>
+<p>就拿编辑页面来举栗。 当这个页面(view)加载，这时已经渲染了来自模型(model) 的数据到<br>HTML，并且当用户在页面(view)上更新这个数据，这时候你需要更新你的模型(model)，但如果你使用 Ext JS 将不需要你自己去做这些编程。</p>
+<h4 id="JavaScript-的架构模式-MVC-MVVM"><a href="#JavaScript-的架构模式-MVC-MVVM" class="headerlink" title="JavaScript 的架构模式(MVC/MVVM)"></a>JavaScript 的架构模式(MVC/MVVM)</h4><p>随着越来越多的代码转移到客户端，维护客户端的 JavaScript 代码变的非常困难。通过在客户端使用  MVC  (  Model View<br>Controller  )/  MVVM  (  Model View, View Model  )  使维护客户端的 JavaScript<br>变得更容易，并提高了生产效率。关于 MVC 和 MVVM 架构模式会在本章后面解释。</p>
+<h4 id="简化复杂的操作"><a href="#简化复杂的操作" class="headerlink" title="简化复杂的操作"></a>简化复杂的操作</h4><p>想象一下使用纯 JavaScript 写一个 AJAX 调用，你需要考虑确保支持所有浏览器，这你可以看一下任何的 JavaScript 框架里进行 AJAX<br>调用的方法的源码。想象一下使用纯 JavaScript 创建一个复杂的控件，例如 grid ，分页，排序，过滤，分组，可编辑字段等等。Ext JS<br>不需要你自己来做这些工作。这里其实是废话，没有谁闲的蛋疼重复造轮子。但是其他框架一定没有 Ext JS 这种一站式的支持。</p>
+<h4 id="访问-DOM-变得容易"><a href="#访问-DOM-变得容易" class="headerlink" title="访问 DOM 变得容易"></a>访问 DOM 变得容易</h4><p>普通的纯 JavaScript 里，你可以访问 DOM，但是这有点复杂。使用 Ext JS 就会很容易查找 DOM。当然使用 jquery<br>的人肯定不信服，还能比 jquery 查找 DOM 更方便吗？我也常用 jquery ，这里我可以说 Ext JS 相较 jquery 查找 DOM<br>不逞多让。</p>
+<h4 id="客户端路由"><a href="#客户端路由" class="headerlink" title="客户端路由"></a>客户端路由</h4><p>在 web 应用里，URL 映射到 web 页面的路由方式背后有一系列的逻辑。路由可以在服务端也可以在客户端。通常客户端路由都是用单页式应用实现的。<br>Single-Page Application  (  SPA  )。</p>
+<h4 id="支持无障碍访问"><a href="#支持无障碍访问" class="headerlink" title="支持无障碍访问"></a>支持无障碍访问</h4><p>无障碍访问特性意味着这个应用程序的内容必须是可以方便的让视力受损的人借助辅助设备访问(例如屏幕阅读器)。<br>而开发一个应用程序能够很好的支持无障碍特性是非常困难的。这里 Ext JS 已经为你做了。</p>
+<p>在美国，如果你开发的软件供联邦和州政府职员使用，在绝大多数情况下，你需要确保你的程序是支持无障碍访问特性的。这一点，很少 JavaScript<br>框架能对无障碍访问特性有较好的支持。而 Ext JS 提供了完美的无障碍访问支持。</p>
+<p>World Wide Web Consortium  (  W3C  )已经创立了一个名为  WAI-ARIA  (  Web Accessibility<br>Initiative – Accessible Rich Internet Applications  ) 的技术规范。</p>
+<ul>
+<li>WAI-ARIA, 是Web Accessibility Initiative – Accessible Rich Internet Applications 的缩写，指无障碍网页应用技术。她主要解决的一个问题:让残障人士能无障碍地访问网页上的动态内容。 </li>
+</ul>
+<p>这种规范方式使残疾人也能无障碍访问 web 应用。 Ext JS 对此具有良好的支持，并且所有的 控件/部件 都可以支持，不需要你做任何额外的编码。</p>
+<p>###</p>
+<h3 id="介绍-Ext-JS"><a href="#介绍-Ext-JS" class="headerlink" title="介绍 Ext JS"></a>介绍 Ext JS</h3><p>Ext JS 作为一个一站式的开发富 UI 应用的框架，它提供支持 MVC,MVVM, 双向绑定，跨浏览器兼容，路由功能，一组广泛的丰富的 UI<br>组件，图表等等。对于框架中所有的 API ， Ext JS 还拥有一个非常优秀的文档。Ext JS 最初的建立是由 Jack Slocum 开发的，做为<br>YUI 的一个附加扩展库使用，现在则是成为 Sencha 公司的产品。</p>
+<p>在 Ext JS 中，你写的代码基本上就是 JavaScript，因为你不需要写 HTML。Ext JS 附带一组庞大的丰富的 UI<br>组件，这在你的开发过程中会节约你相当多的时间。</p>
+<p>本书中，所有的样例代码和示例项目代码将使用最新的 Ext JS Version 6，但是大多数代码是兼容以前的 Ext JS 5 的。Ext JS 5 和<br>Ext JS 6 的大多数概念是相同的。所以如果你在使用 Ext JS 5，你仍然可以从这本书中受益不少。但是请记住这本书的代码将不会运行在 Ext JS<br>5 并且可能需要做一些小修改才能运行在 Ext JS 5。在 Ext JS 6 中最重要的变化是它合并了两个框架：Ext JS 和 Sencha Touch<br>合并成为了一个框架。Ext JS 6 还带来了一个新的 SASS 编译器叫 Fashion，以及3D 图表的改进等等。</p>
+<p>要明白为什么会发生合并 Ext JS 和 Sencha Touch , 我们需要回顾一下。</p>
+<p>Sencha Touch 是一个独立的产品，专用于为移动设备和平板电脑创建可支持触摸的应用，它利用硬件加速技术为移动设备提供高性能的 UI 组件。</p>
+<p>Ext JS 4 和 Ext JS 5 主要用于开发桌面级的 web 应用。 如果你已经在 Ext JS 5 或 Ext JS 4 创建了用于桌面的 web<br>应用，这仍然可以在移动设备和平板电脑上运行，但是它将不支持一些特定的触摸功能，并且不能利用硬件加速为移动设备提供高性能 UI<br>组件。所以为了更好的支持移动设备，Sencha 开发人员被告知要使用 Sencha Touch。</p>
+<p>使用 Sencha Touch 有很多优势。 在 Sencha Touch<br>编写的应用将具备移动平台本地应用一样的外观，并且性能将更好。然而许多开发人员有一个抱怨,因为他们被迫保持两套相同的应用程序的代码库。</p>
+<p>尽管 Sencha Touch 和 Ext JS 有很多差异是完全不同的产品，但他们的概念和思想的框架非常相似，如果你会用 Ext JS,那么学习<br>Sencha Touch 也非常容易。</p>
+<p>长期以来,许多 Ext JS 和 Sencha Touch 用户问为什么不把两个产品合二为一使 Ext JS 能够带触摸功能。在 Ext JS 6<br>中,Sencha 决定将这两个产品合并到一个单一的产品。</p>
+<p>现在，在 Ext JS 6 你仍然可以维护一套独立的代码。而要 Sencha Touch 和 Ext JS 6<br>两者兼存，有些视图的代码你可能需要单独的编写，但是大部分代码都是共享的。</p>
+<p>在 Ext JS 6 合并后将两者通用的代码做为核心(两者公用一个核心)，并且引入了一个 toolkit(工具箱) 的概念。toolkit<br>是一个可视化组件的包，例如 button，panel 等等。Ext JS 6 有两个工具包：classic(古典) 和 modern(现代)。原来的 Ext<br>JS 的可视化组件放在 classic 工具包，原来的 Sencha Touch 的可视化组件则放在 modern 工具包。</p>
+<p>在 Ext JS 6 中选择你想使用的 toolkit(工具包)很简单，如果你正在开发的程序只是针对移动设备的，你可以选择<br>modern，如果你只用于桌面那么你可以选择 classic。默认则是通用的，通用的应用你在桌面端访问 Ext JS 6 应用，就会自动展现 classic<br>风格，如果用移动设备或平板电脑访问则自动展现 modern 风格。</p>
+<h3 id="通用应用"><a href="#通用应用" class="headerlink" title="通用应用"></a>通用应用</h3><p>如果你的应用要同时支持桌面和移动设备，在 Ext JS 6<br>你可以创建一个通用的应用，这时候将会同时应用两个工具包。你可以添加以下的构建配置(这个配置在程序根目录 app.json<br>配置文件中，详细的后面会讲到)，来指定构建使用的工具包和主题：</p>
+<pre><code>&quot;builds&quot;: {
+    //这里就很简单了，如果你只想用 classic 那么就注释 modern 的配置即可。
+    &quot;classic&quot;: {
+
+       &quot;toolkit&quot;: &quot;classic&quot;,
+
+       &quot;theme&quot;: &quot;theme-triton&quot;
+
+    },
+
+    &quot;modern&quot;: {
+
+       &quot;toolkit&quot;: &quot;modern&quot;,
+
+       &quot;theme&quot;: &quot;theme-neptune&quot;
+
+    }
+
+}
+</code></pre><p>这样做的大概路子就是，在 Ext JS 这个框架里用这两套工具包分别对应 桌面 和 移动设备。程序在构建过程中，会构建两套 UI<br>界面出来，而不是我们平时那种响应式的应用，响应式是一套 UI<br>自动根据不同设备改变布局。实际上在企业开发中，甚至互联网开发中，往往都是独立再开发一套支持移动设备的前端 UI，而 Ext JS 6<br>将此合并我认为是非常好的，这样你桌面和移动端都有一套标准，而且很多逻辑可以共享复用，不同的 view 写在独立的工具包里。维护起来也很方便。</p>
+<p>如果你是一个 Ext JS 新手，看到这里肯定非常困惑，不过你现在不用担心，这些在后面都会有我们的样例代码来说明，会让你有更深的理解。</p>
+<p>Ext JS 6 附带了两个主题包， classic 和 modern 主题包，这两个主题包里分别有各自支持的几种主题。</p>
+<p>在 Ext JS 中的一些特定主题，提供了在 Windows，Android，iPhone<br>等设备上类似原生应用的外观。这些你将在第八章(主题和响应设计)学习。</p>
+<h3 id="设置-Ext-JS-开发环境"><a href="#设置-Ext-JS-开发环境" class="headerlink" title="设置 Ext JS 开发环境"></a>设置 Ext JS 开发环境</h3><p>你需要安装一个叫 Sencha Cmd 的工具，这会让你的 Ext JS 应用开发变得简单。它可用于Windows、Mac 和 Linux。</p>
+<ul>
+<li>Sencha Cmd 并不是开发 Ext JS 应用必须用的，但是它会让你的工作非常轻松，所以这里强烈推荐使用 Sencha Cmd。 </li>
+</ul>
+<h3 id="Sencha-Cmd"><a href="#Sencha-Cmd" class="headerlink" title="Sencha Cmd"></a>Sencha Cmd</h3><p>Sencha Cmd 是在 sencha 产品下做开发时使用的命令行工具，例如开发 Ext JS ,Sencha Touch<br>应用时都可以用。它通过许多的自动化任务帮助你提高生产力。它包含以下功能，包管理，JS 编译器，构建脚本，主题等等。</p>
+<p>在安装 Sencha Cmd 之前，你需要安装 JRE 环境，如果你使用的是 Sencha Cmd 5，那么你还需要安装 Ruby。这里如何安装 JRE 或<br>JDK，还是也翻译一下，因为 Sencha Cmd 使用的是 apache ant 作为构建工具，所以需要安装 JRE 环境。而在 Sencha Cmd 5<br>编译 SASS 时则需要使用 Ruby，上面说过 Ext JS 6 使用 fashion 编译 SASS 了，下载最新的 Sencha Cmd 6<br>则不需要安装 Ruby了。</p>
+<h3 id="Java-运行时环境-JRE"><a href="#Java-运行时环境-JRE" class="headerlink" title="Java 运行时环境 (JRE)"></a>Java 运行时环境 (JRE)</h3><p>在命令行窗口输入以下命令检查 java 是否能正常运行在你的设备上：</p>
+<pre><code>java -version
+</code></pre><p>如果你已经在你的设备上安装了 java，那么你应该看到类似下面的代码；否则请下载安装 JRE 或 JDK：</p>
+<p>java version “1.8.0_25”</p>
+<p>Java(TM) SE Runtime Environment (build 1.8.0_25-b17)</p>
+<p>Java HotSpot(TM) 64-Bit Server VM (build 25.25-b02, mixed mode)</p>
+<p>这一步报错的话，检查一下你是否配置了 java 环境变量，不知道怎么配置请自行搜索。</p>
+<h3 id="Ruby"><a href="#Ruby" class="headerlink" title="Ruby"></a>Ruby</h3><p>注意，如果你使用 Sencha Cmd 6 就不需要安装 Ruby，但是如果你正在使用 Sencha Cmd 5，那还是要安装 Ruby<br>的。输入以下命令，检查 Ruby 是否安装成功:</p>
+<pre><code>ruby --version
+</code></pre><p>如果已经安装完成，应该看到类似下面的代码；否则请下载安装 Ruby：</p>
+<p>ruby –version</p>
+<p>ruby 2.0.0p481 (2014-05-08 revision 45883) [universal.x86_64-darwin14]</p>
+<p>Ruby 也是需要配置环境变量的，这里不再介绍方法，不会的自行搜索。</p>
+<h3 id="安装-Sencha-Cmd"><a href="#安装-Sencha-Cmd" class="headerlink" title="安装 Sencha Cmd"></a>安装 Sencha Cmd</h3><p>现在从 Sencha 官网上下载并安装 Sencha Cmd 。安装完成后在命令行窗口输入以下命令检查是否正常运行(同样需要配置环境变量)：</p>
+<pre><code>sencha which
+</code></pre><p>正常情况下应该显示类似以下的代码：</p>
+<p>Sencha Cmd v6.0.0.92</p>
+<p>/bin/Sencha/Cmd/6.0.0.92/</p>
+<p>如果报错，你应该配置环境变量，在 Mac 电脑上运行以下命令添加安装路径到 PATH 变量：</p>
+<pre><code>export PATH=~/bin/Sencha/Cmd/6.0.0.92:$PATH
+</code></pre><p>在 Windows，运行以下命令添加环境变量(这一步你其实可以略过的，我想能看这篇文章的人都知道怎么做)：</p>
+<pre><code>set PATH=%PATH%;C:\Sencha\Cmd\6.0.0.92
+</code></pre><h3 id="用-Sencha-Cmd-生成第一个-Ext-JS-应用"><a href="#用-Sencha-Cmd-生成第一个-Ext-JS-应用" class="headerlink" title="用 Sencha Cmd 生成第一个 Ext JS 应用"></a>用 Sencha Cmd 生成第一个 Ext JS 应用</h3><p>打开命令行窗口键入以下命令：</p>
+<pre><code>sencha generate app --ext MyApp ./myapp
+</code></pre><p>运行上面的命令将会创建名为 MyApp 的 Ext JS 应用，应用所有的文件都放在当前目录下名为 myapp 的文件夹。</p>
+<p>注意，上面的命令生成的 Ext JS 应用代码，包含两个工具包：classic 和<br>modern。因为你不明确指定需要用那个工具包的时候，默认创建的就是通用的应用。如果你需要指定使用 classic 或者 modern 工具包。那么用<br>–modern  或者  –classic  参数，如以下命令所示：</p>
+<pre><code>sencha generate app --ext --modern MyApp ./myapp
+</code></pre><p>当你第一次运行这个命令时，这应该会自动下载 Ext JS 6。如果没有自动下载，那你需要手动的取下载 Ext JS 6，这里贴出来 GPL 协议的 Ext<br>JS 6 官网下载地址  <a href="http://cdn.sencha.com/ext/gpl/ext-6.0.0-gpl.zip" target="_blank" rel="noopener"> http://cdn.sencha.com/ext/gpl/ext-6.0.0-gpl.zip
+</a> 这里下载后解压，这时候生成 Ext JS<br>应用时就可以使用以下命令以指定 SDK 的形式生成了：</p>
+<pre><code>sencha -sdk /path/to/sdk generate app MyApp /path/to/myapp
+</code></pre><p>Sencha Cmd 支持 Ext JS 4.1.1a 以及更高版本，支持 Sencha Touch 2.1 以及更高版本。在你的电脑里可以有多个版本的<br>SDK 。 上面的命令是基于一个特定的 Sencha SDK 来生成的 Ext JS 应用。</p>
+<p>下面的例子，在目录  /projects/extjs/myapp  下生成名为 MyApp 的 Ext JS 应用：</p>
+<pre><code>sencha -sdk /bin/Sencha/ext/6.0.0/ generate app MyApp /projects/extjs/myapp
+</code></pre><p>OK，现在可以查看已经创建的应用了，运行以下命令：  </p>
+<pre><code>cd /projects/extjs/myapp
+
+sencha app watch
+</code></pre><p>这时会运行一些构建相关的任务，最终你将在命令行窗口看到类似下图的界面：</p>
+<p><a href="http://www.jeeboot.com/wp-
+content/uploads/2015/12/%E6%9C%AA%E6%A0%87%E9%A2%98-1.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-
+content/uploads/2015/12/%E6%9C%AA%E6%A0%87%E9%A2%98-1.jpg" alt="未标题-1">
+</a></p>
+<p>上面的命令监控了任意代码修改保存后，都会在浏览器刷新时反应最新的改动。</p>
+<p>在浏览器输入默认 URL (  <a href="http://localhost:1842" target="_blank" rel="noopener">http://localhost:1842</a>)  ，如图所示，看到类似以下界面：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/1.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/1.jpg" alt="1">
+</a></p>
+<p>默认当你使用电脑访问 URL (  <a href="http://localhost:1842" target="_blank" rel="noopener">http://localhost:1842</a>  )，应用会自动检测并为你展示 classic 工具包的<br>UI。如果访问是来自一个移动端浏览器，它将展示 modern 工具包。如何在电脑上看 modern 风格的应用呢？附加参数  (<br><a href="http://localhost:1842?profile=modern" target="_blank" rel="noopener">http://localhost:1842?profile=modern</a>  )，你将看到以下截图：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/11.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/11.jpg" alt="1">
+</a></p>
+<p>MyApp  应用的整体目录结构如下图。我们瞧一瞧这个实例程序都有哪些比较重要的文件。</p>
+<p>应用包含了  model  ,  store  , 和  application.js  。你就把 store 看成是一个 model<br>实例的集合。store 是为你的程序功能提供并加载数据用的，你可以认为 store 就是一个数据源，它支持排序，过滤，分页等等，经常用到 store 的就是<br>grid 组件。这些都会在后面一一讲到。</p>
+<p>在下面截图中,有 classci 和 modern 这两个文件夹。这两个文件夹包含使用不同工具包时写的 view(视图)代码，例如你 classic 风格的<br>view(视图) 就应该写在 classic 目录下，modern 风格的 view(视图) 就应该写在 modern 目录下。</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/12.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/12.jpg" alt="1">
+</a></p>
+<p>下图为 classic 和 modern 文件夹下的结构。classic 和 modern 都包含 src 目录，而你的 view(视图) 就应该写在<br>src 里面。</p>
+<p>而这个  main.scss  文件是样式文件，在 classic 和 modern 工具包都存在，对应桌面和移动设备的样式。</p>
+<p>还有就是在根目录也有一个  sass  文件夹，那里是放置应用所有设备共用的样式。</p>
+<p>SASS  (  Syntactically Awesome Stylesheets  )是一种样式语言。Ext JS 中大量的用到<br>SASS。你将在第8章(主题和响应设计)学习到更多关于样式的知识。</p>
+<p>注意 classic 和 modern 目录，这里面都不是 Ext JS 框架的工具包源码，这里是程序的代码，classic 和 modern<br>两个工具包的源码在根目录  ext  文件夹里：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/13.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/13.jpg" alt="1">
+</a></p>
+<p>在下一节，我将给你介绍 MVC ，并且会在 MyApp 这个应用下使用 Sencha Cmd 生成这些 MVC 相关的文件以及学习它。</p>
+<h3 id="应用的体系结构"><a href="#应用的体系结构" class="headerlink" title="应用的体系结构"></a>应用的体系结构</h3><p>Ext JS 提供支持两种应用架构 MVC 和 MVVM。</p>
+<h3 id="Model-模型"><a href="#Model-模型" class="headerlink" title="Model(模型)"></a>Model(模型)</h3><p>这代表着数据层。model 保存的数据可以包含数据验证和逻辑，model 经常用于 store 中。上文已经讲过，store 就是多个 model 的集合。</p>
+<h3 id="View-视图"><a href="#View-视图" class="headerlink" title="View(视图)"></a>View(视图)</h3><p>这一层就是用户界面。包含有 button，form，和 message box 等等组件。</p>
+<h3 id="Controller-控制器"><a href="#Controller-控制器" class="headerlink" title="Controller(控制器)"></a>Controller(控制器)</h3><p>控制器处理 view(视图)相关的逻辑，例如 view 的 event(事件)处理，还有任何程序相关逻辑都可以写在这里。</p>
+<h3 id="View-model-视图模型"><a href="#View-model-视图模型" class="headerlink" title="View model (视图模型)"></a>View model (视图模型)</h3><p>view model 封装了 view(视图)所需要的展示逻辑，绑定数据到 view 并且每当数据改变时处理更新。</p>
+<p>我们看一下通过 Sencha Cmd 创建的 view，controller，view model 相关的文件。</p>
+<p>如果你打开  app.js  ，你将看到下列代码，这是 Ext JS 应用的启动代码：</p>
+<pre><code>Ext.application({
+    name : &apos;MyApp&apos;,
+    extend : &apos;MyApp.Application&apos;,
+    requires : [
+    &apos;MyApp.view.main.Main&apos;
+    ],
+    mainView : &apos;MyApp.view.main.Main&apos;
+});
+</code></pre><p>在上面代码中，  name  定义了程序的名称，  extend  表示继承  MyApp.Application  类，这个类文件定义在  app<br>文件夹下名为  Application.js  :</p>
+<p>extend: ‘MyApp.Application’</p>
+<p>requires  部分指定了这个类需要的类列表。这样在  requires  里面添加的类在当前类中首次实例化时，会去先加载它，你可以把<br>requires  的作用理解为 java 中的  import  关键字。  mainView  指定的是要初始化创建的 view(视图)。</p>
+<p>继续，现在查看  app  文件夹，你将看到文件  Application.js  ，和  model  ，  view  ，  store  等等。</p>
+<p>下面是  Application.js  文件里的代码：</p>
+<pre><code>Ext.define(&apos;MyApp.Application&apos;, {   
+    extend: &apos;Ext.app.Application&apos;,
+    name: &apos;MyApp&apos;,   
+    stores: [
+    // TODO: add global / shared stores here
+    ],
+    launch: function () {
+        // TODO - Launch the application   
+    } 
+});
+</code></pre><p>这里你可以看到  MyApp.Application  继承自  Ext.app.Application  。这个  launch  函数是在<br>Ext.app.Application  类里。这个函数将会在页面加载完成后调用。</p>
+<p>这个 stores 是指定需要的 store 的，这里并没有用到，你将在后面的章节中学习到关于 store 的更详细的知识。</p>
+<h3 id="视图模型-–-MainModel-js"><a href="#视图模型-–-MainModel-js" class="headerlink" title="视图模型 – MainModel.js"></a>视图模型 – MainModel.js</h3><p>现在看一下  \app\view\main\  目录下的  MainModel.js  文件。这个类是  Main  视图的 view<br>model(视图模型)。这个视图模型继承自  Ext.app. ViewModel  ，代码如下所示：</p>
+<pre><code>Ext.define(&apos;MyApp.view.main.MainModel&apos;,{
+    extend : &apos;Ext.app.ViewModel&apos;,
+    alias : &apos;viewmodel.main&apos;,
+    data : {
+        name : &apos;MyApp&apos;,
+        loremIpsum : &apos;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&apos;
+    }
+});
+</code></pre><h3 id="控制器-–-MainController-js"><a href="#控制器-–-MainController-js" class="headerlink" title="控制器 – MainController.js"></a>控制器 – MainController.js</h3><p>这个类是  Main  视图的控制器。在下列代码中你可以看到  onItemSelected  函数，这个函数将在视图里的 grid<br>中选中某一项时触发调用。这是什么原理呢？后面会讲到的。</p>
+<pre><code>Ext.define(&apos;MyApp.view.main.MainController&apos;, {
+    extend : &apos;Ext.app.ViewController&apos;,
+    alias : &apos;controller.main&apos;,
+    onItemSelected : function(sender, record) {
+        Ext.Msg.confirm(&apos;Confirm&apos;, &apos;Are you sure?&apos;, &apos;onConfirm&apos;, this);
+    },
+    onConfirm : function(choice) {
+        if (choice === &apos;yes&apos;) {
+            //
+        }
+    }
+});
+</code></pre><p>我们可以看到 extend 继承了 Ext.app.ViewController 这个类。Ext JS 中有两种类型的控制器：<br>Ext.app.ViewController  和  Ext.app.Controller  。</p>
+<p>在后面的章节中你将会学习到这两种控制器有何区别。</p>
+<h3 id="视图-–-Main-js"><a href="#视图-–-Main-js" class="headerlink" title="视图 – Main.js"></a>视图 – Main.js</h3><p>如果你用的是 Sencha Cmd 5,，并且你生成应用时执行了使用哪种 toolkits 工具包，是  –modern  或  –classic<br>，如果是这样那么  Main.js  文件就在  \app\view\main  文件夹下面。但是如果你用 Sencha Cmd 6<br>生成的是通用的应用，那么将会有两个  Main.js  文件，分别在  \modern\src\view\main\  和<br>\classic\src\view\main\  目录下面。</p>
+<p>在查看这两个文件的内容之前，我先通过这两个不同路径的  Main.js  文件来解释一下。在本章的上文中，你已经知道为什么 Ext JS 6 合并了 Ext<br>JS 和 Sencha Touch 为一个框架。这两个框架合并后共用一个核心，剩下的代码则分为两部分 classic 和 modern。传统的 Ext JS<br>代码移动到 classic 工具包，而 modern 的代码支持触摸和 HTML5 在 modern<br>工具包。所以这里需要两个工具包，程序会根据访问设备自动使用对应的工具包里的 UI 类(view)。</p>
+<ul>
+<li>应用分两个工具包并共享核心资源和逻辑，这称为通用应用。 </li>
+</ul>
+<p>现在我们看一下在 modern 下的  Main.js  文件：</p>
+<pre><code>Ext.define(&apos;MyApp.view.main.Main&apos;, {
+    extend : &apos;Ext.tab.Panel&apos;,
+    xtype : &apos;app-main&apos;,
+    requires : [
+    &apos;Ext.MessageBox&apos;,
+    &apos;MyApp.view.main.MainController&apos;,
+    &apos;MyApp.view.main.MainModel&apos;,
+    &apos;MyApp.view.main.List&apos;
+    ],
+    controller : &apos;main&apos;,
+    viewModel : &apos;main&apos;,
+    defaults : {
+        styleHtmlContent : true
+    },
+    tabBarPosition : &apos;bottom&apos;,
+    items : [{
+        title : &apos;Home&apos;,
+        iconCls : &apos;fa-home&apos;,
+        layout : &apos;fit&apos;,
+        items : [ {
+            xtype : &apos;mainlist&apos;
+        } ]
+    }, {
+        title : &apos;Users&apos;,
+        iconCls : &apos;fa-user&apos;,
+        bind : {
+            html : &apos;{loremIpsum}&apos;
+        }
+    }, {
+        title : &apos;Groups&apos;,
+        iconCls : &apos;fa-users&apos;,
+        bind : {
+            html : &apos;{loremIpsum}&apos;
+        }
+    }, {
+        title : &apos;Settings&apos;,
+        iconCls : &apos;fa-cog&apos;,
+        bind : {
+            html : &apos;{loremIpsum}&apos;
+        }
+    }]
+});
+</code></pre><p>这个 Main 视图是一个 tab panel，因为它继承了  Ext.tab.Panel  。这个类有属性  controller  ，<br>viewmodel  ，  requires  配置了需要依赖的类。创建了四个 tab 页(items属性)，并且绑定了数据  ViewModel  里的<br>loremIpsum  属性。你将会在后续章节中了解关于此更多的详细信息。</p>
+<p>接着看一下在  \classic\src\view\main\  下的  Main.js  文件内容：</p>
+<pre><code>Ext.define(&apos;NewApp.view.main.Main&apos;, {
+    extend : &apos;Ext.tab.Panel&apos;,
+    xtype : &apos;app-main&apos;,
+    requires : [
+    &apos;Ext.plugin.Viewport&apos;,
+    &apos;Ext.window.MessageBox&apos;,
+    &apos;NewApp.view.main.MainController&apos;,
+    &apos;NewApp.view.main.MainModel&apos;,
+    &apos;NewApp.view.main.List&apos;
+    ],
+    controller : &apos;main&apos;,
+    viewModel : &apos;main&apos;,
+    ui : &apos;navigation&apos;,
+    tabBarHeaderPosition : 1,
+    titleRotation : 0,
+    tabRotation : 0,
+    header : {
+        layout : {
+            align : &apos;stretchmax&apos;
+        },
+        title : {
+            bind : {
+                text : &apos;{name}&apos;
+            },
+            flex : 0
+        },
+        iconCls : &apos;fa-th-list&apos;
+    },
+    tabBar : {
+        flex : 1,
+        layout : {
+            align : &apos;stretch&apos;,
+            overflowHandler : &apos;none&apos;
+        }
+    },
+    responsiveConfig : {
+        tall : {
+            headerPosition : &apos;top&apos;
+        },
+        wide : {
+            headerPosition : &apos;left&apos;
+        }
+    },
+    defaults : {
+        bodyPadding : 20,
+        tabConfig : {
+            plugins : &apos;responsive&apos;,
+            responsiveConfig : {
+                wide : {
+                    iconAlign : &apos;left&apos;,
+                    textAlign : &apos;left&apos;
+                },
+                tall : {
+                    iconAlign : &apos;top&apos;,
+                    textAlign : &apos;center&apos;,
+                    width : 120
+                }
+            }
+        }
+    },
+    items : [ {
+        title : &apos;Home&apos;,
+        iconCls : &apos;fa-home&apos;,
+        items : [ {
+            xtype : &apos;mainlist&apos;
+        } ]
+    }, {
+        title : &apos;Users&apos;,
+        iconCls : &apos;fa-user&apos;,
+        bind : {
+            html : &apos;{loremIpsum}&apos;
+        }
+    }, {
+        title : &apos;Groups&apos;,
+        iconCls : &apos;fa-users&apos;,
+        bind : {
+            html : &apos;{loremIpsum}&apos;
+        }
+    }, {
+        title : &apos;Settings&apos;,
+        iconCls : &apos;fa-cog&apos;,
+        bind : {
+            html : &apos;{loremIpsum}&apos;
+        }
+    } ]
+});
+</code></pre><p>上面代码中，items 中的代码几乎和 modern 工具包中的是一样的。此外，这个文件有些配置是专用于支持响应设计的。下列代码告诉框架使用的  ui<br>组件为  navigation  ：</p>
+<p>ui: ‘navigation’</p>
+<p>在第8章(主题和响应设计)中会介绍关于这个 UI 配置和响应设计的内容。</p>
+<p>同样的，如果你打开 classic 或 modern 下的  List.js  ，你会发现他们只有很细微的区别。</p>
+<p>探索 Sencha Cmd 命令  </p>
+<p>现在让我们学习 Sencha Cmd 的一些非常有用的命令。</p>
+<h3 id="Sencha-命令格式"><a href="#Sencha-命令格式" class="headerlink" title="Sencha 命令格式"></a>Sencha 命令格式</h3><p>Sencha 命令采取以下格式：</p>
+<p>sencha [category] [command] [options…] [arguments…]</p>
+<p>在 Sencha Cmd 中许多命令和可选项。我们看一下都有哪些比较重要的命令。</p>
+<h1 id="Help"><a href="#Help" class="headerlink" title="Help"></a>Help</h1><p>键入以下命令，你将获取一个 categories(类别)列表，一个顶层的 commands(命令)列表，一个可用的 options(选项)列表：</p>
+<pre><code>sencha help
+</code></pre><p>获取一个特定类别的帮助信息，类别名称紧随在 help 后面，例如获取一个类别 app 的帮助信息，运行下列命令：  </p>
+<pre><code>sencha help app
+</code></pre><p>将产生以下输出：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/14.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/14.jpg" alt="1">
+</a></p>
+<p>如果你想进一步获取 app 命令下的子命令的帮助信息，你只需要在最后添加子命令例如 clean，如以下代码所示：</p>
+<pre><code>sencha help app clean
+</code></pre><p>将产生以下输出：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/15.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/15.jpg" alt="1">
+</a></p>
+<h3 id="升级-Sencha-Cmd"><a href="#升级-Sencha-Cmd" class="headerlink" title="升级 Sencha Cmd"></a>升级 Sencha Cmd</h3><p>如果你想检查是否有 Sencha Cmd 可用的更新，使用以下命令：</p>
+<pre><code>sencha upgrade --check
+</code></pre><p>如果你要升级 Sencha Cmd，只需要移除  –check  选项，如以下代码所示：</p>
+<pre><code>sencha upgrade
+</code></pre><h3 id="升级-ExtJS-应用"><a href="#升级-ExtJS-应用" class="headerlink" title="升级 ExtJS 应用"></a>升级 ExtJS 应用</h3><p>升级一个现有的 ExtJS 应用到最新版本，需要先进入到你的 ExtJS 工程目录，使用一下命令：</p>
+<pre><code>sencha app upgrade 后面跟上 sdk 路径
+</code></pre><p>不加路径的话，就会自动从官网下载最新版本的 ExtJS 框架。</p>
+<p>注意：如果 sencha cmd 与要升级到的 ExtJS 框架版本不兼容，需要先升级 SenchaCMD 再升级 ExtJS。</p>
+<h3 id="生成一个应用"><a href="#生成一个应用" class="headerlink" title="生成一个应用"></a>生成一个应用</h3><p>Sencha Cmd 支持 Ext JS 4.1.1a 及更高版本和支持 Sencha Touch 2.1 及更高版本。你电脑上可以存在多个版本的<br>SDK。这是基于 Sencha SDK 生成应用的命令格式，例如 Ext JS 或者 Sencha Touch：</p>
+<pre><code>sencha -sdk /path/to/sdk generate app [--modern/classic] MyApp /path/to/ myapp
+</code></pre><p>这个示例代码将在目录  /Users/SomeUser/projects/extjs/myapp  下生成名为  MyApp  的 Ext JS 6 应用<br>：</p>
+<pre><code>sencha -sdk /Users/SomeUser/bin/Sencha/Cmd/repo/extract/ext/6.0.0/ generate app MyApp /Users/SomeUser/projects/extjs/myapp
+</code></pre><h3 id="构建应用"><a href="#构建应用" class="headerlink" title="构建应用"></a>构建应用</h3><p>运行下列命令将进行构建 HTML，JS，SASS 等等：</p>
+<pre><code>sencha app build
+</code></pre><p>使用 Sencha Cmd 6 构建 Ext JS 6 应用，你还可以运行下列命令选择构建 moern 或 classic 风格的应用：  </p>
+<pre><code>sencha app build modern
+sencha app build classic
+</code></pre><p>这里说一下，  modern  和  classic  的构建配置在  app.json  。 默认 Sencha Cmd 运行两个构建配置：<br>classic 和 modern 。如果需要你也可以在  app.json  中添加额外的构建配置。</p>
+<h3 id="启动应用"><a href="#启动应用" class="headerlink" title="启动应用"></a>启动应用</h3><p>watch 命令用于重新构建并启动应用。这不仅会启动应用程序,还监视任何代码更改，一旦代码改变，浏览器刷新将包括最新的代码：</p>
+<pre><code>sencha app watch
+</code></pre><p>在 Sencha Cmd 6 和 Ext JS 6，你也可以运行下列命令选择 modern 或 classic：  </p>
+<pre><code>sencha app watch modern
+sencha app watch classic
+</code></pre><h3 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h3><p>用Sencha Cmd，你可以生成 Ext JS 代码，例如 view，controller，model：</p>
+<pre><code>sencha generate view myApp.MyView
+
+sencha generate model MyModel id:int,fname,lname
+
+sencha generate controller MyController
+</code></pre><p>当你生成 model 时如果不指定字段类型，默认类型是 string。</p>
+<h3 id="升级你的应用"><a href="#升级你的应用" class="headerlink" title="升级你的应用"></a>升级你的应用</h3><p>Sencha Cmd 升级 SDK 的版本是很容易的。使用这个升级命令将你的程序升级到新框架：</p>
+<pre><code>sencha app upgrade [ path-to-new-framework ]
+</code></pre><h3 id="调试-Ext-JS-应用"><a href="#调试-Ext-JS-应用" class="headerlink" title="调试 Ext JS 应用"></a>调试 Ext JS 应用</h3><p>你可以使用浏览器默认的调试器来调试 Ext JS 代码，但是使用火狐浏览器的 firebug 插件再安装 Illumination 或者使用 Chrome<br>的 Inspector 插件调试这将会容易得多。</p>
+<p>Illumination</p>
+<p>Illumination 是一个第三方工具。它并不是 Sencha 的一个产品，目前它只支持火狐浏览器。</p>
+<h3 id="Illumination-的特性"><a href="#Illumination-的特性" class="headerlink" title="Illumination 的特性"></a>Illumination 的特性</h3><p>这有些 Illumination 的特性，这将减少你在调试上花的时间。</p>
+<h3 id="对象命名"><a href="#对象命名" class="headerlink" title="对象命名"></a>对象命名</h3><p>Illumination 会很容易识别出 Ext JS 组件，所以在 illumination 标签页你能看到 Ext JS 组件名称，例如<br>Ext.panel.Panel  而不是像在 firebug 的 DOM 页里那样显示成  Object  。</p>
+<h3 id="Element-高亮"><a href="#Element-高亮" class="headerlink" title="Element 高亮"></a>Element 高亮</h3><p>如果在 Illumination 窗口你鼠标悬停在任意对象上，将会突出高亮在 HTML 页面中的组件。</p>
+<h3 id="上下文菜单The-contextual-menu"><a href="#上下文菜单The-contextual-menu" class="headerlink" title="上下文菜单The contextual menu"></a>上下文菜单The contextual menu</h3><p>一个 Ext JS 组件是由数个 HTML 元素组成的。如果你在页面右击选择使用 firebug 查看元素，你会看到元素是嵌套在 Ext JS<br>组件里，但是如果你选择 Illumination 来查看元素，会直接显示 Ext JS 组件，这更有便于检查组件的方法属性和事件。</p>
+<p>firebug  DOM  标签页里对象是如何展示的：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/16.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/16.jpg" alt="1">
+</a></p>
+<p>再看一下 Illumination 标签页下对象是如何展示的，你会发现所有组件都显示在下列截图中：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/17.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/17.jpg" alt="1">
+</a></p>
+<p>尽管 Illumination 使调试 Ext JS 应用变得容易，但是并不是必须用它。它并不是免费的，你不想购买的话，仍然可以使用 firebug<br>调试，但你也许会多花一些时间调试，或者使用 App Inspector 插件或者 Sencha Fillde 调试。然并卵，我还是建议使用 firebug<br>就行了。</p>
+<h3 id="App-Inspector"><a href="#App-Inspector" class="headerlink" title="App Inspector"></a>App Inspector</h3><p>App Inspector 是一个由 Sencha 开发的免费的 Chrome 插件。它支持所有 Illumination 支持的功能。</p>
+<p>相比使用 Illumination 一些信息在 App Inspector 查找更容易方便，并且使用 Illumination 比使用 App<br>Inspector 载入程序时间更长。</p>
+<p>App Inspector 的截图：  </p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/18.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/18.jpg" alt="1">
+</a></p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/19.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/19.jpg" alt="1">
+</a></p>
+<h3 id="Sencha-Fiddle"><a href="#Sencha-Fiddle" class="headerlink" title="Sencha Fiddle"></a>Sencha Fiddle</h3><p>这是另外的一个调试工具。这也是一个在线的基于 web 的 IDE 并提供了一些调试功能，如下图：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/110.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/110.jpg" alt="1">
+</a></p>
+<p>开发 IDE</p>
+<p>尽管你可以使用任何简单的文本编辑器来编写 Ext JS 代码，使用 IDE 开发肯定更简单。Sencha 为JetBrains 提供 Sencha<br>JetBrains 插件支持，例如  IntelliJ，WebStrome，PHPStorm，和 RubyMine。</p>
+<p>如果你在寻找一些免费的 IDE，那么你可以看一下 Visual Studio Code 和 Brackets.io<br>。这两个都是非常轻量级，并且开源的文本编辑器，支持 Mac，Windows，Linux，下图是  Visual Studio Code  ：</p>
+<p><a href="http://www.jeeboot.com/wp-content/uploads/2015/12/111.jpg" target="_blank" rel="noopener"> <img src="http://www.jeeboot.com/wp-content/uploads/2015/12/111.jpg" alt="1">
+</a></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>在本章中, 我们看到了使用 JavaScript 框架相较于使用传统纯 JavaScript 的优势。也了解了 Ext JS<br>应用的体系结构，你也学习到如何配置你的开发环境以及如何用 Sencha Cmd 搭建 Ext JS 应用。</p>
+<p>在下一章中, 您将了解Ext JS的核心概念和基本知识。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Ext JS 6学习文档–第1章–ExtJS入门指南/#comments" id="sourceId::2018/04/20/Ext JS 6学习文档–第1章–ExtJS入门指南/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Ext JS 6学习文档–第2章–核心概念/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Ext JS 6学习文档–第2章–核心概念
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/Docker私有仓库的搭建与使用/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Docker私有仓库的搭建与使用</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Ext JS 6学习文档–第1章–ExtJS入门指南/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

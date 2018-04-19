@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>ActiveMQ笔记(7)：如何清理无效的延时消息？ | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="ActiveMQ的延时消息是一个让人又爱又恨的功能，具体使用可参考上篇  ActiveMQ笔记(6)：消息延时投递  ，在很多需要消息延时投递的业务场景十分有用，但是也有一个缺陷，在一些大访问量的场景，如果瞬间向MQ发送海量的延时消息，超过MQ的调度能力，就会造成很多消息到了该投递的时刻，却没有投递出去，形成积压，一直停留在ActiveMQ web控制台的Scheduled面板中。 下面的代码演示">
+<meta name="keywords" content="activemq">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ActiveMQ笔记(7)：如何清理无效的延时消息？">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/ActiveMQ笔记(7)：如何清理无效的延时消息？/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="ActiveMQ的延时消息是一个让人又爱又恨的功能，具体使用可参考上篇  ActiveMQ笔记(6)：消息延时投递  ，在很多需要消息延时投递的业务场景十分有用，但是也有一个缺陷，在一些大访问量的场景，如果瞬间向MQ发送海量的延时消息，超过MQ的调度能力，就会造成很多消息到了该投递的时刻，却没有投递出去，形成积压，一直停留在ActiveMQ web控制台的Scheduled面板中。 下面的代码演示">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/27612/201609/27612-20160904201313552-64
+4393418.png">
+<meta property="og:image" content="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif">
+<meta property="og:image" content="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif">
+<meta property="og:image" content="https://common.cnblogs.com/images/copycode.gif">
+<meta property="og:updated_time" content="2018-04-19T16:29:59.329Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ActiveMQ笔记(7)：如何清理无效的延时消息？">
+<meta name="twitter:description" content="ActiveMQ的延时消息是一个让人又爱又恨的功能，具体使用可参考上篇  ActiveMQ笔记(6)：消息延时投递  ，在很多需要消息延时投递的业务场景十分有用，但是也有一个缺陷，在一些大访问量的场景，如果瞬间向MQ发送海量的延时消息，超过MQ的调度能力，就会造成很多消息到了该投递的时刻，却没有投递出去，形成积压，一直停留在ActiveMQ web控制台的Scheduled面板中。 下面的代码演示">
+<meta name="twitter:image" content="http://images2015.cnblogs.com/blog/27612/201609/27612-20160904201313552-64
+4393418.png">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-ActiveMQ笔记(7)：如何清理无效的延时消息？" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            ActiveMQ笔记(7)：如何清理无效的延时消息？
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/ActiveMQ笔记(7)：如何清理无效的延时消息？/">
+            <time datetime="2018-04-19T16:34:21.413Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/ActiveMQ/">ActiveMQ</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/activemq/">activemq</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>ActiveMQ的延时消息是一个让人又爱又恨的功能，具体使用可参考上篇 <a href="http://blog.csdn.net/lsy0903/article/details/56672475" target="_blank" rel="noopener"> ActiveMQ笔记(6)：消息延时投递
+</a> ，在很多需要消息延时投递的业务场景十分有用<br>，但是也有一个缺陷，在一些大访问量的场景，如果瞬间向MQ发送海量的延时消息，超过MQ的调度能力，就会造成很多消息到了该投递的时刻，却没有投递出去，形成积压，<br>一直停留在ActiveMQ web控制台的Scheduled面板中。</p>
+<p>下面的代码演示了，如何清理activemq中的延时消息（包括：全部清空及清空指定时间段的延时消息），这也是目前唯一可行的办法。</p>
+<p>为了演示方便，先封装一个小工具类：</p>
+<p>+ View Code  ?</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>10</p>
+<p>11</p>
+<p>12</p>
+<p>13</p>
+<p>14</p>
+<p>15</p>
+<p>16</p>
+<p>17</p>
+<p>18</p>
+<p>19</p>
+<p>20</p>
+<p>21</p>
+<p>22</p>
+<p>23</p>
+<p>24</p>
+<p>25</p>
+<p>26</p>
+<p>27</p>
+<p>28</p>
+<p>29</p>
+<p>30</p>
+<p>31</p>
+<p>32</p>
+<p>33</p>
+<p>34</p>
+<p>35</p>
+<p>36</p>
+<p>37</p>
+<p>38</p>
+<p>39</p>
+<p>40</p>
+<p>41</p>
+<p>42</p>
+<p>43</p>
+<p>44</p>
+<p>45</p>
+<p>46</p>
+<p>47</p>
+<p>48</p>
+<p>49</p>
+<p>50</p>
+<p>51</p>
+<p>52</p>
+<p>53</p>
+<p>54</p>
+<p>55</p>
+<p>56</p>
+<p>57</p>
+<p>58</p>
+<p>59</p>
+<p>60</p>
+<p>61</p>
+<p>62</p>
+<p>63</p>
+<p>64</p>
+<p>65</p>
+<p>66</p>
+<p>67</p>
+<p>68</p>
+<p>69</p>
+<p>70</p>
+<p>71</p>
+<p>72</p>
+<p>73</p>
+<p>74</p>
+<p>75</p>
+<p>76</p>
+<p>77</p>
+<p>78</p>
+<p>79</p>
+<p>80</p>
+<p>81</p>
+<p>82</p>
+<p>83</p>
+<p>84</p>
+<p>85</p>
+<p>86</p>
+<p>87</p>
+<p>88</p>
+<p>89</p>
+<p>90</p>
+<p>91</p>
+<p>92</p>
+<p>93</p>
+<p>94</p>
+<p>95</p>
+<p>96</p>
+<p>97</p>
+<p>98</p>
+<p>99</p>
+<p>100</p>
+<p>101</p>
+<p>102</p>
+<p>103</p>
+<p>104</p>
+<p>105</p>
+<p>106</p>
+<p>107</p>
+<p>108</p>
+<p>109</p>
+<p>110</p>
+<p>111</p>
+<p>112</p>
+<p>113</p>
+<p>114</p>
+<p>115</p>
+<p>116</p>
+<p>117</p>
+<p>118</p>
+<p>119</p>
+<p>120</p>
+<p>121</p>
+<p><code>package</code> <code>cn.mwee.utils.mq;</code></p>
+<p><code>import</code> <code>cn.mwee.utils.list.ListUtil;</code></p>
+<p><code>import</code> <code>cn.mwee.utils.log4j2.MwLogger;</code></p>
+<p><code>import</code> <code>org.apache.commons.lang.StringUtils;</code></p>
+<p><code>import</code> <code>org.slf4j.Logger;</code></p>
+<p><code>import</code> <code>org.springframework.jms.core.JmsTemplate;</code></p>
+<p><code>import</code> <code>org.springframework.jms.core.MessagePostProcessor;</code></p>
+<p><code>import</code> <code>javax.jms.ConnectionFactory;</code></p>
+<p><code>import</code> <code>javax.jms.JMSException;</code></p>
+<p><code>import</code> <code>javax.jms.TextMessage;</code></p>
+<p><code>import</code> <code>java.util.ArrayList;</code></p>
+<p><code>import</code> <code>java.util.List;</code></p>
+<p><code>import</code> <code>java.util.stream.Collectors;</code></p>
+<p><code>/**</code></p>
+<p><code></code> <code>* Created by yangjunming on 6/20/16.</code></p>
+<p><code></code> <code>*/</code></p>
+<p><code>public</code> <code>final</code> <code>class</code> <code>MessageUtil {</code></p>
+<p><code></code> <code>private</code> <code>Logger logger =</code> <code>new</code> <code>MwLogger(MessageUtil.</code> <code>class</code> <code>);</code> <code>//这里就是一个Log4j2的实例,大家可以换成原生的log4j2或类似工具</code></p>
+<p><code></code> <code>private</code> <code>ConnectionFactory connectionFactory;</code></p>
+<p><code></code> <code>private</code> <code>long</code> <code>receiveTimeout;</code> <code>//接收超时时间</code></p>
+<p><code></code> <code>private</code> <code>JmsTemplate jmsTemplate;</code></p>
+<p><code></code> <code>private</code> <code>List&lt;String&gt; destinationQueueNames;</code></p>
+<p><code></code> <code>private</code> <code>final</code> <code>static</code> <code>String BACKUP_QUEUE_SUFFIX =</code> <code>&quot;_B&quot;</code><br><code>;</code></p>
+<p><code></code> <code>private</code> <code>boolean</code> <code>autoBackup =</code> <code>false</code> <code>;</code> <code>//是否自动将消息备份到_b的队列，方便调试</code></p>
+<p><code></code> <code>public</code> <code>MessageUtil(</code> <code>final</code> <code>ConnectionFactory
+connectionFactory,</code> <code>final</code> <code>long</code> <code>receiveTimeout,</code> <code>final</code> <code>List&lt;String&gt; destinationQueueNames) {</code></p>
+<p><code></code> <code>this</code> <code>.connectionFactory = connectionFactory;</code></p>
+<p><code></code> <code>this</code> <code>.receiveTimeout = receiveTimeout;</code></p>
+<p><code></code> <code>this</code> <code>.destinationQueueNames =</code> <code>new</code> <code>ArrayList&lt;&gt;();</code></p>
+<p><code></code> <code>this</code> <code>.destinationQueueNames.addAll(destinationQueueNames.stream().co
+llect(Collectors.toList()));</code></p>
+<p><code></code> <code>jmsTemplate =</code> <code>new</code> <code>JmsTemplate(</code> <code>this</code> <code>.connectionFactory);</code></p>
+<p><code></code> <code>jmsTemplate.setReceiveTimeout(</code> <code>this</code> <code>.receiveTimeout);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>MessageUtil(ConnectionFactory connectionFactory, List&lt;String&gt;
+destinationQueueNames) {</code></p>
+<p><code></code> <code>this</code> <code>(connectionFactory,</code> <code>10000</code> <code>, destinationQueueNames);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>void</code> <code>convertAndSend(Object message) {</code></p>
+<p><code></code> <code>if</code> <code>(ListUtil.isEmpty(destinationQueueNames)) {</code></p>
+<p><code></code> <code>logger.error(</code> <code>&quot;目标队列为空，无法发送，请检查配置！message =&gt; &quot;</code> <code>\+
+message.toString());</code></p>
+<p><code></code> <code>return</code> <code>;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>for</code> <code>(String dest : destinationQueueNames) {</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(dest, message);</code></p>
+<p><code></code> <code>if</code> <code>(autoBackup) {</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(dest + BACKUP_QUEUE_SUFFIX, message);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>void</code> <code>convertAndSend(Object message, MessagePostProcessor
+messagePostProcessor) {</code></p>
+<p><code></code> <code>if</code> <code>(ListUtil.isEmpty(destinationQueueNames)) {</code></p>
+<p><code></code> <code>logger.error(</code> <code>&quot;目标队列为空，无法发送，请检查配置！message =&gt; &quot;</code> <code>\+
+message.toString());</code></p>
+<p><code></code> <code>return</code> <code>;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>for</code> <code>(String dest : destinationQueueNames) {</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(dest, message, messagePostProcessor);</code></p>
+<p><code></code> <code>if</code> <code>(autoBackup) {</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(dest + BACKUP_QUEUE_SUFFIX, message,
+messagePostProcessor);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>void</code> <code>convertAndSend(String destinationName, Object
+message) {</code></p>
+<p><code></code> <code>if</code> <code>(StringUtils.isBlank(destinationName)) {</code></p>
+<p><code></code> <code>logger.error(</code> <code>&quot;目标队列为空，无法发送，请检查配置！message =&gt; &quot;</code> <code>\+
+message.toString());</code></p>
+<p><code></code> <code>return</code> <code>;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(destinationName, message);</code></p>
+<p><code></code> <code>if</code> <code>(autoBackup) {</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(destinationName + BACKUP_QUEUE_SUFFIX,
+message);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>void</code> <code>convertAndSend(String destinationName, Object
+message, MessagePostProcessor messagePostProcessor) {</code></p>
+<p><code></code> <code>if</code> <code>(StringUtils.isBlank(destinationName)) {</code></p>
+<p><code></code> <code>logger.error(</code> <code>&quot;目标队列为空，无法发送，请检查配置！message =&gt; &quot;</code> <code>\+
+message.toString());</code></p>
+<p><code></code> <code>return</code> <code>;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(destinationName, message,
+messagePostProcessor);</code></p>
+<p><code></code> <code>if</code> <code>(autoBackup) {</code></p>
+<p><code></code> <code>jmsTemplate.convertAndSend(destinationName + BACKUP_QUEUE_SUFFIX,
+message, messagePostProcessor);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>static</code> <code>String getText(javax.jms.Message message) {</code></p>
+<p><code></code> <code>if</code> <code>(message</code> <code>instanceof</code> <code>TextMessage) {</code></p>
+<p><code></code> <code>try</code> <code>{</code></p>
+<p><code></code> <code>return</code> <code>((TextMessage) message).getText();</code></p>
+<p><code></code> <code>}</code> <code>catch</code> <code>(JMSException e) {</code></p>
+<p><code></code> <code>return</code> <code>message.toString();</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>return</code> <code>message.toString();</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>String getFirstDestination() {</code></p>
+<p><code></code> <code>if</code> <code>(ListUtil.isEmpty(destinationQueueNames)) {</code></p>
+<p><code></code> <code>return</code> <code>null</code> <code>;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>return</code> <code>destinationQueueNames.get(</code> <code>0</code> <code>);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>boolean</code> <code>isAutoBackup() {</code></p>
+<p><code></code> <code>return</code> <code>autoBackup;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>void</code> <code>setAutoBackup(</code> <code>boolean</code> <code>autoBackup) {</code></p>
+<p><code></code> <code>this</code> <code>.autoBackup = autoBackup;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code>}</code></p>
+<p>其中主要就用到了convertAndSend(Object message, MessagePostProcessor<br>messagePostProcessor) 这个方法，其它代码可以无视。</p>
+<p>先来模拟瞬间向MQ发送大量延时消息：</p>
+<p>?</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>10</p>
+<p>11</p>
+<p><code>/**</code></p>
+<p><code></code> <code>* 发送延时消息</code></p>
+<p><code></code> <code>*</code></p>
+<p><code></code> <code>* @param messageUtil</code></p>
+<p><code></code> <code>*/</code></p>
+<p><code>private</code> <code>static</code> <code>void</code> <code>sendScheduleMessage(MessageUtil messageUtil)
+{</code></p>
+<p><code></code> <code>for</code> <code>(</code> <code>int</code> <code>i =</code> <code>0</code> <code>; i &lt;</code> <code>10000</code> <code>; i++) {</code></p>
+<p><code></code> <code>Object obj =</code> <code>&quot;test:&quot;</code> <code>\+ i;</code></p>
+<p><code></code> <code>messageUtil.convertAndSend(obj,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>1000</code> <code>\+ i *</code> <code>1000</code> <code>));</code></p>
+<p><code></code> <code>}</code></p>
+<p><code>}</code></p>
+<p>这里向MQ发送了1w条延时消息，每条消息延时1秒*i，上面代码中的ScheduleMessagePostProcessor类可在上篇中找到。</p>
+<p>运行完之后，MQ中应该堆积着了很多消息了：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201609/27612-20160904201313552-64
+4393418.png" alt=""></p>
+<p>下面的代码可以清空所有延时消息：</p>
+<p>?</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>10</p>
+<p>11</p>
+<p>12</p>
+<p>13</p>
+<p>14</p>
+<p>15</p>
+<p><code>/**</code></p>
+<p><code></code> <code>* 删除所有延时消息</code></p>
+<p><code></code> <code>*</code></p>
+<p><code></code> <code>* @param connectionFactory</code></p>
+<p><code></code> <code>* @throws JMSException</code></p>
+<p><code></code> <code>*/</code></p>
+<p><code>private</code> <code>static</code> <code>void</code> <code>deleteAllScheduleMessage(</code> <code>final</code> <code>ConnectionFactory connectionFactory)</code> <code>throws</code> <code>JMSException {</code></p>
+<p><code></code> <code>Connection conn = connectionFactory.createConnection();</code></p>
+<p><code></code> <code>Session session = conn.createSession(</code> <code>false</code> <code>,
+Session.AUTO_ACKNOWLEDGE);</code></p>
+<p><code></code> <code>Destination management =
+session.createTopic(ScheduledMessage.AMQ_SCHEDULER_MANAGEMENT_DESTINATION);</code></p>
+<p><code></code> <code>MessageProducer producer = session.createProducer(management);</code></p>
+<p><code></code> <code>Message request = session.createMessage();</code></p>
+<p><code></code> <code>request.setStringProperty(ScheduledMessage.AMQ_SCHEDULER_ACTION,
+ScheduledMessage.AMQ_SCHEDULER_ACTION_REMOVEALL);</code></p>
+<p><code></code> <code>producer.send(request);</code></p>
+<p><code>}</code></p>
+<p>清空所有延时消息，有些用力过猛了，很多时候，我们只需要清理掉过期的延时消息（即：本来计划是8:00投递出去的消息，结果过了8点还没投递出去）</p>
+<p>?</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>10</p>
+<p>11</p>
+<p>12</p>
+<p>13</p>
+<p>14</p>
+<p>15</p>
+<p>16</p>
+<p>17</p>
+<p>18</p>
+<p>19</p>
+<p><code>/**</code></p>
+<p><code></code> <code>* 删除过期的延时消息</code></p>
+<p><code></code> <code>*</code></p>
+<p><code></code> <code>* @param connectionFactory</code></p>
+<p><code></code> <code>* @throws JMSException</code></p>
+<p><code></code> <code>*/</code></p>
+<p><code>private</code> <code>static</code> <code>void</code> <code>deleteExpiredScheduleMessage(</code> <code>final</code> <code>ConnectionFactory connectionFactory)</code> <code>throws</code> <code>JMSException {</code></p>
+<p><code></code> <code>long</code> <code>start = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(</code><br><code>12</code> <code>);</code> <code>//删除：当前时间前12小时范围的延时消息</code></p>
+<p><code></code> <code>long</code> <code>end = System.currentTimeMillis();</code></p>
+<p><code></code> <code>Connection conn = connectionFactory.createConnection();</code></p>
+<p><code></code> <code>Session session = conn.createSession(</code> <code>false</code> <code>,
+Session.AUTO_ACKNOWLEDGE);</code></p>
+<p><code></code> <code>Destination management =
+session.createTopic(ScheduledMessage.AMQ_SCHEDULER_MANAGEMENT_DESTINATION);</code></p>
+<p><code></code> <code>MessageProducer producer = session.createProducer(management);</code></p>
+<p><code></code> <code>Message request = session.createMessage();</code></p>
+<p><code></code> <code>request.setStringProperty(ScheduledMessage.AMQ_SCHEDULER_ACTION,
+ScheduledMessage.AMQ_SCHEDULER_ACTION_REMOVEALL);</code></p>
+<p><code></code> <code>request.setStringProperty(ScheduledMessage.AMQ_SCHEDULER_ACTION_START_TIME,
+Long.toString(start));</code></p>
+<p><code></code> <code>request.setStringProperty(ScheduledMessage.AMQ_SCHEDULER_ACTION_END_TIME,
+Long.toString(end));</code></p>
+<p><code></code> <code>producer.send(request);</code></p>
+<p><code>}</code></p>
+<p>与上一段代码基本相似，只是多指定了删除消息的起止时间段。</p>
+<p>最后贴一段spring的配置文件及main函数入口</p>
+<p><img src="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif" alt=""><br><img src="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif" alt=""></p>
+<p><img src="//common.cnblogs.com/images/copycode.gif" alt="复制代码"></p>
+<pre><code> 1 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ 2 &lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+ 3        xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+ 4        xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+ 5 
+ 6     &lt;bean id=&quot;jmsFactory&quot; class=&quot;org.apache.activemq.pool.PooledConnectionFactory&quot; destroy-method=&quot;stop&quot;&gt;
+ 7         &lt;property name=&quot;connectionFactory&quot;&gt;
+ 8             &lt;bean class=&quot;org.apache.activemq.ActiveMQConnectionFactory&quot;&gt;
+ 9                 &lt;property name=&quot;brokerURL&quot;
+10                           value=&quot;failover:(tcp://localhost:61616,tcp://localhost:61626)?randomize=false&amp;amp;backup=true&quot;/&gt;
+11                 &lt;property name=&quot;maxThreadPoolSize&quot; value=&quot;100&quot;/&gt;
+12             &lt;/bean&gt;
+13         &lt;/property&gt;
+14     &lt;/bean&gt;
+15 
+16     &lt;bean id=&quot;messageUtil&quot; class=&quot;cn.mwee.utils.mq.MessageUtil&quot;&gt;
+17         &lt;constructor-arg index=&quot;0&quot; ref=&quot;jmsFactory&quot;/&gt;
+18         &lt;constructor-arg index=&quot;1&quot; value=&quot;10000&quot;/&gt;
+19         &lt;constructor-arg index=&quot;2&quot;&gt;
+20             &lt;list&gt;
+21                 &lt;value&gt;dest1&lt;/value&gt;
+22                 &lt;value&gt;dest2&lt;/value&gt;
+23             &lt;/list&gt;
+24         &lt;/constructor-arg&gt;
+25         &lt;property name=&quot;autoBackup&quot; value=&quot;true&quot;/&gt;
+26     &lt;/bean&gt;
+27 
+28 &lt;/beans&gt;
+</code></pre><p>main函数：</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p><code></code> <code>public</code> <code>static</code> <code>void</code> <code>main(String[] args)</code> <code>throws</code> <code>InterruptedException, JMSException {</code></p>
+<p><code></code> <code>ApplicationContext context =</code> <code>new</code> <code>ClassPathXmlApplicationContext(</code> <code>&quot;spring-sender.xml&quot;</code> <code>);</code></p>
+<p><code></code> <code>ConnectionFactory connectionFactory = context.getBean(ConnectionFactory.</code> <code>class</code> <code>,</code> <code>&quot;jmsFactory&quot;</code> <code>);</code></p>
+<p><code></code> <code>MessageUtil messageUtil = context.getBean(MessageUtil.</code> <code>class</code> <code>);</code></p>
+<p><code>//        sendScheduleMessage(messageUtil);</code></p>
+<p><code>//        deleteAllScheduleMessage(connectionFactory);</code></p>
+<p><code></code> <code>deleteExpiredScheduleMessage(connectionFactory);</code></p>
+<p><code></code> <code>}</code></p>
+<p>参考文章：</p>
+<p><a href="http://timbish.blogspot.com/2010/10
+/enhanced-jms-scheduler-in-activemq.html" target="_blank" rel="noopener"> Enhanced JMS Scheduler in ActiveMQ </a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(7)：如何清理无效的延时消息？/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(7)：如何清理无效的延时消息？/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Activiti工作流引擎使用/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Activiti工作流引擎使用
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/ActiveMQ笔记(6)：消息延时投递/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">ActiveMQ笔记(6)：消息延时投递</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/ActiveMQ笔记(7)：如何清理无效的延时消息？/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

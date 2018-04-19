@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>ActiveMQ笔记(3)：基于Networks of Brokers的HA方案 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="上一篇介绍了基于ZK的ActiveMQ HA方案  ，虽然理解起来比较容易，但是有二个不足： 1)  占用的节点数过多，1个zk集群至少3个节点，1个activemq集群也至少得3个节点，但其实正常运行时，只有一个master节点在对外响应，换句话说，花6个节点的成本只为了保证1个activemq master节点的高可用，太浪费资源了。 2)  性能下降太明显，比起单节点的activemq，性">
+<meta name="keywords" content="activemq">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ActiveMQ笔记(3)：基于Networks of Brokers的HA方案">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="上一篇介绍了基于ZK的ActiveMQ HA方案  ，虽然理解起来比较容易，但是有二个不足： 1)  占用的节点数过多，1个zk集群至少3个节点，1个activemq集群也至少得3个节点，但其实正常运行时，只有一个master节点在对外响应，换句话说，花6个节点的成本只为了保证1个activemq master节点的高可用，太浪费资源了。 2)  性能下降太明显，比起单节点的activemq，性">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325232947995-77
+5199925.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233102823-19
+44467648.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233400479-19
+84865403.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326143807511-76
+6176344.gif">
+<meta property="og:image" content="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif">
+<meta property="og:image" content="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif">
+<meta property="og:image" content="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif">
+<meta property="og:image" content="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif">
+<meta property="og:image" content="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326151335604-95
+1843855.png">
+<meta property="og:image" content="https://common.cnblogs.com/images/copycode.gif">
+<meta property="og:image" content="https://common.cnblogs.com/images/copycode.gif">
+<meta property="og:updated_time" content="2018-04-19T16:30:01.556Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ActiveMQ笔记(3)：基于Networks of Brokers的HA方案">
+<meta name="twitter:description" content="上一篇介绍了基于ZK的ActiveMQ HA方案  ，虽然理解起来比较容易，但是有二个不足： 1)  占用的节点数过多，1个zk集群至少3个节点，1个activemq集群也至少得3个节点，但其实正常运行时，只有一个master节点在对外响应，换句话说，花6个节点的成本只为了保证1个activemq master节点的高可用，太浪费资源了。 2)  性能下降太明显，比起单节点的activemq，性">
+<meta name="twitter:image" content="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325232947995-77
+5199925.gif">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-ActiveMQ笔记(3)：基于Networks of Brokers的HA方案" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            ActiveMQ笔记(3)：基于Networks of Brokers的HA方案
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/">
+            <time datetime="2018-04-19T16:34:21.411Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/ActiveMQ/">ActiveMQ</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/activemq/">activemq</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p><a href="http://blog.csdn.net/lsy0903/article/details/53413355" target="_blank" rel="noopener"> 上一篇介绍了基于ZK的ActiveMQ HA方案
+</a> ，虽然理解起来比较容易，但是有二个不足：</p>
+<p>1)  占用的节点数过多，1个zk集群至少3个节点，1个activemq集群也至少得3个节点，但其实正常运行时，只有一个master节点在对外响应，换句话说<br>，花6个节点的成本只为了保证1个activemq master节点的高可用，太浪费资源了。</p>
+<p>2)  性能下降太明显，比起单节点的activemq，性能下降了近1个数量级。</p>
+<p>这一篇将介绍基于networks of<br>brokers的HA方案，不需要借助zk等第3方组件，只需要2个activemq节点就能达到类似效果，进入正题之前，先来简单谈谈Broker这个概念。</p>
+<p>Broker一词的原意是『  经纪人、中间人  』，用在ActiveMQ的构架中，即：Broker作为Producer与Consumer的中间人(或代理人)<br>，生产者不用知道消费者在哪里、如何消费这些细节，只要将消息扔给中间人Broker即可，类似的，消费者也不用关心消息是从哪个生产者过来的，它只知道这是从Bro<br>ker那里拿来的，如果画一张图来描述，就是下面这样（引用自本文最后参考文章中的图片）</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325232947995-77
+5199925.gif" alt=""></p>
+<p>那么，当生产者将消息发给Broker时，会发生什么？下图描述的就是这个过程：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233102823-19
+44467648.gif" alt=""></p>
+<p>1) 生产者将消息发给Broker</p>
+<p>2) Broker将消息落地存储</p>
+<p>3) 然后给生产者反馈：事情我已经办妥了！</p>
+<p>继续，再来看看消费者又是如何跟Broker打交道的：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233400479-19
+84865403.gif" alt=""></p>
+<p>1) Broker将接收到的消息，从db中取出</p>
+<p>2) 然后发送给消费者</p>
+<p>3)<br>如果消费者使用的是自动确认模式(即：Session.AUTO_ACKNOWLEDGE），则Consumer会马上告诉Broker：ok，消息我已经收到了。</p>
+<p>4) 然后进行自己的业务处理</p>
+<p>5) Broker一旦收到确认，将会马上更新消息的状态为已消费(或直接删除，取决于持久化的实现机制）（注：虽然图中步骤5排在步骤4之后，但是步骤4、5几乎是<br>同时发生的）</p>
+<p>在一些大型应用中，如果一个Broker出现性能瓶颈抗不住压力，可能会拆分成多个Broker，如下图所示：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326143807511-76
+6176344.gif" alt=""></p>
+<p>(注：上图中箭头的方法并非数据流向，而应该理解成调用关系，即：Producer调用Broker1，Consumer调用Broker2…)</p>
+<p>Producer将消息发送给Broker1，而Consumer从另一个Broker2接收消息，有点类似数据库读写分离的意思，这样系统的性能可以提升一定程度的<br>提升，但是问题来了，Broker1上的消息，如何  “同步”（见下面的注释）  到Broker2呢，这就依赖networkConnector的配置。</p>
+<p>注：  _ 同步这个词用在这里可能不太准确，但也找不到一个更精确的词来描述，实际上，二个broker用上述机制组建成小集群后，如果生产者连接到broker1<br>，消费者连接到broker2，当消息发送到broker1后，broker1不会将该消息复制一份到broker2，而是等消费者从broker2上消费该消息时，<br>这条消息才从broker1取到broker2上，相当于此时broker2是消费者，从broker1消费了一条消息，然后broker2上就有这条消息了，最终消<br>费者才能broker2上拿到这条消息。 _</p>
+<p><img src="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif" alt=""><br><img src="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif" alt=""></p>
+<pre><code> 1 &lt;beans
+ 2         xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+ 3         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+ 4         xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+ 5   http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd&quot;&gt;
+ 6 
+ 7   &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+ 8     &lt;property name=&quot;locations&quot;&gt;
+ 9       &lt;value&gt;file:${activemq.conf}/credentials.properties&lt;/value&gt;
+10     &lt;/property&gt;
+11   &lt;/bean&gt;
+12 
+13   &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; brokerName=&quot;activemq-1&quot;&gt;
+14     &lt;networkConnectors&gt;
+15       &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61626)&quot;/&gt;
+16     &lt;/networkConnectors&gt;
+17     &lt;persistenceAdapter&gt;
+18       &lt;kahaDB directory=&quot;${activemq.data}/kahadb&quot;/&gt;
+19     &lt;/persistenceAdapter&gt;
+20     &lt;transportConnectors&gt;
+21       &lt;transportConnector name=&quot;openwire&quot;
+22                           uri=&quot;tcp://0.0.0.0:61616?maximumConnections=1000&amp;amp;wireFormat.maxFrameSize=104857600&quot;/&gt;
+23     &lt;/transportConnectors&gt;
+24   &lt;/broker&gt;
+25 
+26   &lt;import resource=&quot;jetty.xml&quot;/&gt;
+27 &lt;/beans&gt;
+</code></pre><p>View Code</p>
+<p>注意：14-16行及21-22行，该Broker对外暴露616 <strong> 1  </strong> 6端口，同时”连接”到616 <strong> 2  </strong><br>6端口（即另1个broker）,最终的效果相当于，如果有producer把消息发到616 <strong> 1  </strong><br>6（broker1）,则从另一个broker(616 <strong> 2  </strong> 6端口)上也能消费这条消息。</p>
+<p>明白这些基本原理后，在61626对应的activemq上，也做类似的配置，只不过”连接方向”正好相反，参考以下配置：</p>
+<p><img src="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif" alt=""><br><img src="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif" alt=""></p>
+<pre><code> 1 &lt;beans
+ 2         xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+ 3         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+ 4         xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+ 5   http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd&quot;&gt;
+ 6 
+ 7     &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+ 8         &lt;property name=&quot;locations&quot;&gt;
+ 9             &lt;value&gt;file:${activemq.conf}/credentials.properties&lt;/value&gt;
+10         &lt;/property&gt;
+11     &lt;/bean&gt;
+12 
+13     &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; brokerName=&quot;activemq-2&quot;&gt;
+14         &lt;networkConnectors&gt;
+15             &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61616)&quot;/&gt;
+16         &lt;/networkConnectors&gt;
+17         &lt;persistenceAdapter&gt;
+18             &lt;kahaDB directory=&quot;${activemq.data}/kahadb&quot;/&gt;
+19         &lt;/persistenceAdapter&gt;
+20         &lt;transportConnectors&gt;
+21             &lt;transportConnector name=&quot;openwire&quot;
+22                                 uri=&quot;tcp://0.0.0.0:61626?maximumConnections=1000&amp;amp;wireFormat.maxFrameSize=104857600&quot;/&gt;
+23         &lt;/transportConnectors&gt;
+24     &lt;/broker&gt;
+25 
+26     &lt;import resource=&quot;jetty.xml&quot;/&gt;
+27 &lt;/beans&gt;
+</code></pre><p>View Code</p>
+<p>(注：如果希望2个activemq上都能访问admin管理界面，jetty.xml中的端口要修改，不要冲突)</p>
+<p>这样，activemq-1与activemq-2这二个broker就互为主备，发给你的消息会同步到我，发给我的消息也会同步到你，实现了HA，示意图如下：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326151335604-95
+1843855.png" alt=""></p>
+<p>Producer与Consumer连接到activemq时，配置文件可以这么写：</p>
+<p><img src="//common.cnblogs.com/images/copycode.gif" alt="复制代码"></p>
+<pre><code>1 &lt;bean id=&quot;jmsFactory&quot; class=&quot;org.apache.activemq.pool.PooledConnectionFactory&quot; destroy-method=&quot;stop&quot;&gt;
+2     &lt;property name=&quot;connectionFactory&quot;&gt;
+3         &lt;bean class=&quot;org.apache.activemq.ActiveMQConnectionFactory&quot;&gt;
+4             &lt;!--broker服务的地址--&gt;
+5             &lt;property name=&quot;brokerURL&quot; value=&quot;failover:(tcp://localhost:61616,tcp://localhost:61626)&quot;/&gt;
+6             ...
+7         &lt;/bean&gt;
+8     &lt;/property&gt;
+9 &lt;/bean&gt;
+</code></pre><p><img src="//common.cnblogs.com/images/copycode.gif" alt="复制代码"></p>
+<p>这种HA方案的优点是占用的节点数更少(只需要2个节点),而且2个broker都可以响应消息的接收与发送，性能比zookeeper方案要好一些。</p>
+<p>最后，再给一个简化配置的技巧，以上述的2节点HA方案中，二个activemq的配置文件都要加networkConnector配置，如果想减轻配置的工作量，也<br>可以只在其中一个activemq设置，参考以下片段：</p>
+<pre><code>&lt;networkConnectors&gt;
+  &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61626)&quot; duplex=&quot;true&quot;/&gt;
+&lt;/networkConnectors&gt;
+</code></pre><p>即：在61616这个activemq的配置文件中，添加networkConnector时，增加  duplex=”true”  ，也就是双工通讯的意思，这样<br>61616与61626这二个activemq上的broker就建立了双向通讯连接，另一个activemq上就无需额外配置了（注：如果在61626上配置了，反<br>而会报错）</p>
+<p><strong> 参考文章：  </strong></p>
+<p><a href="http://www.jakubkorab.net/2011/11/understanding-activemq-
+broker-networks.html" target="_blank" rel="noopener"> http://www.jakubkorab.net/2011/11/understanding-activemq-broker-<br>networks.html  </a></p>
+<p><a href="http://activemq.apache.org/networks-of-brokers.html" target="_blank" rel="noopener"> http://activemq.apache.org/networks-of-brokers.html
+</a></p>
+<p><strong> 最后  </strong> 贴二段程序运行的输出日志，以说明同步机制的正确性，打消回复中“大鹏520”的顾虑： </p>
+<p>背景： <em>.</em>.<em>.15 与 </em>.<em>.</em>.16 作为HA(双主)的activemq集群，发送程序只连接到15发消息，然后退出。<br>接收程序只从16上收消息，如果收到了，表明15上的消息同步到16。</p>
+<p>下面是 <strong> 发送程序 </strong> 的输出片段：（注意输出日志中关于IP的部分，这是只连接到<em>.</em>.<em>.[b]15[/b]上发送的）<br>(注：部分敏感信息，比如真实IP前缀，公司package名，用</em>代替了)</p>
+<p>_ 14:53:09,996 &lt;<em>.DemoSender&gt; INFO [main]: 准备发送消息… _<br>_ 14:53:10,270 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[main]: Sending: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=</em>.<em>.</em>.15, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.InactivityMonitor&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>. <strong> 15  </strong> :61616@50616]: Using min of<br>local: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=</em>.<em>.</em>.15, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} and remote:<br>WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>. <strong> 15  </strong> :61616@50616]: Received<br>WireFormat: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>. <strong> 15  </strong> :61616@50616]:<br>tcp:///<em>.</em>.<em>.15:61616@50616 before negotiation: OpenWireFormat{version=11,<br>cacheEnabled=false, stackTraceEnabled=false, tightEncodingEnabled=false,<br>sizePrefixDisabled=false, maxFrameSize=9223372036854775807} _<br>_ 14:53:10,307 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>. <strong> 15  </strong> :61616@50616]:<br>tcp:///<em>.</em>.<em>.15:61616@50616 after negotiation: OpenWireFormat{version=11,<br>cacheEnabled=true, stackTraceEnabled=true, tightEncodingEnabled=true,<br>sizePrefixDisabled=false, maxFrameSize=104857600} _<br>_ 14:53:10,416 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Executing callback on JMS Session: PooledSession { ActiveMQSession {id=ID<br>:yangjunmings-MacBook-Pro.local-50615-1461480790088-1:1:1,started=false}<br>java.lang.Object@5a56cdac } _<br>_ 14:53:10,471 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Sending created message: ActiveMQTextMessage {commandId = 0, responseRequired<br>= false, messageId = null, originalDestination = null, originalTransactionId =<br>null, producerId = null, destination = null, transactionId = null, expiration<br>= 0, timestamp = 0, arrival = 0, brokerInTime = 0, brokerOutTime = 0,<br>correlationId = null, replyTo = null, persistent = false, type = null,<br>priority = 0, groupID = null, groupSequence = 0, targetConsumerId = null,<br>compressed = false, userID = null, content = null, marshalledProperties =<br>null, dataStructure = null, redeliveryCounter = 0, size = 0, properties =<br>null, readOnlyProperties = false, readOnlyBody = false, droppable = false,<br>jmsXGroupFirstForConsumer = false, text =  message test:0  } _<br>_ 14:53:10,516 &lt;</em>.DemoSender&gt; INFO [main]:  消息0发送完成!  _<br>_ 14:53:11,520 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Executing callback on JMS Session: PooledSession { ActiveMQSession {id=ID<br>:yangjunmings-MacBook-Pro.local-50615-1461480790088-1:1:1,started=false}<br>java.lang.Object@5a56cdac } _<br>_ 14:53:11,521 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Sending created message: ActiveMQTextMessage {commandId = 0, responseRequired<br>= false, messageId = null, originalDestination = null, originalTransactionId =<br>null, producerId = null, destination = null, transactionId = null, expiration<br>= 0, timestamp = 0, arrival = 0, brokerInTime = 0, brokerOutTime = 0,<br>correlationId = null, replyTo = null, persistent = false, type = null,<br>priority = 0, groupID = null, groupSequence = 0, targetConsumerId = null,<br>compressed = false, userID = null, content = null, marshalledProperties =<br>null, dataStructure = null, redeliveryCounter = 0, size = 0, properties =<br>null, readOnlyProperties = false, readOnlyBody = false, droppable = false,<br>jmsXGroupFirstForConsumer = false, text = message test:1} _</p>
+<p>运行完以后，关掉发送程序，然后启动 <strong> 接收程序 </strong> ：</p>
+<p>_ 14:54:40,965 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[main]: Sending: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=<em>.</em>.<em>.  <strong> 16 </strong> ,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,002 &lt;org.apache.activemq.transport.InactivityMonitor&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>.  <strong> 16 </strong> :61616@50642]: Using min of<br>local: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=<em>.</em>.<em>.  <strong> 16 </strong> ,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} and remote: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=104857600, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,003 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>.  <strong> 16 </strong> :61616@50642]: Received<br>WireFormat: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,003 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>.  <strong> 16 </strong> :61616@50642]: tcp:///</em>.<em>.</em>.  <strong><br>16 </strong> :61616@50642 before negotiation: OpenWireFormat{version=11,<br>cacheEnabled=false, stackTraceEnabled=false, tightEncodingEnabled=false,<br>sizePrefixDisabled=false, maxFrameSize=9223372036854775807} _<br>_ 14:54:41,004 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>.  <strong> 16 </strong> :61616@50642]:<br>tcp:///</em>.<em>.</em>.16:61616@50642 after negotiation: OpenWireFormat{version=11,<br>cacheEnabled=true, stackTraceEnabled=true, tightEncodingEnabled=true,<br>sizePrefixDisabled=false, maxFrameSize=104857600} _<br>_ 14:54:41,163 &lt;org.apache.activemq.thread.TaskRunnerFactory&gt; DEBUG [main]:<br>Initialized TaskRunnerFactory[ActiveMQ Session Task] using ExecutorService:<br>java.util.concurrent.ThreadPoolExecutor@485966cc[Running, pool size = 0,<br>active threads = 0, queued tasks = 0, completed tasks = 0] _<br>_ 14:54:41,181 &lt;*.DemoListener&gt; INFO [ActiveMQ Session Task-1]:  message<br>test:0  _</p>
+<p>注意接收程序中IP的部分，这是从<em>.</em>.<em>.[b]16[/b]上接收到的，说明消息已经从 </em>.<em>.</em>.15同步到<em>.</em>.*.16上了，否则不可能收到消息。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/ActiveMQ笔记(4)：搭建Broker集群(cluster)/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    ActiveMQ笔记(4)：搭建Broker集群(cluster)
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/ActiveMQ笔记(2)：基于ZooKeeper的HA方案/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">ActiveMQ笔记(2)：基于ZooKeeper的HA方案</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Excel文件office2003 and office2007 操作 | LErry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="这篇blog主要是讲述java中poi读取excel，而excel的版本包括：2003-2007和2010两个版本，即excel的后缀名为：xls和xlsx。 poi-3.7-20101029.jar，下载地址：http://download.csdn.net/detail/evangel_z/4107089geronimo-stax-api_1.0_spec-1.0.jar，下载地址：http:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Excel文件office2003 and office2007 操作">
+<meta property="og:url" content="https://www.itchina.top/2018/04/20/Excel文件office2003 and office2007 操作/index.html">
+<meta property="og:site_name" content="LErry">
+<meta property="og:description" content="这篇blog主要是讲述java中poi读取excel，而excel的版本包括：2003-2007和2010两个版本，即excel的后缀名为：xls和xlsx。 poi-3.7-20101029.jar，下载地址：http://download.csdn.net/detail/evangel_z/4107089geronimo-stax-api_1.0_spec-1.0.jar，下载地址：http:">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-04-19T16:30:25.700Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Excel文件office2003 and office2007 操作">
+<meta name="twitter:description" content="这篇blog主要是讲述java中poi读取excel，而excel的版本包括：2003-2007和2010两个版本，即excel的后缀名为：xls和xlsx。 poi-3.7-20101029.jar，下载地址：http://download.csdn.net/detail/evangel_z/4107089geronimo-stax-api_1.0_spec-1.0.jar，下载地址：http:">
+    
+
+    
+        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/shortcut_icon.png" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">LErry</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">主页</a>
+                
+                    <a class="main-nav-link" href="/freebooks">书籍</a>
+                
+                    <a class="main-nav-link" href="/tags">标签</a>
+                
+                    <a class="main-nav-link" href="/archives">归档</a>
+                
+                    <a class="main-nav-link" href="/aboutme">关于</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">主页</a></td>
+                
+                    <td><a class="main-nav-link" href="/freebooks">书籍</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">标签</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">归档</a></td>
+                
+                    <td><a class="main-nav-link" href="/aboutme">关于</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">LErry Li</h2>
+            <h3 id="title">知我者谓我心忧，不知我者谓我何求</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shanghai, China</span>
+            <a id="follow" target="_blank" href="https://github.com/lerry903">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                65
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                54
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/lerry903" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="mailto:lerryli@foxmail.com" target="_blank" title="envelope" class=tooltip>
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="qq" class=tooltip>
+                            <i class="fa fa-qq"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://weibo.com/5941010376" target="_blank" title="weibo" class=tooltip>
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Excel文件office2003 and office2007 操作" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Excel文件office2003 and office2007 操作
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Excel文件office2003 and office2007 操作/">
+            <time datetime="2018-04-19T16:34:21.416Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/J2EE/">J2EE</a>
+    </div>
+
+                        
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>这篇blog主要是讲述java中poi读取excel，而excel的版本包括：2003-2007和2010两个版本，<br>即excel的后缀名为：xls和xlsx。</p>
+<p>poi-3.7-20101029.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/4107089" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/4107089</a><br>geronimo-stax-<br>api_1.0_spec-1.0.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/4107083" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/4107083</a><br>xmlbeans-2.3.0.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/4107140" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/4107140</a><br>poi-<br>ooxml-3.7-20101029.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/4107145" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/4107145</a><br>poi-ooxml-schemas-3.7-20101029.jar，下载地址：<a href="http://download.csdn.net/detail/evange" target="_blank" rel="noopener">http://download.csdn.net/detail/evange</a><br>l_z/4108997<br>以上5个jar，就可读取Excel 2003；  </p>
+<h2 id="—————————————————————————"><a href="#—————————————————————————" class="headerlink" title="-—————————————————————————-"></a>-—————————————————————————-</h2><p>读取Excel<br>2007，请加上dom4j-1.6.1.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/6739735" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/6739735</a>  </p>
+<h2 id="—————————————————————————-1"><a href="#—————————————————————————-1" class="headerlink" title="-—————————————————————————-"></a>-—————————————————————————-</h2><p>poi-3.6-20091214.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/3895051" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/3895051</a><br>poi-contrib-3.6-20091214.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/41" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/41</a><br>07197<br>poi-<br>scratch.6-20091214.jar，下载地址：<a href="http://download.csdn.net/detail/evangel_z/4107204" target="_blank" rel="noopener">http://download.csdn.net/detail/evangel_z/4107204</a></p>
+<p>=================================================</p>
+<p>源码部分： 读取操作  ReadExcelUtil  </p>
+<p>=================================================</p>
+<pre><code>  1 import java.io.File;
+  2 import java.io.FileInputStream;
+  3 import java.io.FileNotFoundException;
+  4 import java.io.IOException;
+  5 import java.text.DecimalFormat;
+  6 import java.text.SimpleDateFormat;
+  7 import java.util.ArrayList;
+  8 import java.util.LinkedList;
+  9 import java.util.List;
+ 10 
+ 11 import org.apache.poi.hssf.usermodel.*;
+ 12 import org.apache.poi.xssf.usermodel.XSSFCell;
+ 13 import org.apache.poi.xssf.usermodel.XSSFRow;
+ 14 import org.apache.poi.xssf.usermodel.XSSFSheet;
+ 15 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+ 16 
+ 17 /**
+ 18  * 读Excel文件office2003 and office2007
+ 19  * @author lerry.li
+ 20  * @date 2016-9-2
+ 21  */
+ 22 public class ReadExcelUtil {
+ 23 
+ 24     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ReadExcelUtil.class);
+ 25     static DecimalFormat df = new DecimalFormat(&quot;0&quot;);// 格式化 number String 字符
+ 26     static SimpleDateFormat sdf = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;);// 格式化日期字符串
+ 27     static DecimalFormat nf = new DecimalFormat(&quot;0.00&quot;);// 格式化数字
+ 28 
+ 29     /**
+ 30      * 对外提供读取excel 的方法
+ 31      * @param file
+ 32      * @return
+ 33      * @throws java.io.IOException
+ 34      * @throws java.io.IOException
+ 35      */
+ 36     public static List&lt;List&lt;Object&gt;&gt; readExcel(File file) throws IOException {
+ 37         String fileName = file.getName();
+ 38         String extension = fileName.lastIndexOf(&quot;.&quot;) == -1 ? &quot;&quot; : fileName
+ 39                 .substring(fileName.lastIndexOf(&quot;.&quot;) + 1);
+ 40         if (&quot;xls&quot;.equals(extension)) {
+ 41             return read2003Excel(file);
+ 42         } else if (&quot;xlsx&quot;.equals(extension)) {
+ 43             return read2007Excel(file);
+ 44         } else {
+ 45             throw new IOException(&quot;不支持的文件类型&quot;);
+ 46         }
+ 47     }
+ 48 
+ 49     /**
+ 50      * 读取 office 2003 excel
+ 51      * @throws java.io.IOException
+ 52      * @throws java.io.FileNotFoundException
+ 53      */
+ 54     @SuppressWarnings(&quot;unused&quot;)
+ 55     private static List&lt;List&lt;Object&gt;&gt; read2003Excel(File file)
+ 56             throws IOException {
+ 57         List&lt;List&lt;Object&gt;&gt; list = new LinkedList&lt;List&lt;Object&gt;&gt;();
+ 58         HSSFWorkbook hwb = new HSSFWorkbook(new FileInputStream(file));
+ 59         HSSFSheet sheet = hwb.getSheetAt(0);
+ 60         Object value = null;
+ 61         HSSFRow row = null;
+ 62         HSSFCell cell = null;
+ 63         for (int i = sheet.getFirstRowNum(); i &lt;= sheet
+ 64                 .getPhysicalNumberOfRows(); i++) {
+ 65             row = sheet.getRow(i);
+ 66             if (row == null) {
+ 67                 continue;
+ 68             }
+ 69             List&lt;Object&gt; linked = new LinkedList&lt;Object&gt;();
+ 70             for (int j = row.getFirstCellNum(); j &lt;= row.getLastCellNum(); j++) {
+ 71                 cell = row.getCell(j);
+ 72                 if (cell == null) {
+ 73                     continue;
+ 74                 }
+ 75                 DecimalFormat df = new DecimalFormat(&quot;0&quot;);// 格式化 number String
+ 76                 // 字符
+ 77                 SimpleDateFormat sdf = new SimpleDateFormat(
+ 78                         &quot;yyyy-MM-dd HH:mm:ss&quot;);// 格式化日期字符串
+ 79                 DecimalFormat nf = new DecimalFormat(&quot;0&quot;);// 格式化数字
+ 80                 switch (cell.getCellType()) {
+ 81                 case HSSFCell.CELL_TYPE_STRING:
+ 82                     value = cell.getStringCellValue();
+ 83                     break;
+ 84                 case HSSFCell.CELL_TYPE_NUMERIC:
+ 85                     if (&quot;@&quot;.equals(cell.getCellStyle().getDataFormatString())) {
+ 86                         value = df.format(cell.getNumericCellValue());
+ 87                     } else if (&quot;General&quot;.equals(cell.getCellStyle()
+ 88                             .getDataFormatString())) {
+ 89                         value = nf.format(cell.getNumericCellValue());
+ 90                     } else {
+ 91                         value = sdf.format(HSSFDateUtil.getJavaDate(cell
+ 92                                 .getNumericCellValue()));
+ 93                     }
+ 94                     break;
+ 95                 case HSSFCell.CELL_TYPE_BOOLEAN:
+ 96                     value = cell.getBooleanCellValue();
+ 97                     break;
+ 98                 case HSSFCell.CELL_TYPE_BLANK:
+ 99                     value = &quot;&quot;;
+100                     break;
+101                 default:
+102                     value = cell.toString();
+103                 }
+104                 //if (value == null || &quot;&quot;.equals(value)) {
+105                 //    continue;
+106                 //}
+107                 if (value == null) {
+108                     continue;
+109                 }
+110                 linked.add(value);
+111             }
+112             list.add(linked);
+113         }
+114         return list;
+115     }
+116 
+117     /**
+118      * 读取Office 2007 excel
+119      * @param file
+120      * @return
+121      * @throws java.io.IOException
+122      */
+123     private static List&lt;List&lt;Object&gt;&gt; read2007Excel(File file)
+124             throws IOException {
+125         int flag=0;
+126         List&lt;List&lt;Object&gt;&gt; list = new ArrayList&lt;List&lt;Object&gt;&gt;();
+127         // 构造 XSSFWorkbook 对象，strPath 传入文件路径
+128         XSSFWorkbook xwb = new XSSFWorkbook(new FileInputStream(file));
+129         // 读取第一章表格内容
+130         XSSFSheet sheet = xwb.getSheetAt(0);
+131         Object value = null;
+132         XSSFRow row = null;
+133         XSSFCell cell = null;
+134         for (int i = sheet.getFirstRowNum(); i &lt;= sheet
+135                 .getPhysicalNumberOfRows(); i++) {
+136             flag++;
+137             row = sheet.getRow(i);
+138             if (row == null) {
+139                 continue;
+140             }
+141             List&lt;Object&gt; linked = new LinkedList&lt;Object&gt;();
+142             for (int j = row.getFirstCellNum(); j &lt;= row.getLastCellNum(); j++) {
+143                 cell = row.getCell(j);
+144                 if (cell == null) {
+145                     continue;
+146                 }
+147                 //DecimalFormat df = new DecimalFormat(&quot;0&quot;);// 格式化 number String
+148                 // 字符
+149                 switch (cell.getCellType()) {
+150                 case HSSFCell.CELL_TYPE_STRING:
+151                     value = cell.getStringCellValue();
+152                     break;
+153                 case HSSFCell.CELL_TYPE_NUMERIC:
+154                     if (&quot;@&quot;.equals(cell.getCellStyle().getDataFormatString())) {
+155                         value = df.format(cell.getNumericCellValue());
+156                     } else if (&quot;General&quot;.equals(cell.getCellStyle()
+157                             .getDataFormatString())) {
+158                         value = nf.format(cell.getNumericCellValue());
+159                     } else {
+160                         value = sdf.format(HSSFDateUtil.getJavaDate(cell
+161                                 .getNumericCellValue()));
+162                     }
+163                     break;
+164                 case HSSFCell.CELL_TYPE_BOOLEAN:
+165                     value = cell.getBooleanCellValue();
+166                     break;
+167                 case HSSFCell.CELL_TYPE_BLANK:
+168                     value = &quot;&quot;;
+169                     break;
+170                 default:
+171                     value = cell.toString();
+172                 }
+173                 //if (value == null || &quot;&quot;.equals(value)) {
+174                 //    continue;
+175                 //}
+176                 if (value == null) {
+177                     continue;
+178                 }
+179                 linked.add(value);
+180             }
+181             list.add(linked);
+182         }
+183         return list;
+184     }
+185     /**
+186      * 获取行数2003
+187      * @param file
+188      * @return 行数
+189      */
+190     public static int getRow2003(File file){
+191         HSSFWorkbook hwb = null;
+192         try {
+193             FileInputStream f =  new FileInputStream(file);
+194             hwb = new HSSFWorkbook(f);
+195         } catch (FileNotFoundException e) {
+196             e.printStackTrace();
+197         } catch (IOException e) {
+198             e.printStackTrace();
+199         }
+200         HSSFSheet sheet = hwb.getSheetAt(0);
+201         return sheet.getPhysicalNumberOfRows();
+202     }
+203     /**
+204      * 获取行数2007
+205      * @param file
+206      * @return
+207      */
+208     public static int getRow2007(File file){
+209         XSSFWorkbook xwb = null;
+210         try {
+211             FileInputStream f = new FileInputStream(file);
+212             xwb = new XSSFWorkbook(f);
+213         } catch (Exception e) {
+214             e.printStackTrace();
+215         }
+216         XSSFSheet sheet = xwb.getSheetAt(0);
+217         return sheet.getPhysicalNumberOfRows();
+218     }
+219     
+220     public static void main(String[] args) {
+221         
+222         File f = new File(&quot;C:/Users/Administrator/Desktop/Book1.xlsx&quot;);
+223         try {
+224             List&lt;List&lt;Object&gt;&gt; list = readExcel(f);
+225             for (int i = 0; i &lt; list.size(); i++) {
+226                 String s1 = list.get(i).toString().trim();
+227                 s1 = s1.replace(&quot;[&quot;, &quot;&quot;);
+228                 s1 = s1.replace(&quot;]&quot;, &quot;&quot;);
+229                 s1 = s1.replace(&quot;  &quot;, &quot;&quot;); 
+230                 String str = s1.replaceAll(&quot; &quot;, &quot;&quot;).trim();
+231                 String[] s=str.split(&quot;,&quot;);
+232                 for(int j=0;j&lt;s.length;j++){
+233                     System.out.println(&quot;===&quot;+s[j]);
+234                 }
+235             }
+236         } catch (Exception e) {
+237             e.printStackTrace();
+238         }
+239     }
+240 
+241 }
+</code></pre><p>=================================================</p>
+<p>源码部分： 下载操作  DownLoadExcelUtil  </p>
+<p>=================================================</p>
+<pre><code> 1 import java.io.BufferedInputStream;
+ 2 import java.io.BufferedOutputStream;
+ 3 import java.io.File;
+ 4 import java.io.FileInputStream;
+ 5 import java.io.IOException;
+ 6 import java.io.InputStream;
+ 7 import java.io.OutputStream;
+ 8 
+ 9 import javax.servlet.ServletContext;
+10 import javax.servlet.ServletOutputStream;
+11 import javax.servlet.http.HttpServletRequest;
+12 import javax.servlet.http.HttpServletResponse;
+13 
+14 import org.slf4j.Logger;
+15 
+16 /**
+17  * 读Excel文件office2003 and office2007
+18  * @author lerry.li
+19  * @date 2016-9-2
+20  */
+21 public class DownLoadExcelUtil {
+22 
+23     private static final Logger log = org.slf4j.LoggerFactory.getLogger(DownLoadExcelUtil.class);
+24     /**
+25      * 下载Excel
+26      * @param path 文件路径
+27      * @param response
+28      */
+29     public static void download(String path, HttpServletResponse response) {  
+30         try {  
+31             // path是指欲下载的文件的路径。  
+32             File file = new File(path);  
+33             // 取得文件名。  
+34             String filename = file.getName();  
+35             // 以流的形式下载文件。  
+36             InputStream fis = new BufferedInputStream(new FileInputStream(path));  
+37             byte[] buffer = new byte[fis.available()];  
+38             fis.read(buffer);  
+39             fis.close();  
+40             // 清空response  
+41             response.reset();  
+42             // 设置response的Header  
+43             response.addHeader(&quot;Content-Disposition&quot;, &quot;attachment;filename=&quot;  
+44                     + new String(filename.getBytes()));  
+45             response.addHeader(&quot;Content-Length&quot;, &quot;&quot; + file.length());  
+46             OutputStream toClient = new BufferedOutputStream(  
+47                     response.getOutputStream());  
+48             response.setContentType(&quot;application/vnd.ms-excel;charset=gb2312&quot;);  
+49             toClient.write(buffer);  
+50             toClient.flush();  
+51             toClient.close();  
+52         } catch (Exception ex) {  
+53             log.info(ex.getMessage());
+54             ex.printStackTrace();  
+55         }  
+56     } 
+57     
+58 }
+</code></pre>
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Excel文件office2003 and office2007 操作/#comments" id="sourceId::2018/04/20/Excel文件office2003 and office2007 操作/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/04/20/Docker私有仓库的搭建与使用/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Docker私有仓库的搭建与使用
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/04/20/apache调优隐藏版本信息及404重定向/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">apache调优隐藏版本信息及404重定向</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="SOHUCS" sid="2018/04/20/Excel文件office2003 and office2007 操作/"></div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
+                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/IDE/">IDE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/项目相关的CVS操作/" class="title">项目相关的CVS操作</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.467Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/J2EE/">J2EE</a></p>
+                            <p class="item-title"><a href="/2018/04/20/图片转换PDF文件/" class="title">图片转换PDF文件</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.449Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ActiveMQ/">ActiveMQ</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ExtJs/">ExtJs</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/IDE/">IDE</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/">J2EE</a><span class="category-list-count">7</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/J2EE/Spring/">Spring</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/">cnn图片数据处理、显示</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/cnn图片数据处理、显示/python数据分析/">python数据分析</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/web前端/">web前端</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/集群/">集群</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/集群/">集群</a><span class="category-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a><span class="archive-list-count">65</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Apache/">Apache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Druid/">Druid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ImageToPDF/">ImageToPDF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logstash/">Logstash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring-Boot/">Spring Boot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ajax/">ajax</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/angular/">angular</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cas/">cas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/exception/">exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ext/">ext</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/extjs/">extjs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/find/">find</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ide/">ide</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/idea/">idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jboss/">jboss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jmx/">jmx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jpa/">jpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lombok/">lombok</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mvc/">mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mybatis/">mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/">nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seo/">seo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shiro/">shiro</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/">spring</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-mvc/">spring mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring-boo/">spring-boo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql-server/">sql server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zookeeper/">zookeeper</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/优化/">优化</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分布式日志/">分布式日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/工作/">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常/">异常</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常处理/">异常处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索引擎/">搜索引擎</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据分析/">数据分析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/汉字转拼音/">汉字转拼音</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/版本控制系统/">版本控制系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序员/">程序员</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/经验/">经验</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集群/">集群</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Apache/" style="font-size: 10px;">Apache</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Druid/" style="font-size: 10px;">Druid</a> <a href="/tags/ImageToPDF/" style="font-size: 10px;">ImageToPDF</a> <a href="/tags/Logstash/" style="font-size: 10px;">Logstash</a> <a href="/tags/Spring-Boot/" style="font-size: 10px;">Spring Boot</a> <a href="/tags/activemq/" style="font-size: 18px;">activemq</a> <a href="/tags/ajax/" style="font-size: 10px;">ajax</a> <a href="/tags/angular/" style="font-size: 10px;">angular</a> <a href="/tags/cas/" style="font-size: 10px;">cas</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/exception/" style="font-size: 10px;">exception</a> <a href="/tags/ext/" style="font-size: 14px;">ext</a> <a href="/tags/extjs/" style="font-size: 14px;">extjs</a> <a href="/tags/find/" style="font-size: 10px;">find</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/ide/" style="font-size: 12px;">ide</a> <a href="/tags/idea/" style="font-size: 10px;">idea</a> <a href="/tags/java/" style="font-size: 16px;">java</a> <a href="/tags/javascript/" style="font-size: 12px;">javascript</a> <a href="/tags/jboss/" style="font-size: 10px;">jboss</a> <a href="/tags/jmx/" style="font-size: 10px;">jmx</a> <a href="/tags/jpa/" style="font-size: 10px;">jpa</a> <a href="/tags/linux/" style="font-size: 14px;">linux</a> <a href="/tags/lombok/" style="font-size: 10px;">lombok</a> <a href="/tags/mvc/" style="font-size: 10px;">mvc</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 12px;">mysql</a> <a href="/tags/nginx/" style="font-size: 10px;">nginx</a> <a href="/tags/numpy/" style="font-size: 10px;">numpy</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/server/" style="font-size: 10px;">server</a> <a href="/tags/shiro/" style="font-size: 12px;">shiro</a> <a href="/tags/spring/" style="font-size: 20px;">spring</a> <a href="/tags/spring-mvc/" style="font-size: 10px;">spring mvc</a> <a href="/tags/spring-boo/" style="font-size: 10px;">spring-boo</a> <a href="/tags/sql-server/" style="font-size: 10px;">sql server</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/zookeeper/" style="font-size: 10px;">zookeeper</a> <a href="/tags/优化/" style="font-size: 12px;">优化</a> <a href="/tags/分布式日志/" style="font-size: 10px;">分布式日志</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/工作/" style="font-size: 10px;">工作</a> <a href="/tags/异常/" style="font-size: 10px;">异常</a> <a href="/tags/异常处理/" style="font-size: 10px;">异常处理</a> <a href="/tags/搜索引擎/" style="font-size: 12px;">搜索引擎</a> <a href="/tags/数据分析/" style="font-size: 10px;">数据分析</a> <a href="/tags/汉字转拼音/" style="font-size: 10px;">汉字转拼音</a> <a href="/tags/版本控制系统/" style="font-size: 10px;">版本控制系统</a> <a href="/tags/程序员/" style="font-size: 10px;">程序员</a> <a href="/tags/经验/" style="font-size: 10px;">经验</a> <a href="/tags/集群/" style="font-size: 10px;">集群</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.baidu.com">百度</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 LErry Li<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cytxPSIHr"></script>
+    <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js" ></script>
+    <script type="text/javascript">
+    window.changyan.api.config({
+    appid: 'cytxPSIHr',
+    conf: 'prod_3c92d05d8ba4377e48c5fe27c2159761'
+    });
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>
