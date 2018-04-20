@@ -1891,343 +1891,6 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
 
 
-    <article id="post-Spring Boot 启动加载数据 CommandLineRunner" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/">Spring Boot 启动加载数据 CommandLineRunner</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/">
-            <time datetime="2018-04-19T16:34:21.440Z" itemprop="datePublished">2018-04-20</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/Spring/">Spring</a>
-    </div>
-
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/spring/">spring</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>实际应用中，我们会有在项目服务启动的时候就去加载一些数据或做一些事情这样的需求。<br>为了解决这样的问题，Spring Boot 为我们提供了一个方法，通过实现接口 CommandLineRunner 来实现。</p>
-<p>很简单，只需要一个类就可以，无需其他配置。<br>创建实现接口 CommandLineRunner 的类</p>
-<pre><code>package org.springboot.sample.runner;
-
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-
-/**
- * 服务启动执行
- *
- * @author   单红宇(365384722)
- * @myblog  http://blog.csdn.net/catoop/
- * @create    2016年1月9日
- */
-@Component
-public class MyStartupRunner1 implements CommandLineRunner {
-
-    @Override
-    public void run(String... args) throws Exception {
-        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
-    }
-
-}
-</code></pre><ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-</ul>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-</ul>
-<p>Spring Boot应用程序在启动后，会遍历CommandLineRunner接口的实例并运行它们的run方法。也可以利用@Order注解（或者实现Ord<br>er接口）来规定所有CommandLineRunner实例的运行顺序。</p>
-<p>如下我们使用@Order 注解来定义执行顺序。</p>
-<pre><code>package org.springboot.sample.runner;
-
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
-
-/**
- * 服务启动执行
- *
- * @author   单红宇(365384722)
- * @myblog  http://blog.csdn.net/catoop/
- * @create    2016年1月9日
- */
-@Component
-@Order(value=2)
-public class MyStartupRunner1 implements CommandLineRunner {
-
-    @Override
-    public void run(String... args) throws Exception {
-        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 11111111 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
-    }
-
-}
-</code></pre><ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-<li>22 </li>
-<li>23 </li>
-<li>24 </li>
-</ul>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-<li>22 </li>
-<li>23 </li>
-<li>24 </li>
-</ul>
-<pre><code>package org.springboot.sample.runner;
-
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
-
-/**
- * 服务启动执行
- *
- * @author   单红宇(365384722)
- * @myblog  http://blog.csdn.net/catoop/
- * @create    2016年1月9日
- */
-@Component
-@Order(value=1)
-public class MyStartupRunner2 implements CommandLineRunner {
-
-    @Override
-    public void run(String... args) throws Exception {
-        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 22222222 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
-    }
-
-}
-</code></pre><ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-<li>22 </li>
-<li>23 </li>
-<li>24 </li>
-</ul>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-<li>22 </li>
-<li>23 </li>
-<li>24 </li>
-</ul>
-<p>启动程序后，控制台输出结果为：</p>
-<pre><code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 22222222 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
-&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 11111111 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
-</code></pre><ul>
-<li>1 </li>
-<li>2 </li>
-</ul>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<ul>
-<li>1 </li>
-<li>2 </li>
-</ul>
-<p>根据控制台结果可判断，@Order 注解的执行优先级是按value值从小到大顺序。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-    <div class="bdsharebuttonbox">
-    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
-    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
-    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
-    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
-    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
-    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
-</div>
-<script>
-window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-</script>
-<style>
-    .bdshare_popup_box {
-        border-radius: 4px;
-        border: #e1e1e1 solid 1px;
-    }
-    .bdshare-button-style0-16 a,
-    .bdshare-button-style0-16 .bds_more {
-        padding-left: 20px;
-        margin: 6px 10px 6px 0;
-    }
-    .bdshare_dialog_list a,
-    .bdshare_popup_list a,
-    .bdshare_popup_bottom a {
-        font-family: 'Microsoft Yahei';
-    }
-    .bdshare_popup_top {
-        display: none;
-    }
-    .bdshare_popup_bottom {
-        height: auto;
-        padding: 5px;
-    }
-</style>
-
-
-</div>
-
-            
-    
-        <a href="https://www.itchina.top/2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/#comments" id="sourceId::2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/" class="article-comment-link cy_cmt_count">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <article id="post-Spring Boot 日志记录 SLF4J" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -2655,6 +2318,343 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
             
     
         <a href="https://www.itchina.top/2018/04/20/Spring Boot 日志记录 SLF4J/#comments" id="sourceId::2018/04/20/Spring Boot 日志记录 SLF4J/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
+    <article id="post-Spring Boot 启动加载数据 CommandLineRunner" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/">Spring Boot 启动加载数据 CommandLineRunner</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/">
+            <time datetime="2018-04-19T16:34:21.440Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Spring/">Spring</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/spring/">spring</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>实际应用中，我们会有在项目服务启动的时候就去加载一些数据或做一些事情这样的需求。<br>为了解决这样的问题，Spring Boot 为我们提供了一个方法，通过实现接口 CommandLineRunner 来实现。</p>
+<p>很简单，只需要一个类就可以，无需其他配置。<br>创建实现接口 CommandLineRunner 的类</p>
+<pre><code>package org.springboot.sample.runner;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+/**
+ * 服务启动执行
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月9日
+ */
+@Component
+public class MyStartupRunner1 implements CommandLineRunner {
+
+    @Override
+    public void run(String... args) throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+</ul>
+<p>Spring Boot应用程序在启动后，会遍历CommandLineRunner接口的实例并运行它们的run方法。也可以利用@Order注解（或者实现Ord<br>er接口）来规定所有CommandLineRunner实例的运行顺序。</p>
+<p>如下我们使用@Order 注解来定义执行顺序。</p>
+<pre><code>package org.springboot.sample.runner;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+/**
+ * 服务启动执行
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月9日
+ */
+@Component
+@Order(value=2)
+public class MyStartupRunner1 implements CommandLineRunner {
+
+    @Override
+    public void run(String... args) throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 11111111 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<pre><code>package org.springboot.sample.runner;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+/**
+ * 服务启动执行
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月9日
+ */
+@Component
+@Order(value=1)
+public class MyStartupRunner2 implements CommandLineRunner {
+
+    @Override
+    public void run(String... args) throws Exception {
+        System.out.println(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 22222222 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;);
+    }
+
+}
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+</ul>
+<p>启动程序后，控制台输出结果为：</p>
+<pre><code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 22222222 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;服务启动执行，执行加载数据等操作 11111111 &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+</ul>
+<p>根据控制台结果可判断，@Order 注解的执行优先级是按value值从小到大顺序。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/#comments" id="sourceId::2018/04/20/Spring Boot 启动加载数据 CommandLineRunner/" class="article-comment-link cy_cmt_count">评论</a>
     
 
         </footer>
@@ -3743,7 +3743,7 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
 
 
-    <article id="post-Spring Boot 环境变量读取 和 属性对象的绑定" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Spring Boot 集成Shiro和CAS" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -3751,7 +3751,7 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/Spring Boot 环境变量读取 和 属性对象的绑定/">Spring Boot 环境变量读取 和 属性对象的绑定</a>
+            <a class="article-title" href="/2018/04/20/Spring Boot 集成Shiro和CAS/">Spring Boot 集成Shiro和CAS</a>
         </h1>
     
 
@@ -3760,7 +3760,7 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/Spring Boot 环境变量读取 和 属性对象的绑定/">
+        <a href="/2018/04/20/Spring Boot 集成Shiro和CAS/">
             <time datetime="2018-04-19T16:34:21.437Z" itemprop="datePublished">2018-04-20</time>
         </a>
     </div>
@@ -3775,7 +3775,7 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/spring/">spring</a>
+        <a class="tag-link" href="/tags/cas/">cas</a>, <a class="tag-link" href="/tags/shiro/">shiro</a>, <a class="tag-link" href="/tags/spring/">spring</a>
     </div>
 
                     </div>
@@ -3786,93 +3786,256 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>凡是被Spring管理的类，实现接口 EnvironmentAware 重写方法 setEnvironment<br>可以在工程启动时，获取到系统环境变量和application配置文件中的变量。<br>如：</p>
-<pre><code>@Configuration
-public class MyWebAppConfigurer implements EnvironmentAware
-        {
-    private static final Logger logger = LoggerFactory.getLogger(MyWebAppConfigurer.class);
+            <p>请大家在看本文之前，先了解如下知识点：<br>1、Shiro 是什么？怎么用？<br>2、Cas 是什么？怎么用？<br>3、最好有Spring基础</p>
+<p>可以先看看这两篇文章，按照这2篇文章的内容做一遍：<br><a href="http://blog.csdn.net/catoop/article/details/50520958" target="_blank" rel="noopener"> Spring Boot Shiro 权限管理
+</a><br><a href="http://blog.csdn.net/catoop/article/details/50530364" target="_blank" rel="noopener"> CAS单点登录 </a></p>
+<p>首先看一下下面这张图：<br>第一个流程是单纯使用Shiro的流程。<br>第二个流程是单纯使用Cas的流程。<br>第三个图是Shiro集成Cas后的流程。</p>
+<p>【流程图高清图连接： <a href="https://img-
+blog.csdn.net/20160117224937078" target="_blank" rel="noopener"> https://img-blog.csdn.net/20160117224937078 </a> 】</p>
+<p><img src="https://img-blog.csdn.net/20160117224937078" alt="流程图"></p>
+<p>PS：流程图急急忙忙画的，整体上应该没有什么问题，具体细节问题还请大家留言指正。</p>
+<p>如果你只是打算用到你的Spring Boot项目中，那么看着如下配置完成便可。<br>如果你想进一步了解其中的细节，还是建议大家单独配置Shiro、单独配置Cas，看看官方相关文档。<br>Shiro在1.2版本开始提供了对cas的集成，按下面添加依赖到pom.xml中：</p>
+<pre><code>&lt;!--Apache Shiro所需的jar包 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.shiro&lt;/groupId&gt;
+    &lt;artifactId&gt;shiro-spring&lt;/artifactId&gt;
+    &lt;version&gt;1.2.4&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;  
+    &lt;groupId&gt;org.apache.shiro&lt;/groupId&gt;  
+    &lt;artifactId&gt;shiro-ehcache&lt;/artifactId&gt;  
+    &lt;version&gt;1.2.4&lt;/version&gt;  
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.shiro&lt;/groupId&gt;
+    &lt;artifactId&gt;shiro-cas&lt;/artifactId&gt;
+    &lt;version&gt;1.2.4&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre><ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+</ul>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<ul>
+<li>1 </li>
+<li>2 </li>
+<li>3 </li>
+<li>4 </li>
+<li>5 </li>
+<li>6 </li>
+<li>7 </li>
+<li>8 </li>
+<li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+</ul>
+<p>shiro-cas 依赖 shiro-web，shiro-web 依赖 shiro-core，所以添加shiro-cas后shiro-web<br>.jar和shiro-core.jar会自动被引用。<br>cas被shiro集成后，其原理就是shiro将casFilter加入到shiroFilter的filterChain中。</p>
+<p>在SpringBoot工程中创建ShiroCasConfiguration. <a href="http://lib.csdn.net/base/17" target="_blank" rel="noopener"> Java </a></p>
+<pre><code>package org.springboot.sample.config;
 
-    private RelaxedPropertyResolver propertyResolver;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-    @Value(&quot;${spring.datasource.url}&quot;)
-    private String myUrl;
+import javax.servlet.Filter;
+
+import org.apache.shiro.cache.ehcache.EhCacheManager;
+import org.apache.shiro.cas.CasFilter;
+import org.apache.shiro.cas.CasSubjectFactory;
+import org.apache.shiro.spring.LifecycleBeanPostProcessor;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
+import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springboot.sample.dao.IScoreDao;
+import org.springboot.sample.security.MyShiroCasRealm;
+import org.springboot.sample.service.StudentService;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.filter.DelegatingFilterProxy;
+
+/**
+ * Shiro集成Cas配置
+ *
+ * @author   单红宇(365384722)
+ * @myblog  http://blog.csdn.net/catoop/
+ * @create    2016年1月17日
+ */
+@Configuration
+public class ShiroCasConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShiroCasConfiguration.class);
+
+    // CasServerUrlPrefix
+    public static final String casServerUrlPrefix = &quot;https://localhost:8443/cas&quot;;
+    // Cas登录页面地址
+    public static final String casLoginUrl = casServerUrlPrefix + &quot;/login&quot;;
+    // Cas登出页面地址
+    public static final String casLogoutUrl = casServerUrlPrefix + &quot;/logout&quot;;
+    // 当前工程对外提供的服务地址
+    public static final String shiroServerUrlPrefix = &quot;http://localhost:9090/myspringboot&quot;;
+    // casFilter UrlPattern
+    public static final String casFilterUrlPattern = &quot;/shiro-cas&quot;;
+    // 登录地址
+    public static final String loginUrl = casLoginUrl + &quot;?service=&quot; + shiroServerUrlPrefix + casFilterUrlPattern;
+
+    @Bean
+    public EhCacheManager getEhCacheManager() {  
+        EhCacheManager em = new EhCacheManager();  
+        em.setCacheManagerConfigFile(&quot;classpath:ehcache-shiro.xml&quot;);  
+        return em;  
+    }  
+
+    @Bean(name = &quot;myShiroCasRealm&quot;)
+    public MyShiroCasRealm myShiroCasRealm(EhCacheManager cacheManager) {  
+        MyShiroCasRealm realm = new MyShiroCasRealm(); 
+        realm.setCacheManager(cacheManager);
+        return realm;
+    } 
 
     /**
-     * 这个方法只是测试实现EnvironmentAware接口，读取环境变量的方法。
+     * 注册DelegatingFilterProxy（Shiro）
+     *
+     * @param dispatcherServlet
+     * @return
+     * @author SHANHY
+     * @create  2016年1月13日
      */
-    @Override
-    public void setEnvironment(Environment env) {
-        logger.info(env.getProperty(&quot;JAVA_HOME&quot;));
-        logger.info(myUrl);
-        String str = env.getProperty(&quot;spring.datasource.url&quot;);
-        logger.info(str);
-        propertyResolver = new RelaxedPropertyResolver(env, &quot;spring.datasource.&quot;);
-        String url = propertyResolver.getProperty(&quot;url&quot;);
-        logger.info(url);
+    @Bean
+    public FilterRegistrationBean filterRegistrationBean() {
+        FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
+        filterRegistration.setFilter(new DelegatingFilterProxy(&quot;shiroFilter&quot;));
+        //  该值缺省为false,表示生命周期由SpringApplicationContext管理,设置为true则表示由ServletContainer管理  
+        filterRegistration.addInitParameter(&quot;targetFilterLifecycle&quot;, &quot;true&quot;);
+        filterRegistration.setEnabled(true);
+        filterRegistration.addUrlPatterns(&quot;/*&quot;);
+        return filterRegistration;
     }
-}
-</code></pre><ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-<li>22 </li>
-<li>23 </li>
-<li>24 </li>
-</ul>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<ul>
-<li>1 </li>
-<li>2 </li>
-<li>3 </li>
-<li>4 </li>
-<li>5 </li>
-<li>6 </li>
-<li>7 </li>
-<li>8 </li>
-<li>9 </li>
-<li>10 </li>
-<li>11 </li>
-<li>12 </li>
-<li>13 </li>
-<li>14 </li>
-<li>15 </li>
-<li>16 </li>
-<li>17 </li>
-<li>18 </li>
-<li>19 </li>
-<li>20 </li>
-<li>21 </li>
-<li>22 </li>
-<li>23 </li>
-<li>24 </li>
-</ul>
-<p>@Controller @Service 等被Spring管理的类都支持，注意重写的方法 setEnvironment 是在系统启动的时候被执行。<br>或者如下Controller：</p>
-<pre><code>@Controller
-public class PageController implements EnvironmentAware{
 
-    @Override
-    public void setEnvironment(Environment environment) {
-        String s = environment.getProperty(&quot;JAVA_HOME&quot;);
-        System.out.println(s);
+    @Bean(name = &quot;lifecycleBeanPostProcessor&quot;)
+    public LifecycleBeanPostProcessor getLifecycleBeanPostProcessor() {
+        return new LifecycleBeanPostProcessor();
     }
+
+    @Bean
+    public DefaultAdvisorAutoProxyCreator getDefaultAdvisorAutoProxyCreator() {
+        DefaultAdvisorAutoProxyCreator daap = new DefaultAdvisorAutoProxyCreator();
+        daap.setProxyTargetClass(true);
+        return daap;
+    }
+
+    @Bean(name = &quot;securityManager&quot;)
+    public DefaultWebSecurityManager getDefaultWebSecurityManager(MyShiroCasRealm myShiroCasRealm) {
+        DefaultWebSecurityManager dwsm = new DefaultWebSecurityManager();
+        dwsm.setRealm(myShiroCasRealm);
+//      &lt;!-- 用户授权/认证信息Cache, 采用EhCache 缓存 --&gt; 
+        dwsm.setCacheManager(getEhCacheManager());
+        // 指定 SubjectFactory
+        dwsm.setSubjectFactory(new CasSubjectFactory());
+        return dwsm;
+    }
+
+    @Bean
+    public AuthorizationAttributeSourceAdvisor getAuthorizationAttributeSourceAdvisor(DefaultWebSecurityManager securityManager) {
+        AuthorizationAttributeSourceAdvisor aasa = new AuthorizationAttributeSourceAdvisor();
+        aasa.setSecurityManager(securityManager);
+        return aasa;
+    }
+
+    /**
+     * 加载shiroFilter权限控制规则（从数据库读取然后配置）
+     *
+     * @author SHANHY
+     * @create  2016年1月14日
+     */
+    private void loadShiroFilterChain(ShiroFilterFactoryBean shiroFilterFactoryBean, StudentService stuService, IScoreDao scoreDao){
+        /////////////////////// 下面这些规则配置最好配置到配置文件中 ///////////////////////
+        Map&lt;String, String&gt; filterChainDefinitionMap = new LinkedHashMap&lt;String, String&gt;();
+
+        filterChainDefinitionMap.put(casFilterUrlPattern, &quot;casFilter&quot;);// shiro集成cas后，首先添加该规则
+
+        // authc：该过滤器下的页面必须验证后才能访问，它是Shiro内置的一个拦截器org.apache.shiro.web.filter.authc.FormAuthenticationFilter
+        filterChainDefinitionMap.put(&quot;/user&quot;, &quot;authc&quot;);// 这里为了测试，只限制/user，实际开发中请修改为具体拦截的请求规则
+        // anon：它对应的过滤器里面是空的,什么都没做
+        logger.info(&quot;##################从数据库读取权限规则，加载到shiroFilter中##################&quot;);
+        filterChainDefinitionMap.put(&quot;/user/edit/**&quot;, &quot;authc,perms[user:edit]&quot;);// 这里为了测试，固定写死的值，也可以从数据库或其他配置中读取
+
+        filterChainDefinitionMap.put(&quot;/login&quot;, &quot;anon&quot;);
+        filterChainDefinitionMap.put(&quot;/**&quot;, &quot;anon&quot;);//anon 可以理解为不拦截
+
+        shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
+    }
+
+    /**
+     * CAS过滤器
+     *
+     * @return
+     * @author SHANHY
+     * @create  2016年1月17日
+     */
+    @Bean(name = &quot;casFilter&quot;)
+    public CasFilter getCasFilter() {
+        CasFilter casFilter = new CasFilter();
+        casFilter.setName(&quot;casFilter&quot;);
+        casFilter.setEnabled(true);
+        // 登录失败后跳转的URL，也就是 Shiro 执行 CasRealm 的 doGetAuthenticationInfo 方法向CasServer验证tiket
+        casFilter.setFailureUrl(loginUrl);// 我们选择认证失败后再打开登录页面
+        return casFilter;
+    }
+
+    /**
+     * ShiroFilter&lt;br/&gt;
+     * 注意这里参数中的 StudentService 和 IScoreDao 只是一个例子，因为我们在这里可以用这样的方式获取到相关访问数据库的对象，
+     * 然后读取数据库相关配置，配置到 shiroFilterFactoryBean 的访问规则中。实际项目中，请使用自己的Service来处理业务逻辑。
+     *
+     * @param myShiroCasRealm
+     * @param stuService
+     * @param scoreDao
+     * @return
+     * @author SHANHY
+     * @create  2016年1月14日
+     */
+    @Bean(name = &quot;shiroFilter&quot;)
+    public ShiroFilterFactoryBean getShiroFilterFactoryBean(DefaultWebSecurityManager securityManager, CasFilter casFilter, StudentService stuService, IScoreDao scoreDao) {
+        ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
+        // 必须设置 SecurityManager  
+        shiroFilterFactoryBean.setSecurityManager(securityManager);
+        // 如果不设置默认会自动寻找Web工程根目录下的&quot;/login.jsp&quot;页面
+        shiroFilterFactoryBean.setLoginUrl(loginUrl);
+        // 登录成功后要跳转的连接
+        shiroFilterFactoryBean.setSuccessUrl(&quot;/user&quot;);
+        shiroFilterFactoryBean.setUnauthorizedUrl(&quot;/403&quot;);
+        // 添加casFilter到shiroFilter中
+        Map&lt;String, Filter&gt; filters = new HashMap&lt;&gt;();
+        filters.put(&quot;casFilter&quot;, casFilter);
+        shiroFilterFactoryBean.setFilters(filters);
+
+        loadShiroFilterChain(shiroFilterFactoryBean, stuService, scoreDao);
+        return shiroFilterFactoryBean;
+    }
+
 }
 </code></pre><ul>
 <li>1 </li>
@@ -3884,6 +4047,185 @@ public class PageController implements EnvironmentAware{
 <li>7 </li>
 <li>8 </li>
 <li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+<li>121 </li>
+<li>122 </li>
+<li>123 </li>
+<li>124 </li>
+<li>125 </li>
+<li>126 </li>
+<li>127 </li>
+<li>128 </li>
+<li>129 </li>
+<li>130 </li>
+<li>131 </li>
+<li>132 </li>
+<li>133 </li>
+<li>134 </li>
+<li>135 </li>
+<li>136 </li>
+<li>137 </li>
+<li>138 </li>
+<li>139 </li>
+<li>140 </li>
+<li>141 </li>
+<li>142 </li>
+<li>143 </li>
+<li>144 </li>
+<li>145 </li>
+<li>146 </li>
+<li>147 </li>
+<li>148 </li>
+<li>149 </li>
+<li>150 </li>
+<li>151 </li>
+<li>152 </li>
+<li>153 </li>
+<li>154 </li>
+<li>155 </li>
+<li>156 </li>
+<li>157 </li>
+<li>158 </li>
+<li>159 </li>
+<li>160 </li>
+<li>161 </li>
+<li>162 </li>
+<li>163 </li>
+<li>164 </li>
+<li>165 </li>
+<li>166 </li>
+<li>167 </li>
+<li>168 </li>
+<li>169 </li>
+<li>170 </li>
+<li>171 </li>
+<li>172 </li>
+<li>173 </li>
+<li>174 </li>
+<li>175 </li>
+<li>176 </li>
+<li>177 </li>
+<li>178 </li>
+<li>179 </li>
+<li>180 </li>
+<li>181 </li>
+<li>182 </li>
+<li>183 </li>
+<li>184 </li>
+<li>185 </li>
+<li>186 </li>
+<li>187 </li>
+<li>188 </li>
 </ul>
 <p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
 <ul>
@@ -3896,15 +4238,256 @@ public class PageController implements EnvironmentAware{
 <li>7 </li>
 <li>8 </li>
 <li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
+<li>73 </li>
+<li>74 </li>
+<li>75 </li>
+<li>76 </li>
+<li>77 </li>
+<li>78 </li>
+<li>79 </li>
+<li>80 </li>
+<li>81 </li>
+<li>82 </li>
+<li>83 </li>
+<li>84 </li>
+<li>85 </li>
+<li>86 </li>
+<li>87 </li>
+<li>88 </li>
+<li>89 </li>
+<li>90 </li>
+<li>91 </li>
+<li>92 </li>
+<li>93 </li>
+<li>94 </li>
+<li>95 </li>
+<li>96 </li>
+<li>97 </li>
+<li>98 </li>
+<li>99 </li>
+<li>100 </li>
+<li>101 </li>
+<li>102 </li>
+<li>103 </li>
+<li>104 </li>
+<li>105 </li>
+<li>106 </li>
+<li>107 </li>
+<li>108 </li>
+<li>109 </li>
+<li>110 </li>
+<li>111 </li>
+<li>112 </li>
+<li>113 </li>
+<li>114 </li>
+<li>115 </li>
+<li>116 </li>
+<li>117 </li>
+<li>118 </li>
+<li>119 </li>
+<li>120 </li>
+<li>121 </li>
+<li>122 </li>
+<li>123 </li>
+<li>124 </li>
+<li>125 </li>
+<li>126 </li>
+<li>127 </li>
+<li>128 </li>
+<li>129 </li>
+<li>130 </li>
+<li>131 </li>
+<li>132 </li>
+<li>133 </li>
+<li>134 </li>
+<li>135 </li>
+<li>136 </li>
+<li>137 </li>
+<li>138 </li>
+<li>139 </li>
+<li>140 </li>
+<li>141 </li>
+<li>142 </li>
+<li>143 </li>
+<li>144 </li>
+<li>145 </li>
+<li>146 </li>
+<li>147 </li>
+<li>148 </li>
+<li>149 </li>
+<li>150 </li>
+<li>151 </li>
+<li>152 </li>
+<li>153 </li>
+<li>154 </li>
+<li>155 </li>
+<li>156 </li>
+<li>157 </li>
+<li>158 </li>
+<li>159 </li>
+<li>160 </li>
+<li>161 </li>
+<li>162 </li>
+<li>163 </li>
+<li>164 </li>
+<li>165 </li>
+<li>166 </li>
+<li>167 </li>
+<li>168 </li>
+<li>169 </li>
+<li>170 </li>
+<li>171 </li>
+<li>172 </li>
+<li>173 </li>
+<li>174 </li>
+<li>175 </li>
+<li>176 </li>
+<li>177 </li>
+<li>178 </li>
+<li>179 </li>
+<li>180 </li>
+<li>181 </li>
+<li>182 </li>
+<li>183 </li>
+<li>184 </li>
+<li>185 </li>
+<li>186 </li>
+<li>187 </li>
+<li>188 </li>
 </ul>
-<p>我们还可以通过@ConfigurationProperties 读取application属性配置文件中的属性。</p>
-<pre><code>@Configuration
-@ConditionalOnClass(Mongo.class)
-@EnableConfigurationProperties(MongoProperties.class)
-public class MongoAutoConfiguration {
+<p>创建权限认证的 MyShiroCasRealm.java</p>
+<pre><code>package org.springboot.sample.security;
+
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.cas.CasRealm;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springboot.sample.config.ShiroCasConfiguration;
+import org.springboot.sample.dao.IUserDao;
+import org.springboot.sample.entity.Role;
+import org.springboot.sample.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+public class MyShiroCasRealm extends CasRealm{
+
+    private static final Logger logger = LoggerFactory.getLogger(MyShiroCasRealm.class);
 
     @Autowired
-    private MongoProperties properties; 
+    private IUserDao userDao; 
+
+    @PostConstruct
+    public void initProperty(){
+//      setDefaultRoles(&quot;ROLE_USER&quot;);
+        setCasServerUrlPrefix(ShiroCasConfiguration.casServerUrlPrefix);
+        // 客户端回调地址
+        setCasService(ShiroCasConfiguration.shiroServerUrlPrefix + ShiroCasConfiguration.casFilterUrlPattern);
+    }
+
+    /**
+     * 权限认证，为当前登录的Subject授予角色和权限 
+     * @see 经测试：本例中该方法的调用时机为需授权资源被访问时 
+     * @see 经测试：并且每次访问需授权资源时都会执行该方法中的逻辑，这表明本例中默认并未启用AuthorizationCache 
+     * @see 经测试：如果连续访问同一个URL（比如刷新），该方法不会被重复调用，Shiro有一个时间间隔（也就是cache时间，在ehcache-shiro.xml中配置），超过这个时间间隔再刷新页面，该方法会被执行
+     */
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+        logger.info(&quot;##################执行Shiro权限认证##################&quot;);
+        //获取当前登录输入的用户名，等价于(String) principalCollection.fromRealm(getName()).iterator().next();
+        String loginName = (String)super.getAvailablePrincipal(principalCollection); 
+        //到数据库查是否有此对象
+        User user=userDao.findByName(loginName);// 实际项目中，这里可以根据实际情况做缓存，如果不做，Shiro自己也是有时间间隔机制，2分钟内不会重复执行该方法
+        if(user!=null){
+            //权限信息对象info,用来存放查出的用户的所有的角色（role）及权限（permission）
+            SimpleAuthorizationInfo info=new SimpleAuthorizationInfo();
+            //用户的角色集合
+            info.setRoles(user.getRolesName());
+            //用户的角色对应的所有权限，如果只使用角色定义访问权限，下面的四行可以不要
+            List&lt;Role&gt; roleList=user.getRoleList();
+            for (Role role : roleList) {
+                info.addStringPermissions(role.getPermissionsName());
+            }
+            // 或者按下面这样添加
+            //添加一个角色,不是配置意义上的添加,而是证明该用户拥有admin角色    
+//            simpleAuthorInfo.addRole(&quot;admin&quot;);  
+            //添加权限  
+//            simpleAuthorInfo.addStringPermission(&quot;admin:manage&quot;);  
+//            logger.info(&quot;已为用户[mike]赋予了[admin]角色和[admin:manage]权限&quot;);
+            return info;
+        }
+        // 返回null的话，就会导致任何用户访问被拦截的请求时，都会自动跳转到unauthorizedUrl指定的地址
+        return null;
+    }
 
 }
 </code></pre><ul>
@@ -3917,6 +4500,69 @@ public class MongoAutoConfiguration {
 <li>7 </li>
 <li>8 </li>
 <li>9 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
 </ul>
 <p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
 <ul>
@@ -3929,20 +4575,77 @@ public class MongoAutoConfiguration {
 <li>7 </li>
 <li>8 </li>
 <li>9 </li>
-<li>@ConditionOnClass表明该@Configuration仅仅在一定条件下才会被加载，这里的条件是Mongo.class位于类路径上 </li>
-<li>@EnableConfigurationProperties将Spring Boot的配置文件（application.properties）中的spring.data.mongodb.*属性映射为MongoProperties并注入到MongoAutoConfiguration中。 </li>
-<li>@ConditionalOnMissingBean说明Spring Boot仅仅在当前上下文中不存在Mongo对象时，才会实例化一个Bean。这个逻辑也体现了Spring Boot的另外一个特性——自定义的Bean优先于框架的默认配置，我们如果显式的在业务代码中定义了一个Mongo对象，那么Spring Boot就不再创建。 </li>
+<li>10 </li>
+<li>11 </li>
+<li>12 </li>
+<li>13 </li>
+<li>14 </li>
+<li>15 </li>
+<li>16 </li>
+<li>17 </li>
+<li>18 </li>
+<li>19 </li>
+<li>20 </li>
+<li>21 </li>
+<li>22 </li>
+<li>23 </li>
+<li>24 </li>
+<li>25 </li>
+<li>26 </li>
+<li>27 </li>
+<li>28 </li>
+<li>29 </li>
+<li>30 </li>
+<li>31 </li>
+<li>32 </li>
+<li>33 </li>
+<li>34 </li>
+<li>35 </li>
+<li>36 </li>
+<li>37 </li>
+<li>38 </li>
+<li>39 </li>
+<li>40 </li>
+<li>41 </li>
+<li>42 </li>
+<li>43 </li>
+<li>44 </li>
+<li>45 </li>
+<li>46 </li>
+<li>47 </li>
+<li>48 </li>
+<li>49 </li>
+<li>50 </li>
+<li>51 </li>
+<li>52 </li>
+<li>53 </li>
+<li>54 </li>
+<li>55 </li>
+<li>56 </li>
+<li>57 </li>
+<li>58 </li>
+<li>59 </li>
+<li>60 </li>
+<li>61 </li>
+<li>62 </li>
+<li>63 </li>
+<li>64 </li>
+<li>65 </li>
+<li>66 </li>
+<li>67 </li>
+<li>68 </li>
+<li>69 </li>
+<li>70 </li>
+<li>71 </li>
+<li>72 </li>
 </ul>
-<pre><code>@ConfigurationProperties(prefix = &quot;spring.data.mongodb&quot;)
-public class MongoProperties {
-
-    private String host;
-    private int port = DBPort.PORT;
-    private String uri = &quot;mongodb://localhost/test&quot;;
-    private String database;
-
-    // ... getters/ setters omitted
-} 
+<p>在Controller中添加一个方法，用于将登录URL简单化，提供一个重定向功能</p>
+<pre><code>    @RequestMapping(value=&quot;/login&quot;,method=RequestMethod.GET)
+    public String loginForm(Model model){
+        model.addAttribute(&quot;user&quot;, new User());
+//      return &quot;login&quot;;
+        return &quot;redirect:&quot; + ShiroCasConfiguration.loginUrl;
+    }
 </code></pre><ul>
 <li>1 </li>
 <li>2 </li>
@@ -3952,8 +4655,6 @@ public class MongoProperties {
 <li>6 </li>
 <li>7 </li>
 <li>8 </li>
-<li>9 </li>
-<li>10 </li>
 </ul>
 <p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
 <ul>
@@ -3965,10 +4666,9 @@ public class MongoProperties {
 <li>6 </li>
 <li>7 </li>
 <li>8 </li>
-<li>9 </li>
-<li>10 </li>
 </ul>
-<p>它就是以spring.data.mongodb作为前缀的属性，然后通过名字直接映射为对象的属性，同时还包含了一些默认值。如果不配置，那么mongo.uri就<br>是mongodb://localhost/test。</p>
+<p>本文主要是介绍如何在Spring Boot中集成Shiro+Cas，并非一个从零创建工程到整体完成的介绍。<br>上面贴出了2个主要的Java类，整个工程的其他所有代码没有任何与Shiro和Cas耦合的地方。如果需要jsp页面、Controller、实体类、连接 <a href="http://lib.csdn.net/base/14" target="_blank" rel="noopener"><br>数据库 </a> 测试数据等代码，可以先参考文章： <a href="http://blog.csdn.net/lsy0903/article/details/52910744" target="_blank" rel="noopener"><br>http://blog.csdn.net/lsy0903/article/details/52910744
+</a> （建议先看这篇文章再看本文）</p>
 
         
         </div>
@@ -4016,7 +4716,7 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
             
     
-        <a href="https://www.itchina.top/2018/04/20/Spring Boot 环境变量读取 和 属性对象的绑定/#comments" id="sourceId::2018/04/20/Spring Boot 环境变量读取 和 属性对象的绑定/" class="article-comment-link cy_cmt_count">评论</a>
+        <a href="https://www.itchina.top/2018/04/20/Spring Boot 集成Shiro和CAS/#comments" id="sourceId::2018/04/20/Spring Boot 集成Shiro和CAS/" class="article-comment-link cy_cmt_count">评论</a>
     
 
         </footer>
@@ -4079,8 +4779,8 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
                     <li>
                         
                         <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
-                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/" class="title">通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法</a></p>
                             <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
                         </div>
                     </li>
