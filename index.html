@@ -711,209 +711,6 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
 
 
-    <article id="post-通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/">通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/">
-            <time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time>
-        </a>
-    </div>
-
-
-                        
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/ajax/">ajax</a>, <a class="tag-link" href="/tags/angular/">angular</a>, <a class="tag-link" href="/tags/spring-mvc/">spring mvc</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>现在在做的项目用到了SpringMVC框架，需要从前端angular接收请求的JSON数据，为了测试方便，所以直接先用AJAX进行测试，不过刚开始用平时用的<br>ajax方法，提交请求会出现415或者400错误，经过研究，终于可以了，现在做个总结。</p>
-<p>js代码：</p>
-<pre><code>function postSimpleData() {
-        $.ajax({
-            type: &quot;POST&quot;,
-            url: &quot;Service/SimpleData&quot;,
-            contentType: &quot;application/json&quot;, //必须有
-            dataType: &quot;json&quot;, //表示返回值类型，不必须
-            data: JSON.stringify({ &apos;foo&apos;: &apos;foovalue&apos;, &apos;bar&apos;: &apos;barvalue&apos; }),  //相当于 //data: &quot;{&apos;str1&apos;:&apos;foovalue&apos;, &apos;str2&apos;:&apos;barvalue&apos;}&quot;,
-            success: function (jsonResult) {
-                alert(jsonResult);
-            }
-        });
-    }
-    function login(){
-    $.ajax({
-        url: &quot;Service/login&quot;,
-        type: &quot;POST&quot;,
-        contentType: &quot;application/json&quot;,
-        dataType: &quot;json&quot;,
-        data: JSON.stringify({
-            MachineIP:&quot;127.0.0.1&quot;,
-            AppTag:&quot;4&quot;,
-            RequestInfo:{
-                StaffCode:&quot;&quot;,
-                Password:&quot;&quot;,
-                StaffCard:&quot;01411&quot;
-            },
-        }),
-        async: true,
-        success: function(data) {
-            var ss = JSON.stringify(data);
-            $(&quot;#result&quot;).val(ss);
-            console.log(ss);
-        }
-    });
-    }
-    function postEmployees() {
-        $.ajax({
-            type: &quot;POST&quot;,
-            url: &quot;Service/Employees&quot;,
-            contentType: &quot;application/json&quot;,
-            dataType: &quot;json&quot;,
-            data: JSON.stringify({                &quot;Employees&quot;: [
-                                    { &quot;firstName&quot;: &quot;Bill&quot;, &quot;lastName&quot;: &quot;Gates&quot; },
-                                    { &quot;firstName&quot;: &quot;George&quot;, &quot;lastName&quot;: &quot;Bush&quot; },
-                                    { &quot;firstName&quot;: &quot;Thomas&quot;, &quot;lastName&quot;: &quot;Carter&quot; }
-                                 ]
-
-            }),
-            success: function (jsonResult) {
-                alert(jsonResult);
-            }
-        });
-    }
-</code></pre><p>JAVA  Controller代码：</p>
-<pre><code>@RequestMapping(value = &quot;/SimpleData&quot;, method = RequestMethod.POST)
-    @ResponseBody
-    public ActionResult SimpleData(string foo, string bar) {
-        return Json(&quot;SimpleData&quot;, JsonRequestBehavior.AllowGet);
-    }
-
-    @RequestMapping(value = &quot;/login&quot;, method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseProtocolMap login(@RequestBody JSONObject requestJson, HttpServletRequest request) {
-        ResponseProtocolMap responseProtocolMap = null;
-        String machineIP = RequestJsonUtils.getMachineIP(requestJson);
-        String appTag = RequestJsonUtils.getAppTag(requestJson);
-        JSONObject requestInfo = RequestJsonUtils.getRequestInfo(requestJson);
-        if (requestInfo == null) {
-            responseProtocolMap = new ResponseProtocolMap(&quot;-1&quot;, &quot;参数错误&quot;);
-        } else {
-            String staffCode = RequestJsonUtils.getValueByKey(requestInfo, &quot;StaffCode&quot;);
-            String password = RequestJsonUtils.getValueByKey(requestInfo, &quot;Password&quot;);
-            String staffCard = RequestJsonUtils.getValueByKey(requestInfo, &quot;StaffCard&quot;);
-            responseProtocolMap = sysLoginService.login(staffCode, password, staffCard, appTag, request);
-        }
-        return responseProtocolMap;
-    }
-
-    @RequestMapping(value = &quot;/Employees&quot;, method = RequestMethod.POST)
-    @ResponseBody
-    public ActionResult Employees(List&lt;Employee&gt; Employees) {
-        return Json(&quot;Employees&quot;, JsonRequestBehavior.AllowGet);
-    }
-
-
-
-
-
-public class Employee{
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-}
-</code></pre><p>值得注意的有2点：</p>
-<p>1）Ajax 选项中</p>
-<pre><code>contentType: &quot;application/json&quot;
-</code></pre><p>这一条必须写，表明request的数据类型是json。</p>
-<p>而</p>
-<pre><code>dataType: &quot;json&quot;
-</code></pre><p>这一条表示返回值的类型，不是必须的，且依据返回值类型而定。</p>
-<p>2）选项中</p>
-<pre><code>data: JSON.stringify({ &apos;foo&apos;: &apos;foovalue&apos;, &apos;bar&apos;: &apos;barvalue&apos; })
-</code></pre><p>很多时候我们将数据写作：</p>
-<pre><code>{ &apos;foo&apos;: &apos;foovalue&apos;, &apos;bar&apos;: &apos;barvalue&apos; }
-</code></pre><p>这样会导致错误，因为js会默认将这个json对象放到表单数据中，故而导致controller接收不到。</p>
-<p>有两种办法处理：第一种方式是用JSON.stringify()函数，其中JSON被Ecmascript5定义为全局对象。</p>
-<p>第二种方式是直接用双引号包裹起来，比如data: “{‘str1’:’foovalue’, ‘str2’:’barvalue’}”。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-    <div class="bdsharebuttonbox">
-    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
-    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
-    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
-    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
-    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
-    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
-</div>
-<script>
-window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-</script>
-<style>
-    .bdshare_popup_box {
-        border-radius: 4px;
-        border: #e1e1e1 solid 1px;
-    }
-    .bdshare-button-style0-16 a,
-    .bdshare-button-style0-16 .bds_more {
-        padding-left: 20px;
-        margin: 6px 10px 6px 0;
-    }
-    .bdshare_dialog_list a,
-    .bdshare_popup_list a,
-    .bdshare_popup_bottom a {
-        font-family: 'Microsoft Yahei';
-    }
-    .bdshare_popup_top {
-        display: none;
-    }
-    .bdshare_popup_bottom {
-        height: auto;
-        padding: 5px;
-    }
-</style>
-
-
-</div>
-
-            
-    
-        <a href="https://www.itchina.top/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/#comments" id="sourceId::2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/" class="article-comment-link cy_cmt_count">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <article id="post-使用 Spring Data JPA 简化 JPA 开发" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -1258,6 +1055,209 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
             
     
         <a href="https://www.itchina.top/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/#comments" id="sourceId::2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
+    <article id="post-通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/">通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/">
+            <time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/ajax/">ajax</a>, <a class="tag-link" href="/tags/angular/">angular</a>, <a class="tag-link" href="/tags/spring-mvc/">spring mvc</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>现在在做的项目用到了SpringMVC框架，需要从前端angular接收请求的JSON数据，为了测试方便，所以直接先用AJAX进行测试，不过刚开始用平时用的<br>ajax方法，提交请求会出现415或者400错误，经过研究，终于可以了，现在做个总结。</p>
+<p>js代码：</p>
+<pre><code>function postSimpleData() {
+        $.ajax({
+            type: &quot;POST&quot;,
+            url: &quot;Service/SimpleData&quot;,
+            contentType: &quot;application/json&quot;, //必须有
+            dataType: &quot;json&quot;, //表示返回值类型，不必须
+            data: JSON.stringify({ &apos;foo&apos;: &apos;foovalue&apos;, &apos;bar&apos;: &apos;barvalue&apos; }),  //相当于 //data: &quot;{&apos;str1&apos;:&apos;foovalue&apos;, &apos;str2&apos;:&apos;barvalue&apos;}&quot;,
+            success: function (jsonResult) {
+                alert(jsonResult);
+            }
+        });
+    }
+    function login(){
+    $.ajax({
+        url: &quot;Service/login&quot;,
+        type: &quot;POST&quot;,
+        contentType: &quot;application/json&quot;,
+        dataType: &quot;json&quot;,
+        data: JSON.stringify({
+            MachineIP:&quot;127.0.0.1&quot;,
+            AppTag:&quot;4&quot;,
+            RequestInfo:{
+                StaffCode:&quot;&quot;,
+                Password:&quot;&quot;,
+                StaffCard:&quot;01411&quot;
+            },
+        }),
+        async: true,
+        success: function(data) {
+            var ss = JSON.stringify(data);
+            $(&quot;#result&quot;).val(ss);
+            console.log(ss);
+        }
+    });
+    }
+    function postEmployees() {
+        $.ajax({
+            type: &quot;POST&quot;,
+            url: &quot;Service/Employees&quot;,
+            contentType: &quot;application/json&quot;,
+            dataType: &quot;json&quot;,
+            data: JSON.stringify({                &quot;Employees&quot;: [
+                                    { &quot;firstName&quot;: &quot;Bill&quot;, &quot;lastName&quot;: &quot;Gates&quot; },
+                                    { &quot;firstName&quot;: &quot;George&quot;, &quot;lastName&quot;: &quot;Bush&quot; },
+                                    { &quot;firstName&quot;: &quot;Thomas&quot;, &quot;lastName&quot;: &quot;Carter&quot; }
+                                 ]
+
+            }),
+            success: function (jsonResult) {
+                alert(jsonResult);
+            }
+        });
+    }
+</code></pre><p>JAVA  Controller代码：</p>
+<pre><code>@RequestMapping(value = &quot;/SimpleData&quot;, method = RequestMethod.POST)
+    @ResponseBody
+    public ActionResult SimpleData(string foo, string bar) {
+        return Json(&quot;SimpleData&quot;, JsonRequestBehavior.AllowGet);
+    }
+
+    @RequestMapping(value = &quot;/login&quot;, method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseProtocolMap login(@RequestBody JSONObject requestJson, HttpServletRequest request) {
+        ResponseProtocolMap responseProtocolMap = null;
+        String machineIP = RequestJsonUtils.getMachineIP(requestJson);
+        String appTag = RequestJsonUtils.getAppTag(requestJson);
+        JSONObject requestInfo = RequestJsonUtils.getRequestInfo(requestJson);
+        if (requestInfo == null) {
+            responseProtocolMap = new ResponseProtocolMap(&quot;-1&quot;, &quot;参数错误&quot;);
+        } else {
+            String staffCode = RequestJsonUtils.getValueByKey(requestInfo, &quot;StaffCode&quot;);
+            String password = RequestJsonUtils.getValueByKey(requestInfo, &quot;Password&quot;);
+            String staffCard = RequestJsonUtils.getValueByKey(requestInfo, &quot;StaffCard&quot;);
+            responseProtocolMap = sysLoginService.login(staffCode, password, staffCard, appTag, request);
+        }
+        return responseProtocolMap;
+    }
+
+    @RequestMapping(value = &quot;/Employees&quot;, method = RequestMethod.POST)
+    @ResponseBody
+    public ActionResult Employees(List&lt;Employee&gt; Employees) {
+        return Json(&quot;Employees&quot;, JsonRequestBehavior.AllowGet);
+    }
+
+
+
+
+
+public class Employee{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+}
+</code></pre><p>值得注意的有2点：</p>
+<p>1）Ajax 选项中</p>
+<pre><code>contentType: &quot;application/json&quot;
+</code></pre><p>这一条必须写，表明request的数据类型是json。</p>
+<p>而</p>
+<pre><code>dataType: &quot;json&quot;
+</code></pre><p>这一条表示返回值的类型，不是必须的，且依据返回值类型而定。</p>
+<p>2）选项中</p>
+<pre><code>data: JSON.stringify({ &apos;foo&apos;: &apos;foovalue&apos;, &apos;bar&apos;: &apos;barvalue&apos; })
+</code></pre><p>很多时候我们将数据写作：</p>
+<pre><code>{ &apos;foo&apos;: &apos;foovalue&apos;, &apos;bar&apos;: &apos;barvalue&apos; }
+</code></pre><p>这样会导致错误，因为js会默认将这个json对象放到表单数据中，故而导致controller接收不到。</p>
+<p>有两种办法处理：第一种方式是用JSON.stringify()函数，其中JSON被Ecmascript5定义为全局对象。</p>
+<p>第二种方式是直接用双引号包裹起来，比如data: “{‘str1’:’foovalue’, ‘str2’:’barvalue’}”。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/#comments" id="sourceId::2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/" class="article-comment-link cy_cmt_count">评论</a>
     
 
         </footer>
@@ -1692,6 +1692,840 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
             
     
         <a href="https://www.itchina.top/2018/04/20/分布式日志收集之Logstash 笔记（一）/#comments" id="sourceId::2018/04/20/分布式日志收集之Logstash 笔记（一）/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
+    <article id="post-从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/">从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/">
+            <time datetime="2018-04-19T16:34:21.445Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/J2EE/">J2EE</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/mvc/">mvc</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p><strong> 摘要： </strong> MVC模式早在上个世纪70年代就诞生了，直到今天它依然存在，可见生命力相当之强。MVC模式最早用于Smalltalk语言中，最后在其它许多开发语言中都得到了很好的应用，例如，Java中的Struts、Spring MVC等框架。 </p>
+<h3 id="1-理解MVC"><a href="#1-理解MVC" class="headerlink" title=" 1. 理解MVC "></a><strong> 1. 理解MVC </strong></h3><p>MVC是一种经典的设计模式，全名为Model-View-Controller，即模型-视图-控制器。</p>
+<p>其中，模型是用于封装数据的载体，例如，在 <a href="http://lib.csdn.net/base/17" target="_blank" rel="noopener"> Java </a><br>中一般通过一个简单的POJO（Plain Ordinary Java Object）来表示，其本质是一个普通的Java Bean，包含一系列的成员变量及其g<br>etter/setter方法。对于视图而言，它更加偏重于展现，也就是说，视图决定了界面到底长什么样子，在Java中可通过JSP来充当视图，或者通过纯HTML<br>的方式进行展现，而后者才是目前的主流。模型和视图需要通过控制器来进行粘合，例如，用户发送一个HTTP请求，此时该请求首先会进入控制器，然后控制器去获取数据并<br>将其封装为模型，最后将模型传递到视图中进行展现。</p>
+<p>综上所述，MVC的交互过程如图1所示。</p>
+<p><img src="http://img.ptcms.csdn.net/article/201510/21/56275703bfc42_middle.jpg" alt=""></p>
+<h3 id="2-MVC模式的优点与不足"><a href="#2-MVC模式的优点与不足" class="headerlink" title=" 2. MVC模式的优点与不足 "></a><strong> 2. MVC模式的优点与不足 </strong></h3><p>MVC模式早在上个世纪70年代就诞生了，直到今天它依然存在，可见生命力相当之强。MVC模式最早用于Smalltalk语言中，最后在其它许多开发语言中都得到了<br>很好的应用，例如，Java中的Struts、Spring<br>MVC等框架。正是因为这些MVC框架的出现，才让MVC模式真正落地，让开发更加高效，让代码耦合度尽量减小，让应用程序各部分的职责更加清晰。</p>
+<p>既然MVC模式这么好，难道它就没有不足的地方吗？我认为MVC至少有以下三点不足：</p>
+<ol>
+<li>每次请求必须经过“控制器-&gt;模型-&gt;视图”这个流程，用户才能看到最终的展现的界面，这个过程似乎有些复杂。 </li>
+<li>实际上视图是依赖于模型的，换句话说，如果没有模型，视图也无法呈现出最终的效果。 </li>
+<li>渲染视图的过程是在服务端来完成的，最终呈现给浏览器的是带有模型的视图页面，性能无法得到很好的优化。 </li>
+</ol>
+<p>为了使数据展现过程更加直接，并且提供更好的用户体验，我们有必要对MVC模式进行改进。不妨这样来尝试，首先从浏览器发送AJAX请求，然后服务端接受该请求并返回<br>JSON数据返回给浏览器，最后在浏览器中进行界面渲染。</p>
+<p>改进后的MVC模式如图2所示。</p>
+<p><img src="http://img.ptcms.csdn.net/article/201510/21/562758bfa5c45_middle.jpg" alt="">  </p>
+<p>也就是说，我们输入的是AJAX请求，输出的是JSON数据，市面上有这样的技术来实现这个功能吗？答案是REST。</p>
+<blockquote>
+<p>REST全称是Representational State Transfer（表述性状态转移），它是Roy<br>Fielding博士在2000年写的一篇关于软件 <a href="http://lib.csdn.net/base/16" target="_blank" rel="noopener"> 架构 </a><br>风格的论文，此文一出，威震四方！国内外许多知名互联网公司纷纷开始采用这种轻量级的Web服务，大家习惯将其称为RESTful Web<br>Services，或简称REST服务。]</p>
+</blockquote>
+<p>如果将浏览器这一端视为前端，而服务器那一端视为后端的话，可以将以上改进后的MVC模式简化为以下前后端分离模式，如图3所示。</p>
+<p><img src="http://img.ptcms.csdn.net/article/201510/21/5627594400199_middle.jpg" alt="">  </p>
+<p>可见，有了REST服务，前端关注界面展现，后端关注业务逻辑，分工明确，职责清晰。那么，如何使用REST服务将应用程序进行前后端分离呢？我们接下来继续探讨，首<br>先我们需要认识REST。</p>
+<h3 id="3-认识REST"><a href="#3-认识REST" class="headerlink" title=" 3. 认识REST "></a><strong> 3. 认识REST </strong></h3><p>REST本质上是使用URL来访问资源种方式。众所周知，URL就是我们平常使用的请求地址了，其中包括两部分：请求方式与请求路径，比较常见的请求方式是GET与P<br>OST，但在REST中又提出了几种其它类型的请求方式，汇总起来有六种：GET、POST、PUT、DELETE、HEAD、OPTIONS。尤其是前四种，正好与<br>CRUD（Create-Retrieve-Update-Delete，增删改查）四种操作相对应，例如，GET（查）、POST（增）、PUT（改）、DELET<br>E（删），这正是REST与CRUD的异曲同工之妙！需要强调的是，REST是“面向资源”的，这里提到的资源，实际上就是我们常说的领域对象，在系统设计过程中，我<br>们经常通过领域对象来进行数据建模。</p>
+<p>REST是一个“无状态”的架构模式，因为在任何时候都可以由客户端发出请求到服务端，最终返回自己想要的数据，当前请求不会受到上次请求的影响。也就是说，服务端将<br>内部资源发布REST服务，客户端通过URL来访问这些资源，这不就是SOA所提倡的“面向服务”的思想吗？所以，REST也被人们看做是一种“轻量级”的SOA实现<br>技术，因此在企业级应用与互联网应用中都得到了广泛应用。</p>
+<p>下面我们举几个例子对REST请求进行简单描述：</p>
+<p><img src="http://img.ptcms.csdn.net/article/201510/21/562759e455b69_middle.jpg" alt="">  </p>
+<p>可见，请求路径相同，但请求方式不同，所代表的业务操作也不同，例如，/advertiser/1这个请求，带有GET、PUT、DELETE三种不同的请求方式，对<br>应三种不同的业务操作。</p>
+<p>虽然REST看起来还是很简单的，实际上我们往往需要提供一个REST框架，让其实现前后端分离架构，让开发人员将精力集中在业务上，而并非那些具体的技术细节。下面<br>我们将使用Java技术来实现这个REST框架，整体框架会基于Spring进行开发。</p>
+<h3 id="4-实现REST框架"><a href="#4-实现REST框架" class="headerlink" title=" 4. 实现REST框架 "></a><strong> 4. 实现REST框架 </strong></h3><h4 id="4-1-统一响应结构"><a href="#4-1-统一响应结构" class="headerlink" title="4.1 统一响应结构"></a>4.1 统一响应结构</h4><p>使用REST框架实现前后端分离架构，我们需要首先确定返回的JSON响应结构是统一的，也就是说，每个REST请求将返回相同结构的JSON响应结构。不妨定义一个<br>相对通用的JSON响应结构，其中包含两部分：元数据与返回值，其中，元数据表示操作是否成功与返回值消息等，返回值对应服务端方法所返回的数据。该JSON响应结构<br>如下：</p>
+<pre><code>{
+    &quot;meta&quot;: {
+        &quot;success&quot;: true,
+        &quot;message&quot;: &quot;ok&quot;
+    },
+    &quot;data&quot;: ...
+}
+</code></pre><p>为了在框架中映射以上JSON响应结构，我们需要编写一个Response类与其对应：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  class  Response { </li>
+<li><ol start="3">
+<li>private  static  final  String OK =  “ok”  ; </li>
+</ol>
+</li>
+<li>private  static  final  String ERROR =  “error”  ; </li>
+<li><ol start="6">
+<li>private  Meta meta; </li>
+</ol>
+</li>
+<li>private  Object data; </li>
+<li><ol start="9">
+<li>public  Response success() { </li>
+</ol>
+</li>
+<li>this  .meta =  new  Meta(  true  , OK); </li>
+<li>return  this  ; </li>
+<li>} </li>
+<li><ol start="14">
+<li>public  Response success(Object data) { </li>
+</ol>
+</li>
+<li>this  .meta =  new  Meta(  true  , OK); </li>
+<li>this  .data = data; </li>
+<li>return  this  ; </li>
+<li>} </li>
+<li><ol start="20">
+<li>public  Response failure() { </li>
+</ol>
+</li>
+<li>this  .meta =  new  Meta(  false  , ERROR); </li>
+<li>return  this  ; </li>
+<li>} </li>
+<li><ol start="25">
+<li>public  Response failure(String message) { </li>
+</ol>
+</li>
+<li>this  .meta =  new  Meta(  false  , message); </li>
+<li>return  this  ; </li>
+<li>} </li>
+<li><ol start="30">
+<li>public  Meta getMeta() { </li>
+</ol>
+</li>
+<li>return  meta; </li>
+<li>} </li>
+<li><ol start="34">
+<li>public  Object getData() { </li>
+</ol>
+</li>
+<li>return  data; </li>
+<li>} </li>
+<li><ol start="38">
+<li>public  class  Meta { </li>
+</ol>
+</li>
+<li><ol start="40">
+<li>private  boolean  success; </li>
+</ol>
+</li>
+<li>private  String message; </li>
+<li><ol start="43">
+<li>public  Meta(  boolean  success) { </li>
+</ol>
+</li>
+<li>this  .success = success; </li>
+<li>} </li>
+<li><ol start="47">
+<li>public  Meta(  boolean  success, String message) { </li>
+</ol>
+</li>
+<li>this  .success = success; </li>
+<li>this  .message = message; </li>
+<li>} </li>
+<li><ol start="52">
+<li>public  boolean  isSuccess() { </li>
+</ol>
+</li>
+<li>return  success; </li>
+<li>} </li>
+<li><ol start="56">
+<li>public  String getMessage() { </li>
+</ol>
+</li>
+<li>return  message; </li>
+<li>} </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>以上Response类包括两类通用返回值消息：ok与error，还包括两个常用的操作方法：success( )与failure(<br>)，通过一个内部类来展现元数据结构，我们在下文中多次会使用该Response类。</p>
+<p>实现该REST框架需要考虑许多问题，首当其冲的就是对象序列化问题。</p>
+<h4 id="4-2-实现对象序列化"><a href="#4-2-实现对象序列化" class="headerlink" title="4.2 实现对象序列化"></a>4.2 实现对象序列化</h4><p>想要解释什么是对象序列化？不妨通过一些例子进行说明。比如，通过浏览器发送了一个普通的HTTP请求，该请求携带了一个JSON格式的参数，在服务端需要将该JSO<br>N参数转换为普通的Java对象，这个转换过程称为序列化。再比如，在服务端获取了数据，此时该数据是一个普通的Java对象，然后需要将这个Java对象转换为JS<br>ON字符串，并将其返回到浏览器中进行渲染，这个转换过程称为反序列化。不管是序列化还是反序列化，我们一般都称为序列化。</p>
+<p>实际上，Spring<br>MVC已经为我们提供了这类序列化特性，只需在Controller的方法参数中使用@RequestBody注解定义需要反序列化的参数即可，如以下代码片段：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@Controller </li>
+<li>public  class  AdvertiserController { </li>
+<li><ol start="4">
+<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
+</ol>
+</li>
+<li>public  Response createAdvertiser(  @RequestBody  AdvertiserParam advertiserParam) { </li>
+<li>… </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>若需要对Controller的方法返回值进行序列化，则需要在该返回值上使用@ResponseBody注解来定义，如以下代码片段：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@Controller </li>
+<li>public  class  AdvertiserController { </li>
+<li><ol start="4">
+<li>@RequestMapping  (value =  “/advertiser/{id}”  , method = RequestMethod.GET) </li>
+</ol>
+</li>
+<li>public  @ResponseBody  Response getAdvertiser(  @PathVariable  (  “id”  ) String advertiserId) { </li>
+<li>… </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>当然，@ResponseBody注解也可以定义在类上，这样所有的方法都继承了该特性。由于经常会使用到@ResponseBody注解，所以Spring提供了一<br>个名为@RestController的注解来取代以上的@Controller注解，这样我们就可以省略返回值前面的@ResponseBody注解了，但参数前面<br>的@RequestBody注解是无法省略的。实际上，看看Spring中对应@RestController注解的源码便可知晓：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@Target  ({ElementType.TYPE}) </li>
+<li>@Retention  (RetentionPolicy.RUNTIME) </li>
+<li>@Documented </li>
+<li>@Controller </li>
+<li>@ResponseBody </li>
+<li>public  @interface  RestController { </li>
+<li><ol start="8">
+<li>String value()  default  “”  ; </li>
+</ol>
+</li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>可见，@RestController注解已经被@Controller与@ResponseBody注解定义过了，Spring框架会识别这类注解。需要注意的是，<br>该特性在Spring 4.0中才引入。</p>
+<p>因此，我们可将以上代码进行如下改写：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@RestController </li>
+<li>public  class  AdvertiserController { </li>
+<li><ol start="4">
+<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
+</ol>
+</li>
+<li>public  Response createAdvertiser(  @RequestBody  AdvertiserParam advertiserParam) { </li>
+<li>… </li>
+<li>} </li>
+<li><ol start="9">
+<li>@RequestMapping  (value =  “/advertiser/{id}”  , method = RequestMethod.GET) </li>
+</ol>
+</li>
+<li>public  Response getAdvertiser(  @PathVariable  (  “id”  ) String advertiserId) { </li>
+<li>… </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>除了使用注解来定义序列化行为以外，我们还需要使用Jackson来提供JSON的序列化操作，在Spring配置文件中只需添加以下配置即可：</p>
+<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>&lt; mvc:annotation-driven  &gt;</li>
+<li>&lt; mvc:message-converters  &gt;</li>
+<li>&lt; bean  class  =  “org.springframework.http.converter.json.MappingJackson2HttpMessageConverter”  /&gt;</li>
+<li>&lt;/  mvc:message-converters  &gt;</li>
+<li>&lt;/  mvc:annotation-driven  &gt;</li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>若需要对Jackson的序列化行为进行定制，比如，排除值为空属性、进行缩进输出、将驼峰转为下划线、进行日期格式化等，这又如何实现呢？</p>
+<p>首先，我们需要扩展Jackson提供的ObjectMapper类，代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  class  CustomObjectMapper  extends  ObjectMapper { </li>
+<li><ol start="3">
+<li>private  boolean  camelCaseToLowerCaseWithUnderscores =  false  ; </li>
+</ol>
+</li>
+<li>private  String dateFormatPattern; </li>
+<li><ol start="6">
+<li>public  void  setCamelCaseToLowerCaseWithUnderscores(  boolean  camelCaseToLowerCaseWithUnderscores) { </li>
+</ol>
+</li>
+<li>this  .camelCaseToLowerCaseWithUnderscores = camelCaseToLowerCaseWithUnderscores; </li>
+<li>} </li>
+<li><ol start="10">
+<li>public  void  setDateFormatPattern(String dateFormatPattern) { </li>
+</ol>
+</li>
+<li>this  .dateFormatPattern = dateFormatPattern; </li>
+<li>} </li>
+<li><ol start="14">
+<li>public  void  init() { </li>
+</ol>
+</li>
+<li>// 排除值为空属性 </li>
+<li>setSerializationInclusion(JsonInclude.Include.NON_NULL); </li>
+<li>// 进行缩进输出 </li>
+<li>configure(SerializationFeature.INDENT_OUTPUT,  true  ); </li>
+<li>// 将驼峰转为下划线 </li>
+<li>if  (camelCaseToLowerCaseWithUnderscores) { </li>
+<li>setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES); </li>
+<li>} </li>
+<li>// 进行日期格式化 </li>
+<li>if  (StringUtil.isNotEmpty(dateFormatPattern)) { </li>
+<li>DateFormat dateFormat =  new  SimpleDateFormat(dateFormatPattern); </li>
+<li>setDateFormat(dateFormat); </li>
+<li>} </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>然后，将CustomObjectMapper注入到MappingJackson2HttpMessageConverter中，Spring配置如下：</p>
+<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>&lt; bean  id  =  “objectMapper”  class  =  “com.xxx.api.json.CustomObjectMapper”  init-method  =  “init”  &gt;</li>
+<li>&lt; property  name  =  “camelCaseToLowerCaseWithUnderscores”  value  =  “true”  /&gt;</li>
+<li>&lt; property  name  =  “dateFormatPattern”  value  =  “yyyy-MM-dd HH:mm:ss”  /&gt;</li>
+<li>&lt;/  bean  &gt;</li>
+<li><ol start="6">
+<li>&lt; mvc:annotation-driven  &gt;</li>
+</ol>
+</li>
+<li>&lt; mvc:message-converters  &gt;</li>
+<li>&lt; bean  class  =  “org.springframework.http.converter.json.MappingJackson2HttpMessageConverter”  &gt;</li>
+<li>&lt; property  name  =  “objectMapper”  ref  =  “objectMapper”  /&gt;</li>
+<li>&lt;/  bean  &gt;</li>
+<li>&lt;/  mvc:message-converters  &gt;</li>
+<li>&lt;/  mvc:annotation-driven  &gt;</li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>通过以上过程，我们已经完成了一个基于Spring MVC的REST框架，只不过该框架还非常单薄，还缺乏很多关键性特性，尤其是异常处理。</p>
+<h4 id="4-3-处理异常行为"><a href="#4-3-处理异常行为" class="headerlink" title="4.3 处理异常行为"></a>4.3 处理异常行为</h4><p>在Spring MVC中，我们可以使用AOP技术，编写一个全局的异常处理切面类，用它来统一处理所有的异常行为，在Spring 3.2中才开始提供。使用法很简<br>单，只需定义一个类，并通过@ControllerAdvice注解将其标注即可，同时需要使用@ResponseBody注解表示返回值可序列化为JSON字符串。<br>代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@ControllerAdvice </li>
+<li>@ResponseBody </li>
+<li>public  class  ExceptionAdvice { </li>
+<li><ol start="5">
+<li>/** </li>
+</ol>
+</li>
+<li><ul>
+<li>400 - Bad Request </li>
+</ul>
+</li>
+<li>*/ </li>
+<li>@ResponseStatus  (HttpStatus.BAD_REQUEST) </li>
+<li>@ExceptionHandler  (HttpMessageNotReadableException.  class  ) </li>
+<li>public  Response handleHttpMessageNotReadableException(HttpMessageNotReadableException e) { </li>
+<li>logger.error(  ”参数解析失败”  , e); </li>
+<li>return  new  Response().failure(  “could_not_read_json”  ); </li>
+<li>} </li>
+<li><ol start="15">
+<li>/** </li>
+</ol>
+</li>
+<li><ul>
+<li>405 - Method Not Allowed </li>
+</ul>
+</li>
+<li>*/ </li>
+<li>@ResponseStatus  (HttpStatus.METHOD_NOT_ALLOWED) </li>
+<li>@ExceptionHandler  (HttpRequestMethodNotSupportedException.  class  ) </li>
+<li>public  Response handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) { </li>
+<li>logger.error(  ”不支持当前请求方法”  , e); </li>
+<li>return  new  Response().failure(  “request_method_not_supported”  ); </li>
+<li>} </li>
+<li><ol start="25">
+<li>/** </li>
+</ol>
+</li>
+<li><ul>
+<li>415 - Unsupported Media Type </li>
+</ul>
+</li>
+<li>*/ </li>
+<li>@ResponseStatus  (HttpStatus.UNSUPPORTED_MEDIA_TYPE) </li>
+<li>@ExceptionHandler  (HttpMediaTypeNotSupportedException.  class  ) </li>
+<li>public  Response handleHttpMediaTypeNotSupportedException(Exception e) { </li>
+<li>logger.error(  ”不支持当前媒体类型”  , e); </li>
+<li>return  new  Response().failure(  “content_type_not_supported”  ); </li>
+<li>} </li>
+<li><ol start="35">
+<li>/** </li>
+</ol>
+</li>
+<li><ul>
+<li>500 - Internal Server Error </li>
+</ul>
+</li>
+<li>*/ </li>
+<li>@ResponseStatus  (HttpStatus.INTERNAL_SERVER_ERROR) </li>
+<li>@ExceptionHandler  (Exception.  class  ) </li>
+<li>public  Response handleException(Exception e) { </li>
+<li>logger.error(  ”服务运行异常”  , e); </li>
+<li>return  new  Response().failure(e.getMessage()); </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>可见，在ExceptionAdvice类中包含一系列的异常处理方法，每个方法都通过@ResponseStatus注解定义了响应状态码，此外还通过@Excep<br>tionHandler注解指定了具体需要拦截的异常类。以上过程只是包含了一部分的异常情况，若需处理其它异常，可添加方法具体的方法。需要注意的是，在运行时从上<br>往下依次调用每个异常处理方法，匹配当前异常类型是否与@ExceptionHandler注解所定义的异常相匹配，若匹配，则执行该方法，同时忽略后续所有的异常处<br>理方法，最终会返回经JSON序列化后的Response对象。</p>
+<h4 id="4-4-支持参数验证"><a href="#4-4-支持参数验证" class="headerlink" title="4.4 支持参数验证"></a>4.4 支持参数验证</h4><p>我们回到上文所提到的示例，这里处理一个普通的POST请求，代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@RestController </li>
+<li>public  class  AdvertiserController { </li>
+<li><ol start="4">
+<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
+</ol>
+</li>
+<li>public  Response createAdvertiser(  @RequestBody  AdvertiserParam advertiserParam) { </li>
+<li>… </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>其中，AdvertiserParam参数包含若干属性，通过以下类结构可见，它是一个传统的POJO：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  class  AdvertiserParam { </li>
+<li><ol start="3">
+<li>private  String advertiserName; </li>
+</ol>
+</li>
+<li><ol start="5">
+<li>private  String description; </li>
+</ol>
+</li>
+<li><ol start="7">
+<li>// 省略 getter/setter 方法 </li>
+</ol>
+</li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>如果业务上需要确保AdvertiserParam对象的advertiserName属性必填，如何实现呢？</p>
+<p>若将这类参数验证的代码写死在Controller中，势必会与正常的业务逻辑搅在一起，导致责任不够单一，违背于“单一责任原则”。建议将其参数验证行为从Cont<br>roller中剥离出来，放到另外的类中，这里仅提供一个@Valid注解来定义AdvertiserParam参数，并在AdvertiserParam类中通过@<br>NotEmpty注解来定义advertiserName属性，就像下面这样：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@RestController </li>
+<li>public  class  AdvertiserController { </li>
+<li><ol start="4">
+<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
+</ol>
+</li>
+<li>public  Response createAdvertiser(  @RequestBody  @Valid  AdvertiserParam advertiserParam) { </li>
+<li>… </li>
+<li>} </li>
+<li>} </li>
+<li><ol start="10">
+<li>public  class  AdvertiserParam { </li>
+</ol>
+</li>
+<li><ol start="12">
+<li>@NotEmpty </li>
+</ol>
+</li>
+<li>private  String advertiserName; </li>
+<li><ol start="15">
+<li>private  String description; </li>
+</ol>
+</li>
+<li><ol start="17">
+<li>// 省略 getter/setter 方法 </li>
+</ol>
+</li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>这里的@Valid注解实际上是Validation Bean规范提供的注解，该规范已由Hibernate<br>Validator框架实现，因此需要添加以下Maven依赖到pom.xml文件中：</p>
+<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>&lt; dependency  &gt;</li>
+<li>&lt; groupId  &gt; org.hibernate  &lt;/  groupId  &gt;</li>
+<li>&lt; artifactId  &gt; hibernate-validator  &lt;/  artifactId  &gt;</li>
+<li>&lt; version  &gt; ${hibernate-validator.version}  &lt;/  version  &gt;</li>
+<li>&lt;/  dependency  &gt;</li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>需要注意的是，Hibernate Validator与Hibernate没有任何依赖关系，唯一有联系的只是都属于JBoss公司的开源项目而已。</p>
+<p>要实现@NotEmpty注解的功能，我们需要做以下几件事情。</p>
+<p>首先，定义一个@NotEmpty注解类，代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@Documented </li>
+<li>@Target  ({ElementType.FIELD, ElementType.PARAMETER}) </li>
+<li>@Retention  (RetentionPolicy.RUNTIME) </li>
+<li>@Constraint  (validatedBy = NotEmptyValidator.  class  ) </li>
+<li>public  @interface  NotEmpty { </li>
+<li><ol start="7">
+<li>String message()  default  “not_empty”  ; </li>
+</ol>
+</li>
+<li><ol start="9">
+<li>Class&lt;?&gt;[] groups()  default  {}; </li>
+</ol>
+</li>
+<li><ol start="11">
+<li>Class&lt;?  extends  Payload&gt;[] payload()  default  {}; </li>
+</ol>
+</li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>以上注解类必须包含message、groups、payload三个属性，因为这是规范所要求的，此外，需要通过@Constraint注解指定一个验证器类，这里<br>对应的是NotEmptyValidator，其代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  class  NotEmptyValidator  implements  ConstraintValidator&lt;NotEmpty, String&gt; { </li>
+<li><ol start="3">
+<li>@Override </li>
+</ol>
+</li>
+<li>public  void  initialize(NotEmpty constraintAnnotation) { </li>
+<li>} </li>
+<li><ol start="7">
+<li>@Override </li>
+</ol>
+</li>
+<li>public  boolean  isValid(String value, ConstraintValidatorContext context) { </li>
+<li>return  StringUtil.isNotEmpty(value); </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>以上验证器类实现了ConstraintValidator接口，并在该接口的isValid( )方法中完成了具体的参数验证逻辑。需要注意的是，实现接口时需要指<br>定泛型，第一个参数表示验证注解类型（NotEmpty），第二个参数表示需要验证的参数类型（String）。</p>
+<p>然后，我们需要在Spring配置文件中开启该特性，需添加如下配置：</p>
+<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>&lt; bean  class  =  “org.springframework.validation.beanvalidation.MethodValidationPostProcessor”  /&gt;</li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>最后，需要在全局异常处理类中添加参数验证处理方法，代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>@ControllerAdvice </li>
+<li>@ResponseBody </li>
+<li>public  class  ExceptionAdvice { </li>
+<li><ol start="5">
+<li>/** </li>
+</ol>
+</li>
+<li><ul>
+<li>400 - Bad Request </li>
+</ul>
+</li>
+<li>*/ </li>
+<li>@ResponseStatus  (HttpStatus.BAD_REQUEST) </li>
+<li>@ExceptionHandler  (ValidationException.  class  ) </li>
+<li>public  Response handleValidationException(ValidationException e) { </li>
+<li>logger.error(  ”参数验证失败”  , e); </li>
+<li>return  new  Response().failure(  “validation_exception”  ); </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>至此，REST框架已集成了Bean Validation特性，我们可以使用各种注解来完成所需的参数验证行为了。</p>
+<p>看似该框架可以在本地成功跑起来，整个架构包含两个应用，前端应用提供纯静态的HTML页面，后端应用发布REST<br>API，前端需要通过AJAX调用后端发布的REST<br>API，然而AJAX是不支持跨域访问的，也就是说，前后端两个应用必须在同一个域名下才能访问。这是非常严重的技术障碍，一定需要找到解决方案。</p>
+<h4 id="4-5-解决跨域问题"><a href="#4-5-解决跨域问题" class="headerlink" title="4.5 解决跨域问题"></a>4.5 解决跨域问题</h4><p>比如，前端应用为静态站点且部署在<a href="http://web.xxx.com域下，后端应用发布REST" target="_blank" rel="noopener">http://web.xxx.com域下，后端应用发布REST</a> API并部署在<a href="http://api.xxx.com域下，如何" target="_blank" rel="noopener">http://api.xxx.com域下，如何</a><br>使前端应用通过AJAX跨域访问后端应用呢？这需要使用到CORS技术来实现，这也是目前最好的解决方案了。</p>
+<p>[CORS全称为Cross Origin Resource<br>Sharing（跨域资源共享），服务端只需添加相关响应头信息，即可实现客户端发出AJAX跨域请求。]</p>
+<p>CORS技术非常简单，易于实现，目前绝大多数浏览器均已支持该技术（IE8浏览器也支持了），服务端可通过任何编程语言来实现，只要能将CORS响应头写入resp<br>onse对象中即可。</p>
+<p>下面我们继续扩展REST框架，通过CORS技术实现AJAX跨域访问。</p>
+<p>首先，我们需要编写一个Filter，用于过滤所有的HTTP请求，并将CORS响应头写入response对象中，代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  class  CorsFilter  implements  Filter { </li>
+<li><ol start="3">
+<li>private  String allowOrigin; </li>
+</ol>
+</li>
+<li>private  String allowMethods; </li>
+<li>private  String allowCredentials; </li>
+<li>private  String allowHeaders; </li>
+<li>private  String exposeHeaders; </li>
+<li><ol start="9">
+<li>@Override </li>
+</ol>
+</li>
+<li>public  void  init(FilterConfig filterConfig)  throws  ServletException { </li>
+<li>allowOrigin = filterConfig.getInitParameter(  ”allowOrigin”  ); </li>
+<li>allowMethods = filterConfig.getInitParameter(  ”allowMethods”  ); </li>
+<li>allowCredentials = filterConfig.getInitParameter(  ”allowCredentials”  ); </li>
+<li>allowHeaders = filterConfig.getInitParameter(  ”allowHeaders”  ); </li>
+<li>exposeHeaders = filterConfig.getInitParameter(  ”exposeHeaders”  ); </li>
+<li>} </li>
+<li><ol start="18">
+<li>@Override </li>
+</ol>
+</li>
+<li>public  void  doFilter(ServletRequest req, ServletResponse res, FilterChain chain)  throws  IOException, ServletException { </li>
+<li>HttpServletRequest request = (HttpServletRequest) req; </li>
+<li>HttpServletResponse response = (HttpServletResponse) res; </li>
+<li>if  (StringUtil.isNotEmpty(allowOrigin)) { </li>
+<li>List<string> allowOriginList = Arrays.asList(allowOrigin.split(  ”,”  )); </string></li>
+<li>if  (CollectionUtil.isNotEmpty(allowOriginList)) { </li>
+<li>String currentOrigin = request.getHeader(  ”Origin”  ); </li>
+<li>if  (allowOriginList.contains(currentOrigin)) { </li>
+<li>response.setHeader(  ”Access-Control-Allow-Origin”  , currentOrigin); </li>
+<li>} </li>
+<li>} </li>
+<li>} </li>
+<li>if  (StringUtil.isNotEmpty(allowMethods)) { </li>
+<li>response.setHeader(  ”Access-Control-Allow-Methods”  , allowMethods); </li>
+<li>} </li>
+<li>if  (StringUtil.isNotEmpty(allowCredentials)) { </li>
+<li>response.setHeader(  ”Access-Control-Allow-Credentials”  , allowCredentials); </li>
+<li>} </li>
+<li>if  (StringUtil.isNotEmpty(allowHeaders)) { </li>
+<li>response.setHeader(  ”Access-Control-Allow-Headers”  , allowHeaders); </li>
+<li>} </li>
+<li>if  (StringUtil.isNotEmpty(exposeHeaders)) { </li>
+<li>response.setHeader(  ”Access-Control-Expose-Headers”  , exposeHeaders); </li>
+<li>} </li>
+<li>chain.doFilter(req, res); </li>
+<li>} </li>
+<li><ol start="46">
+<li>@Override </li>
+</ol>
+</li>
+<li>public  void  destroy() { </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>以上CorsFilter将从web.xml中读取相关Filter初始化参数，并将在处理HTTP请求时将这些参数写入对应的CORS响应头中，下面大致描述一下这<br>些CORS响应头的意义：</p>
+<ul>
+<li>Access-Control-Allow-Origin：允许访问的客户端域名，例如：<a href="http://web.xxx.com，若为*，则表示从任意域都能访问，即不做任何限制。" target="_blank" rel="noopener">http://web.xxx.com，若为*，则表示从任意域都能访问，即不做任何限制。</a> </li>
+<li>Access-Control-Allow-Methods：允许访问的方法名，多个方法名用逗号分割，例如：GET,POST,PUT,DELETE,OPTIONS。 </li>
+<li>Access-Control-Allow-Credentials：是否允许请求带有验证信息，若要获取客户端域下的cookie时，需要将其设置为true。 </li>
+<li>Access-Control-Allow-Headers：允许服务端访问的客户端请求头，多个请求头用逗号分割，例如：Content-Type。 </li>
+<li>Access-Control-Expose-Headers：允许客户端访问的服务端响应头，多个响应头用逗号分割。 </li>
+</ul>
+<p>需要注意的是，CORS规范中定义Access-Control-Allow-Origin只允许两种取值，要么为*，要么为具体的域名，也就是说，不支持同时配置多<br>个域名。为了解决跨多个域的问题，需要在代码中做一些处理，这里将Filter初始化参数作为一个域名的集合（用逗号分隔），只需从当前请求中获取Origin请求头<br>，就知道是从哪个域中发出的请求，若该请求在以上允许的域名集合中，则将其放入Access-Control-Allow-<br>Origin响应头，这样跨多个域的问题就轻松解决了。</p>
+<p>以下是web.xml中配置CorsFilter的方法：</p>
+<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>&lt; filter  &gt;</li>
+<li>&lt; filter-name  &gt; corsFilter  &lt;/  filter-name  &gt;</li>
+<li>&lt; filter-class  &gt; com.xxx.api.cors.CorsFilter  &lt;/  filter-class  &gt;</li>
+<li>&lt; init-param  &gt;</li>
+<li>&lt; param-name  &gt; allowOrigin  &lt;/  param-name  &gt;</li>
+<li>&lt; param-value  &gt; <a href="http://web.xxx.com" target="_blank" rel="noopener">http://web.xxx.com</a>  &lt;/  param-value  &gt;</li>
+<li>&lt;/  init-param  &gt;</li>
+<li>&lt; init-param  &gt;</li>
+<li>&lt; param-name  &gt; allowMethods  &lt;/  param-name  &gt;</li>
+<li>&lt; param-value  &gt; GET,POST,PUT,DELETE,OPTIONS  &lt;/  param-value  &gt;</li>
+<li>&lt;/  init-param  &gt;</li>
+<li>&lt; init-param  &gt;</li>
+<li>&lt; param-name  &gt; allowCredentials  &lt;/  param-name  &gt;</li>
+<li>&lt; param-value  &gt; true  &lt;/  param-value  &gt;</li>
+<li>&lt;/  init-param  &gt;</li>
+<li>&lt; init-param  &gt;</li>
+<li>&lt; param-name  &gt; allowHeaders  &lt;/  param-name  &gt;</li>
+<li>&lt; param-value  &gt; Content-Type  &lt;/  param-value  &gt;</li>
+<li>&lt;/  init-param  &gt;</li>
+<li>&lt;/  filter  &gt;</li>
+<li>&lt; filter-mapping  &gt;</li>
+<li>&lt; filter-name  &gt; corsFilter  &lt;/  filter-name  &gt;</li>
+<li>&lt; url-pattern  &gt; /*  &lt;/  url-pattern  &gt;</li>
+<li>&lt;/  filter-mapping  &gt;</li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>完成以上过程即可实现AJAX跨域功能了，但似乎还存在另外一个问题，由于REST是无状态的，后端应用发布的REST<br>API可在用户未登录的情况下被任意调用，这显然是不安全的，如何解决这个问题呢？我们需要为REST请求提供安全机制。</p>
+<h4 id="4-6-提供安全机制"><a href="#4-6-提供安全机制" class="headerlink" title="4.6 提供安全机制"></a>4.6 提供安全机制</h4><p>解决REST安全调用问题，可以做得很复杂，也可以做得特简单，可按照以下过程提供REST安全机制：</p>
+<ol>
+<li>当用户登录成功后，在服务端生成一个token，并将其放入内存中（可放入JVM或Redis中），同时将该token返回到客户端。 </li>
+<li>在客户端中将返回的token写入cookie中，并且每次请求时都将token随请求头一起发送到服务端。 </li>
+<li>提供一个AOP切面，用于拦截所有的Controller方法，在切面中判断token的有效性。 </li>
+<li>当登出时，只需清理掉cookie中的token即可，服务端token可设置过期时间，使其自行移除。 </li>
+</ol>
+<p>首先，我们需要定义一个用于管理token的接口，包括创建token与检查token有效性的功能。代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  interface  TokenManager { </li>
+<li><ol start="3">
+<li>String createToken(String username); </li>
+</ol>
+</li>
+<li><ol start="5">
+<li>boolean  checkToken(String token); </li>
+</ol>
+</li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>然后，我们可提供一个简单的TokenManager实现类，将token存储到JVM内存中。代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  class  DefaultTokenManager  implements  TokenManager { </li>
+<li><ol start="3">
+<li>private  static  Map&lt;String, String&gt; tokenMap =  new  ConcurrentHashMap&lt;&gt;(); </li>
+</ol>
+</li>
+<li><ol start="5">
+<li>@Override </li>
+</ol>
+</li>
+<li>public  String createToken(String username) { </li>
+<li>String token = CodecUtil.createUUID(); </li>
+<li>tokenMap.put(token, username); </li>
+<li>return  token; </li>
+<li>} </li>
+<li><ol start="12">
+<li>@Override </li>
+</ol>
+</li>
+<li>public  boolean  checkToken(String token) { </li>
+<li>return  !StringUtil.isEmpty(token) &amp;&amp; tokenMap.containsKey(token); </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>需要注意的是，如果需要做到分布式集群，建议基于Redis提供一个实现类，将token存储到Redis中，并利用Redis与生俱来的特性，做到token的分布<br>式一致性。</p>
+<p>然后，我们可以基于Spring<br>AOP写一个切面类，用于拦截Controller类的方法，并从请求头中获取token，最后对token有效性进行判断。代码如下：</p>
+<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>public  class  SecurityAspect { </li>
+<li><ol start="3">
+<li>private  static  final  String DEFAULT_TOKEN_NAME =  “X-Token”  ; </li>
+</ol>
+</li>
+<li><ol start="5">
+<li>private  TokenManager tokenManager; </li>
+</ol>
+</li>
+<li>private  String tokenName; </li>
+<li><ol start="8">
+<li>public  void  setTokenManager(TokenManager tokenManager) { </li>
+</ol>
+</li>
+<li>this  .tokenManager = tokenManager; </li>
+<li>} </li>
+<li><ol start="12">
+<li>public  void  setTokenName(String tokenName) { </li>
+</ol>
+</li>
+<li>if  (StringUtil.isEmpty(tokenName)) { </li>
+<li>tokenName = DEFAULT_TOKEN_NAME; </li>
+<li>} </li>
+<li>this  .tokenName = tokenName; </li>
+<li>} </li>
+<li><ol start="19">
+<li>public  Object execute(ProceedingJoinPoint pjp)  throws  Throwable { </li>
+</ol>
+</li>
+<li>// 从切点上获取目标方法 </li>
+<li>MethodSignature methodSignature = (MethodSignature) pjp.getSignature(); </li>
+<li>Method method = methodSignature.getMethod(); </li>
+<li>// 若目标方法忽略了安全性检查，则直接调用目标方法 </li>
+<li>if  (method.isAnnotationPresent(IgnoreSecurity.  class  )) { </li>
+<li>return  pjp.proceed(); </li>
+<li>} </li>
+<li>// 从 request header 中获取当前 token </li>
+<li>String token = WebContext.getRequest().getHeader(tokenName); </li>
+<li>// 检查 token 有效性 </li>
+<li>if  (!tokenManager.checkToken(token)) { </li>
+<li>String message = String.format(  ”token [%s] is invalid”  , token); </li>
+<li>throw  new  TokenException(message); </li>
+<li>} </li>
+<li>// 调用目标方法 </li>
+<li>return  pjp.proceed(); </li>
+<li>} </li>
+<li>} </li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>若要使SecurityAspect生效，则需要添加如下Spring 配置：</p>
+<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>&lt; bean  id  =  “securityAspect”  class  =  “com.xxx.api.security.SecurityAspect”  &gt;</li>
+<li>&lt; property  name  =  “tokenManager”  ref  =  “tokenManager”  /&gt;</li>
+<li>&lt; property  name  =  “tokenName”  value  =  “X-Token”  /&gt;</li>
+<li>&lt;/  bean  &gt;</li>
+<li><ol start="6">
+<li>&lt; aop:config  &gt;</li>
+</ol>
+</li>
+<li>&lt; aop:aspect  ref  =  “securityAspect”  &gt;</li>
+<li>&lt; aop:around  method  =  “execute”  pointcut  =  “@annotation(org.springframework.web.bind.annotation.RequestMapping)”  /&gt;</li>
+<li>&lt;/  aop:aspect  &gt;</li>
+<li>&lt;/  aop:config  &gt;</li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<p>最后，别忘了在web.xml中添加允许的X-Token响应头，配置如下：</p>
+<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
+<ol>
+<li>&lt; init-param  &gt;</li>
+<li>&lt; param-name  &gt; allowHeaders  &lt;/  param-name  &gt;</li>
+<li>&lt; param-value  &gt; Content-Type,X-Token  &lt;/  param-value  &gt;</li>
+<li>&lt;/  init-param  &gt;</li>
+</ol>
+<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title=" 总结 "></a><strong> 总结 </strong></h3><p>本文从经典的MVC模式开始，对MVC模式是什么以及该模式存在的不足进行了简述。然后引出了如何对MVC模式的改良，让其转变为前后端分离架构，以及解释了为何要进<br>行前后端分离。最后通过REST服务将前后端进行解耦，并提供了一款基于Java的REST框架的主要实现过程，尤其是需要注意的核心技术问题及其解决方案。希望本文<br>对正在探索前后端分离的读者们有所帮助，期待与大家共同探讨。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/#comments" id="sourceId::2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/" class="article-comment-link cy_cmt_count">评论</a>
     
 
         </footer>
@@ -7345,840 +8179,6 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
 
 
-    <article id="post-从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/">从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/">
-            <time datetime="2018-04-19T16:34:21.445Z" itemprop="datePublished">2018-04-20</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/J2EE/">J2EE</a>
-    </div>
-
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/mvc/">mvc</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p><strong> 摘要： </strong> MVC模式早在上个世纪70年代就诞生了，直到今天它依然存在，可见生命力相当之强。MVC模式最早用于Smalltalk语言中，最后在其它许多开发语言中都得到了很好的应用，例如，Java中的Struts、Spring MVC等框架。 </p>
-<h3 id="1-理解MVC"><a href="#1-理解MVC" class="headerlink" title=" 1. 理解MVC "></a><strong> 1. 理解MVC </strong></h3><p>MVC是一种经典的设计模式，全名为Model-View-Controller，即模型-视图-控制器。</p>
-<p>其中，模型是用于封装数据的载体，例如，在 <a href="http://lib.csdn.net/base/17" target="_blank" rel="noopener"> Java </a><br>中一般通过一个简单的POJO（Plain Ordinary Java Object）来表示，其本质是一个普通的Java Bean，包含一系列的成员变量及其g<br>etter/setter方法。对于视图而言，它更加偏重于展现，也就是说，视图决定了界面到底长什么样子，在Java中可通过JSP来充当视图，或者通过纯HTML<br>的方式进行展现，而后者才是目前的主流。模型和视图需要通过控制器来进行粘合，例如，用户发送一个HTTP请求，此时该请求首先会进入控制器，然后控制器去获取数据并<br>将其封装为模型，最后将模型传递到视图中进行展现。</p>
-<p>综上所述，MVC的交互过程如图1所示。</p>
-<p><img src="http://img.ptcms.csdn.net/article/201510/21/56275703bfc42_middle.jpg" alt=""></p>
-<h3 id="2-MVC模式的优点与不足"><a href="#2-MVC模式的优点与不足" class="headerlink" title=" 2. MVC模式的优点与不足 "></a><strong> 2. MVC模式的优点与不足 </strong></h3><p>MVC模式早在上个世纪70年代就诞生了，直到今天它依然存在，可见生命力相当之强。MVC模式最早用于Smalltalk语言中，最后在其它许多开发语言中都得到了<br>很好的应用，例如，Java中的Struts、Spring<br>MVC等框架。正是因为这些MVC框架的出现，才让MVC模式真正落地，让开发更加高效，让代码耦合度尽量减小，让应用程序各部分的职责更加清晰。</p>
-<p>既然MVC模式这么好，难道它就没有不足的地方吗？我认为MVC至少有以下三点不足：</p>
-<ol>
-<li>每次请求必须经过“控制器-&gt;模型-&gt;视图”这个流程，用户才能看到最终的展现的界面，这个过程似乎有些复杂。 </li>
-<li>实际上视图是依赖于模型的，换句话说，如果没有模型，视图也无法呈现出最终的效果。 </li>
-<li>渲染视图的过程是在服务端来完成的，最终呈现给浏览器的是带有模型的视图页面，性能无法得到很好的优化。 </li>
-</ol>
-<p>为了使数据展现过程更加直接，并且提供更好的用户体验，我们有必要对MVC模式进行改进。不妨这样来尝试，首先从浏览器发送AJAX请求，然后服务端接受该请求并返回<br>JSON数据返回给浏览器，最后在浏览器中进行界面渲染。</p>
-<p>改进后的MVC模式如图2所示。</p>
-<p><img src="http://img.ptcms.csdn.net/article/201510/21/562758bfa5c45_middle.jpg" alt="">  </p>
-<p>也就是说，我们输入的是AJAX请求，输出的是JSON数据，市面上有这样的技术来实现这个功能吗？答案是REST。</p>
-<blockquote>
-<p>REST全称是Representational State Transfer（表述性状态转移），它是Roy<br>Fielding博士在2000年写的一篇关于软件 <a href="http://lib.csdn.net/base/16" target="_blank" rel="noopener"> 架构 </a><br>风格的论文，此文一出，威震四方！国内外许多知名互联网公司纷纷开始采用这种轻量级的Web服务，大家习惯将其称为RESTful Web<br>Services，或简称REST服务。]</p>
-</blockquote>
-<p>如果将浏览器这一端视为前端，而服务器那一端视为后端的话，可以将以上改进后的MVC模式简化为以下前后端分离模式，如图3所示。</p>
-<p><img src="http://img.ptcms.csdn.net/article/201510/21/5627594400199_middle.jpg" alt="">  </p>
-<p>可见，有了REST服务，前端关注界面展现，后端关注业务逻辑，分工明确，职责清晰。那么，如何使用REST服务将应用程序进行前后端分离呢？我们接下来继续探讨，首<br>先我们需要认识REST。</p>
-<h3 id="3-认识REST"><a href="#3-认识REST" class="headerlink" title=" 3. 认识REST "></a><strong> 3. 认识REST </strong></h3><p>REST本质上是使用URL来访问资源种方式。众所周知，URL就是我们平常使用的请求地址了，其中包括两部分：请求方式与请求路径，比较常见的请求方式是GET与P<br>OST，但在REST中又提出了几种其它类型的请求方式，汇总起来有六种：GET、POST、PUT、DELETE、HEAD、OPTIONS。尤其是前四种，正好与<br>CRUD（Create-Retrieve-Update-Delete，增删改查）四种操作相对应，例如，GET（查）、POST（增）、PUT（改）、DELET<br>E（删），这正是REST与CRUD的异曲同工之妙！需要强调的是，REST是“面向资源”的，这里提到的资源，实际上就是我们常说的领域对象，在系统设计过程中，我<br>们经常通过领域对象来进行数据建模。</p>
-<p>REST是一个“无状态”的架构模式，因为在任何时候都可以由客户端发出请求到服务端，最终返回自己想要的数据，当前请求不会受到上次请求的影响。也就是说，服务端将<br>内部资源发布REST服务，客户端通过URL来访问这些资源，这不就是SOA所提倡的“面向服务”的思想吗？所以，REST也被人们看做是一种“轻量级”的SOA实现<br>技术，因此在企业级应用与互联网应用中都得到了广泛应用。</p>
-<p>下面我们举几个例子对REST请求进行简单描述：</p>
-<p><img src="http://img.ptcms.csdn.net/article/201510/21/562759e455b69_middle.jpg" alt="">  </p>
-<p>可见，请求路径相同，但请求方式不同，所代表的业务操作也不同，例如，/advertiser/1这个请求，带有GET、PUT、DELETE三种不同的请求方式，对<br>应三种不同的业务操作。</p>
-<p>虽然REST看起来还是很简单的，实际上我们往往需要提供一个REST框架，让其实现前后端分离架构，让开发人员将精力集中在业务上，而并非那些具体的技术细节。下面<br>我们将使用Java技术来实现这个REST框架，整体框架会基于Spring进行开发。</p>
-<h3 id="4-实现REST框架"><a href="#4-实现REST框架" class="headerlink" title=" 4. 实现REST框架 "></a><strong> 4. 实现REST框架 </strong></h3><h4 id="4-1-统一响应结构"><a href="#4-1-统一响应结构" class="headerlink" title="4.1 统一响应结构"></a>4.1 统一响应结构</h4><p>使用REST框架实现前后端分离架构，我们需要首先确定返回的JSON响应结构是统一的，也就是说，每个REST请求将返回相同结构的JSON响应结构。不妨定义一个<br>相对通用的JSON响应结构，其中包含两部分：元数据与返回值，其中，元数据表示操作是否成功与返回值消息等，返回值对应服务端方法所返回的数据。该JSON响应结构<br>如下：</p>
-<pre><code>{
-    &quot;meta&quot;: {
-        &quot;success&quot;: true,
-        &quot;message&quot;: &quot;ok&quot;
-    },
-    &quot;data&quot;: ...
-}
-</code></pre><p>为了在框架中映射以上JSON响应结构，我们需要编写一个Response类与其对应：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  class  Response { </li>
-<li><ol start="3">
-<li>private  static  final  String OK =  “ok”  ; </li>
-</ol>
-</li>
-<li>private  static  final  String ERROR =  “error”  ; </li>
-<li><ol start="6">
-<li>private  Meta meta; </li>
-</ol>
-</li>
-<li>private  Object data; </li>
-<li><ol start="9">
-<li>public  Response success() { </li>
-</ol>
-</li>
-<li>this  .meta =  new  Meta(  true  , OK); </li>
-<li>return  this  ; </li>
-<li>} </li>
-<li><ol start="14">
-<li>public  Response success(Object data) { </li>
-</ol>
-</li>
-<li>this  .meta =  new  Meta(  true  , OK); </li>
-<li>this  .data = data; </li>
-<li>return  this  ; </li>
-<li>} </li>
-<li><ol start="20">
-<li>public  Response failure() { </li>
-</ol>
-</li>
-<li>this  .meta =  new  Meta(  false  , ERROR); </li>
-<li>return  this  ; </li>
-<li>} </li>
-<li><ol start="25">
-<li>public  Response failure(String message) { </li>
-</ol>
-</li>
-<li>this  .meta =  new  Meta(  false  , message); </li>
-<li>return  this  ; </li>
-<li>} </li>
-<li><ol start="30">
-<li>public  Meta getMeta() { </li>
-</ol>
-</li>
-<li>return  meta; </li>
-<li>} </li>
-<li><ol start="34">
-<li>public  Object getData() { </li>
-</ol>
-</li>
-<li>return  data; </li>
-<li>} </li>
-<li><ol start="38">
-<li>public  class  Meta { </li>
-</ol>
-</li>
-<li><ol start="40">
-<li>private  boolean  success; </li>
-</ol>
-</li>
-<li>private  String message; </li>
-<li><ol start="43">
-<li>public  Meta(  boolean  success) { </li>
-</ol>
-</li>
-<li>this  .success = success; </li>
-<li>} </li>
-<li><ol start="47">
-<li>public  Meta(  boolean  success, String message) { </li>
-</ol>
-</li>
-<li>this  .success = success; </li>
-<li>this  .message = message; </li>
-<li>} </li>
-<li><ol start="52">
-<li>public  boolean  isSuccess() { </li>
-</ol>
-</li>
-<li>return  success; </li>
-<li>} </li>
-<li><ol start="56">
-<li>public  String getMessage() { </li>
-</ol>
-</li>
-<li>return  message; </li>
-<li>} </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>以上Response类包括两类通用返回值消息：ok与error，还包括两个常用的操作方法：success( )与failure(<br>)，通过一个内部类来展现元数据结构，我们在下文中多次会使用该Response类。</p>
-<p>实现该REST框架需要考虑许多问题，首当其冲的就是对象序列化问题。</p>
-<h4 id="4-2-实现对象序列化"><a href="#4-2-实现对象序列化" class="headerlink" title="4.2 实现对象序列化"></a>4.2 实现对象序列化</h4><p>想要解释什么是对象序列化？不妨通过一些例子进行说明。比如，通过浏览器发送了一个普通的HTTP请求，该请求携带了一个JSON格式的参数，在服务端需要将该JSO<br>N参数转换为普通的Java对象，这个转换过程称为序列化。再比如，在服务端获取了数据，此时该数据是一个普通的Java对象，然后需要将这个Java对象转换为JS<br>ON字符串，并将其返回到浏览器中进行渲染，这个转换过程称为反序列化。不管是序列化还是反序列化，我们一般都称为序列化。</p>
-<p>实际上，Spring<br>MVC已经为我们提供了这类序列化特性，只需在Controller的方法参数中使用@RequestBody注解定义需要反序列化的参数即可，如以下代码片段：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@Controller </li>
-<li>public  class  AdvertiserController { </li>
-<li><ol start="4">
-<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
-</ol>
-</li>
-<li>public  Response createAdvertiser(  @RequestBody  AdvertiserParam advertiserParam) { </li>
-<li>… </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>若需要对Controller的方法返回值进行序列化，则需要在该返回值上使用@ResponseBody注解来定义，如以下代码片段：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@Controller </li>
-<li>public  class  AdvertiserController { </li>
-<li><ol start="4">
-<li>@RequestMapping  (value =  “/advertiser/{id}”  , method = RequestMethod.GET) </li>
-</ol>
-</li>
-<li>public  @ResponseBody  Response getAdvertiser(  @PathVariable  (  “id”  ) String advertiserId) { </li>
-<li>… </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>当然，@ResponseBody注解也可以定义在类上，这样所有的方法都继承了该特性。由于经常会使用到@ResponseBody注解，所以Spring提供了一<br>个名为@RestController的注解来取代以上的@Controller注解，这样我们就可以省略返回值前面的@ResponseBody注解了，但参数前面<br>的@RequestBody注解是无法省略的。实际上，看看Spring中对应@RestController注解的源码便可知晓：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@Target  ({ElementType.TYPE}) </li>
-<li>@Retention  (RetentionPolicy.RUNTIME) </li>
-<li>@Documented </li>
-<li>@Controller </li>
-<li>@ResponseBody </li>
-<li>public  @interface  RestController { </li>
-<li><ol start="8">
-<li>String value()  default  “”  ; </li>
-</ol>
-</li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>可见，@RestController注解已经被@Controller与@ResponseBody注解定义过了，Spring框架会识别这类注解。需要注意的是，<br>该特性在Spring 4.0中才引入。</p>
-<p>因此，我们可将以上代码进行如下改写：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@RestController </li>
-<li>public  class  AdvertiserController { </li>
-<li><ol start="4">
-<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
-</ol>
-</li>
-<li>public  Response createAdvertiser(  @RequestBody  AdvertiserParam advertiserParam) { </li>
-<li>… </li>
-<li>} </li>
-<li><ol start="9">
-<li>@RequestMapping  (value =  “/advertiser/{id}”  , method = RequestMethod.GET) </li>
-</ol>
-</li>
-<li>public  Response getAdvertiser(  @PathVariable  (  “id”  ) String advertiserId) { </li>
-<li>… </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>除了使用注解来定义序列化行为以外，我们还需要使用Jackson来提供JSON的序列化操作，在Spring配置文件中只需添加以下配置即可：</p>
-<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>&lt; mvc:annotation-driven  &gt;</li>
-<li>&lt; mvc:message-converters  &gt;</li>
-<li>&lt; bean  class  =  “org.springframework.http.converter.json.MappingJackson2HttpMessageConverter”  /&gt;</li>
-<li>&lt;/  mvc:message-converters  &gt;</li>
-<li>&lt;/  mvc:annotation-driven  &gt;</li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>若需要对Jackson的序列化行为进行定制，比如，排除值为空属性、进行缩进输出、将驼峰转为下划线、进行日期格式化等，这又如何实现呢？</p>
-<p>首先，我们需要扩展Jackson提供的ObjectMapper类，代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  class  CustomObjectMapper  extends  ObjectMapper { </li>
-<li><ol start="3">
-<li>private  boolean  camelCaseToLowerCaseWithUnderscores =  false  ; </li>
-</ol>
-</li>
-<li>private  String dateFormatPattern; </li>
-<li><ol start="6">
-<li>public  void  setCamelCaseToLowerCaseWithUnderscores(  boolean  camelCaseToLowerCaseWithUnderscores) { </li>
-</ol>
-</li>
-<li>this  .camelCaseToLowerCaseWithUnderscores = camelCaseToLowerCaseWithUnderscores; </li>
-<li>} </li>
-<li><ol start="10">
-<li>public  void  setDateFormatPattern(String dateFormatPattern) { </li>
-</ol>
-</li>
-<li>this  .dateFormatPattern = dateFormatPattern; </li>
-<li>} </li>
-<li><ol start="14">
-<li>public  void  init() { </li>
-</ol>
-</li>
-<li>// 排除值为空属性 </li>
-<li>setSerializationInclusion(JsonInclude.Include.NON_NULL); </li>
-<li>// 进行缩进输出 </li>
-<li>configure(SerializationFeature.INDENT_OUTPUT,  true  ); </li>
-<li>// 将驼峰转为下划线 </li>
-<li>if  (camelCaseToLowerCaseWithUnderscores) { </li>
-<li>setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES); </li>
-<li>} </li>
-<li>// 进行日期格式化 </li>
-<li>if  (StringUtil.isNotEmpty(dateFormatPattern)) { </li>
-<li>DateFormat dateFormat =  new  SimpleDateFormat(dateFormatPattern); </li>
-<li>setDateFormat(dateFormat); </li>
-<li>} </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>然后，将CustomObjectMapper注入到MappingJackson2HttpMessageConverter中，Spring配置如下：</p>
-<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>&lt; bean  id  =  “objectMapper”  class  =  “com.xxx.api.json.CustomObjectMapper”  init-method  =  “init”  &gt;</li>
-<li>&lt; property  name  =  “camelCaseToLowerCaseWithUnderscores”  value  =  “true”  /&gt;</li>
-<li>&lt; property  name  =  “dateFormatPattern”  value  =  “yyyy-MM-dd HH:mm:ss”  /&gt;</li>
-<li>&lt;/  bean  &gt;</li>
-<li><ol start="6">
-<li>&lt; mvc:annotation-driven  &gt;</li>
-</ol>
-</li>
-<li>&lt; mvc:message-converters  &gt;</li>
-<li>&lt; bean  class  =  “org.springframework.http.converter.json.MappingJackson2HttpMessageConverter”  &gt;</li>
-<li>&lt; property  name  =  “objectMapper”  ref  =  “objectMapper”  /&gt;</li>
-<li>&lt;/  bean  &gt;</li>
-<li>&lt;/  mvc:message-converters  &gt;</li>
-<li>&lt;/  mvc:annotation-driven  &gt;</li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>通过以上过程，我们已经完成了一个基于Spring MVC的REST框架，只不过该框架还非常单薄，还缺乏很多关键性特性，尤其是异常处理。</p>
-<h4 id="4-3-处理异常行为"><a href="#4-3-处理异常行为" class="headerlink" title="4.3 处理异常行为"></a>4.3 处理异常行为</h4><p>在Spring MVC中，我们可以使用AOP技术，编写一个全局的异常处理切面类，用它来统一处理所有的异常行为，在Spring 3.2中才开始提供。使用法很简<br>单，只需定义一个类，并通过@ControllerAdvice注解将其标注即可，同时需要使用@ResponseBody注解表示返回值可序列化为JSON字符串。<br>代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@ControllerAdvice </li>
-<li>@ResponseBody </li>
-<li>public  class  ExceptionAdvice { </li>
-<li><ol start="5">
-<li>/** </li>
-</ol>
-</li>
-<li><ul>
-<li>400 - Bad Request </li>
-</ul>
-</li>
-<li>*/ </li>
-<li>@ResponseStatus  (HttpStatus.BAD_REQUEST) </li>
-<li>@ExceptionHandler  (HttpMessageNotReadableException.  class  ) </li>
-<li>public  Response handleHttpMessageNotReadableException(HttpMessageNotReadableException e) { </li>
-<li>logger.error(  ”参数解析失败”  , e); </li>
-<li>return  new  Response().failure(  “could_not_read_json”  ); </li>
-<li>} </li>
-<li><ol start="15">
-<li>/** </li>
-</ol>
-</li>
-<li><ul>
-<li>405 - Method Not Allowed </li>
-</ul>
-</li>
-<li>*/ </li>
-<li>@ResponseStatus  (HttpStatus.METHOD_NOT_ALLOWED) </li>
-<li>@ExceptionHandler  (HttpRequestMethodNotSupportedException.  class  ) </li>
-<li>public  Response handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) { </li>
-<li>logger.error(  ”不支持当前请求方法”  , e); </li>
-<li>return  new  Response().failure(  “request_method_not_supported”  ); </li>
-<li>} </li>
-<li><ol start="25">
-<li>/** </li>
-</ol>
-</li>
-<li><ul>
-<li>415 - Unsupported Media Type </li>
-</ul>
-</li>
-<li>*/ </li>
-<li>@ResponseStatus  (HttpStatus.UNSUPPORTED_MEDIA_TYPE) </li>
-<li>@ExceptionHandler  (HttpMediaTypeNotSupportedException.  class  ) </li>
-<li>public  Response handleHttpMediaTypeNotSupportedException(Exception e) { </li>
-<li>logger.error(  ”不支持当前媒体类型”  , e); </li>
-<li>return  new  Response().failure(  “content_type_not_supported”  ); </li>
-<li>} </li>
-<li><ol start="35">
-<li>/** </li>
-</ol>
-</li>
-<li><ul>
-<li>500 - Internal Server Error </li>
-</ul>
-</li>
-<li>*/ </li>
-<li>@ResponseStatus  (HttpStatus.INTERNAL_SERVER_ERROR) </li>
-<li>@ExceptionHandler  (Exception.  class  ) </li>
-<li>public  Response handleException(Exception e) { </li>
-<li>logger.error(  ”服务运行异常”  , e); </li>
-<li>return  new  Response().failure(e.getMessage()); </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>可见，在ExceptionAdvice类中包含一系列的异常处理方法，每个方法都通过@ResponseStatus注解定义了响应状态码，此外还通过@Excep<br>tionHandler注解指定了具体需要拦截的异常类。以上过程只是包含了一部分的异常情况，若需处理其它异常，可添加方法具体的方法。需要注意的是，在运行时从上<br>往下依次调用每个异常处理方法，匹配当前异常类型是否与@ExceptionHandler注解所定义的异常相匹配，若匹配，则执行该方法，同时忽略后续所有的异常处<br>理方法，最终会返回经JSON序列化后的Response对象。</p>
-<h4 id="4-4-支持参数验证"><a href="#4-4-支持参数验证" class="headerlink" title="4.4 支持参数验证"></a>4.4 支持参数验证</h4><p>我们回到上文所提到的示例，这里处理一个普通的POST请求，代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@RestController </li>
-<li>public  class  AdvertiserController { </li>
-<li><ol start="4">
-<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
-</ol>
-</li>
-<li>public  Response createAdvertiser(  @RequestBody  AdvertiserParam advertiserParam) { </li>
-<li>… </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>其中，AdvertiserParam参数包含若干属性，通过以下类结构可见，它是一个传统的POJO：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  class  AdvertiserParam { </li>
-<li><ol start="3">
-<li>private  String advertiserName; </li>
-</ol>
-</li>
-<li><ol start="5">
-<li>private  String description; </li>
-</ol>
-</li>
-<li><ol start="7">
-<li>// 省略 getter/setter 方法 </li>
-</ol>
-</li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>如果业务上需要确保AdvertiserParam对象的advertiserName属性必填，如何实现呢？</p>
-<p>若将这类参数验证的代码写死在Controller中，势必会与正常的业务逻辑搅在一起，导致责任不够单一，违背于“单一责任原则”。建议将其参数验证行为从Cont<br>roller中剥离出来，放到另外的类中，这里仅提供一个@Valid注解来定义AdvertiserParam参数，并在AdvertiserParam类中通过@<br>NotEmpty注解来定义advertiserName属性，就像下面这样：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@RestController </li>
-<li>public  class  AdvertiserController { </li>
-<li><ol start="4">
-<li>@RequestMapping  (value =  “/advertiser”  , method = RequestMethod.POST) </li>
-</ol>
-</li>
-<li>public  Response createAdvertiser(  @RequestBody  @Valid  AdvertiserParam advertiserParam) { </li>
-<li>… </li>
-<li>} </li>
-<li>} </li>
-<li><ol start="10">
-<li>public  class  AdvertiserParam { </li>
-</ol>
-</li>
-<li><ol start="12">
-<li>@NotEmpty </li>
-</ol>
-</li>
-<li>private  String advertiserName; </li>
-<li><ol start="15">
-<li>private  String description; </li>
-</ol>
-</li>
-<li><ol start="17">
-<li>// 省略 getter/setter 方法 </li>
-</ol>
-</li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>这里的@Valid注解实际上是Validation Bean规范提供的注解，该规范已由Hibernate<br>Validator框架实现，因此需要添加以下Maven依赖到pom.xml文件中：</p>
-<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>&lt; dependency  &gt;</li>
-<li>&lt; groupId  &gt; org.hibernate  &lt;/  groupId  &gt;</li>
-<li>&lt; artifactId  &gt; hibernate-validator  &lt;/  artifactId  &gt;</li>
-<li>&lt; version  &gt; ${hibernate-validator.version}  &lt;/  version  &gt;</li>
-<li>&lt;/  dependency  &gt;</li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>需要注意的是，Hibernate Validator与Hibernate没有任何依赖关系，唯一有联系的只是都属于JBoss公司的开源项目而已。</p>
-<p>要实现@NotEmpty注解的功能，我们需要做以下几件事情。</p>
-<p>首先，定义一个@NotEmpty注解类，代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@Documented </li>
-<li>@Target  ({ElementType.FIELD, ElementType.PARAMETER}) </li>
-<li>@Retention  (RetentionPolicy.RUNTIME) </li>
-<li>@Constraint  (validatedBy = NotEmptyValidator.  class  ) </li>
-<li>public  @interface  NotEmpty { </li>
-<li><ol start="7">
-<li>String message()  default  “not_empty”  ; </li>
-</ol>
-</li>
-<li><ol start="9">
-<li>Class&lt;?&gt;[] groups()  default  {}; </li>
-</ol>
-</li>
-<li><ol start="11">
-<li>Class&lt;?  extends  Payload&gt;[] payload()  default  {}; </li>
-</ol>
-</li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>以上注解类必须包含message、groups、payload三个属性，因为这是规范所要求的，此外，需要通过@Constraint注解指定一个验证器类，这里<br>对应的是NotEmptyValidator，其代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  class  NotEmptyValidator  implements  ConstraintValidator&lt;NotEmpty, String&gt; { </li>
-<li><ol start="3">
-<li>@Override </li>
-</ol>
-</li>
-<li>public  void  initialize(NotEmpty constraintAnnotation) { </li>
-<li>} </li>
-<li><ol start="7">
-<li>@Override </li>
-</ol>
-</li>
-<li>public  boolean  isValid(String value, ConstraintValidatorContext context) { </li>
-<li>return  StringUtil.isNotEmpty(value); </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>以上验证器类实现了ConstraintValidator接口，并在该接口的isValid( )方法中完成了具体的参数验证逻辑。需要注意的是，实现接口时需要指<br>定泛型，第一个参数表示验证注解类型（NotEmpty），第二个参数表示需要验证的参数类型（String）。</p>
-<p>然后，我们需要在Spring配置文件中开启该特性，需添加如下配置：</p>
-<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>&lt; bean  class  =  “org.springframework.validation.beanvalidation.MethodValidationPostProcessor”  /&gt;</li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>最后，需要在全局异常处理类中添加参数验证处理方法，代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>@ControllerAdvice </li>
-<li>@ResponseBody </li>
-<li>public  class  ExceptionAdvice { </li>
-<li><ol start="5">
-<li>/** </li>
-</ol>
-</li>
-<li><ul>
-<li>400 - Bad Request </li>
-</ul>
-</li>
-<li>*/ </li>
-<li>@ResponseStatus  (HttpStatus.BAD_REQUEST) </li>
-<li>@ExceptionHandler  (ValidationException.  class  ) </li>
-<li>public  Response handleValidationException(ValidationException e) { </li>
-<li>logger.error(  ”参数验证失败”  , e); </li>
-<li>return  new  Response().failure(  “validation_exception”  ); </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>至此，REST框架已集成了Bean Validation特性，我们可以使用各种注解来完成所需的参数验证行为了。</p>
-<p>看似该框架可以在本地成功跑起来，整个架构包含两个应用，前端应用提供纯静态的HTML页面，后端应用发布REST<br>API，前端需要通过AJAX调用后端发布的REST<br>API，然而AJAX是不支持跨域访问的，也就是说，前后端两个应用必须在同一个域名下才能访问。这是非常严重的技术障碍，一定需要找到解决方案。</p>
-<h4 id="4-5-解决跨域问题"><a href="#4-5-解决跨域问题" class="headerlink" title="4.5 解决跨域问题"></a>4.5 解决跨域问题</h4><p>比如，前端应用为静态站点且部署在<a href="http://web.xxx.com域下，后端应用发布REST" target="_blank" rel="noopener">http://web.xxx.com域下，后端应用发布REST</a> API并部署在<a href="http://api.xxx.com域下，如何" target="_blank" rel="noopener">http://api.xxx.com域下，如何</a><br>使前端应用通过AJAX跨域访问后端应用呢？这需要使用到CORS技术来实现，这也是目前最好的解决方案了。</p>
-<p>[CORS全称为Cross Origin Resource<br>Sharing（跨域资源共享），服务端只需添加相关响应头信息，即可实现客户端发出AJAX跨域请求。]</p>
-<p>CORS技术非常简单，易于实现，目前绝大多数浏览器均已支持该技术（IE8浏览器也支持了），服务端可通过任何编程语言来实现，只要能将CORS响应头写入resp<br>onse对象中即可。</p>
-<p>下面我们继续扩展REST框架，通过CORS技术实现AJAX跨域访问。</p>
-<p>首先，我们需要编写一个Filter，用于过滤所有的HTTP请求，并将CORS响应头写入response对象中，代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  class  CorsFilter  implements  Filter { </li>
-<li><ol start="3">
-<li>private  String allowOrigin; </li>
-</ol>
-</li>
-<li>private  String allowMethods; </li>
-<li>private  String allowCredentials; </li>
-<li>private  String allowHeaders; </li>
-<li>private  String exposeHeaders; </li>
-<li><ol start="9">
-<li>@Override </li>
-</ol>
-</li>
-<li>public  void  init(FilterConfig filterConfig)  throws  ServletException { </li>
-<li>allowOrigin = filterConfig.getInitParameter(  ”allowOrigin”  ); </li>
-<li>allowMethods = filterConfig.getInitParameter(  ”allowMethods”  ); </li>
-<li>allowCredentials = filterConfig.getInitParameter(  ”allowCredentials”  ); </li>
-<li>allowHeaders = filterConfig.getInitParameter(  ”allowHeaders”  ); </li>
-<li>exposeHeaders = filterConfig.getInitParameter(  ”exposeHeaders”  ); </li>
-<li>} </li>
-<li><ol start="18">
-<li>@Override </li>
-</ol>
-</li>
-<li>public  void  doFilter(ServletRequest req, ServletResponse res, FilterChain chain)  throws  IOException, ServletException { </li>
-<li>HttpServletRequest request = (HttpServletRequest) req; </li>
-<li>HttpServletResponse response = (HttpServletResponse) res; </li>
-<li>if  (StringUtil.isNotEmpty(allowOrigin)) { </li>
-<li>List<string> allowOriginList = Arrays.asList(allowOrigin.split(  ”,”  )); </string></li>
-<li>if  (CollectionUtil.isNotEmpty(allowOriginList)) { </li>
-<li>String currentOrigin = request.getHeader(  ”Origin”  ); </li>
-<li>if  (allowOriginList.contains(currentOrigin)) { </li>
-<li>response.setHeader(  ”Access-Control-Allow-Origin”  , currentOrigin); </li>
-<li>} </li>
-<li>} </li>
-<li>} </li>
-<li>if  (StringUtil.isNotEmpty(allowMethods)) { </li>
-<li>response.setHeader(  ”Access-Control-Allow-Methods”  , allowMethods); </li>
-<li>} </li>
-<li>if  (StringUtil.isNotEmpty(allowCredentials)) { </li>
-<li>response.setHeader(  ”Access-Control-Allow-Credentials”  , allowCredentials); </li>
-<li>} </li>
-<li>if  (StringUtil.isNotEmpty(allowHeaders)) { </li>
-<li>response.setHeader(  ”Access-Control-Allow-Headers”  , allowHeaders); </li>
-<li>} </li>
-<li>if  (StringUtil.isNotEmpty(exposeHeaders)) { </li>
-<li>response.setHeader(  ”Access-Control-Expose-Headers”  , exposeHeaders); </li>
-<li>} </li>
-<li>chain.doFilter(req, res); </li>
-<li>} </li>
-<li><ol start="46">
-<li>@Override </li>
-</ol>
-</li>
-<li>public  void  destroy() { </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>以上CorsFilter将从web.xml中读取相关Filter初始化参数，并将在处理HTTP请求时将这些参数写入对应的CORS响应头中，下面大致描述一下这<br>些CORS响应头的意义：</p>
-<ul>
-<li>Access-Control-Allow-Origin：允许访问的客户端域名，例如：<a href="http://web.xxx.com，若为*，则表示从任意域都能访问，即不做任何限制。" target="_blank" rel="noopener">http://web.xxx.com，若为*，则表示从任意域都能访问，即不做任何限制。</a> </li>
-<li>Access-Control-Allow-Methods：允许访问的方法名，多个方法名用逗号分割，例如：GET,POST,PUT,DELETE,OPTIONS。 </li>
-<li>Access-Control-Allow-Credentials：是否允许请求带有验证信息，若要获取客户端域下的cookie时，需要将其设置为true。 </li>
-<li>Access-Control-Allow-Headers：允许服务端访问的客户端请求头，多个请求头用逗号分割，例如：Content-Type。 </li>
-<li>Access-Control-Expose-Headers：允许客户端访问的服务端响应头，多个响应头用逗号分割。 </li>
-</ul>
-<p>需要注意的是，CORS规范中定义Access-Control-Allow-Origin只允许两种取值，要么为*，要么为具体的域名，也就是说，不支持同时配置多<br>个域名。为了解决跨多个域的问题，需要在代码中做一些处理，这里将Filter初始化参数作为一个域名的集合（用逗号分隔），只需从当前请求中获取Origin请求头<br>，就知道是从哪个域中发出的请求，若该请求在以上允许的域名集合中，则将其放入Access-Control-Allow-<br>Origin响应头，这样跨多个域的问题就轻松解决了。</p>
-<p>以下是web.xml中配置CorsFilter的方法：</p>
-<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>&lt; filter  &gt;</li>
-<li>&lt; filter-name  &gt; corsFilter  &lt;/  filter-name  &gt;</li>
-<li>&lt; filter-class  &gt; com.xxx.api.cors.CorsFilter  &lt;/  filter-class  &gt;</li>
-<li>&lt; init-param  &gt;</li>
-<li>&lt; param-name  &gt; allowOrigin  &lt;/  param-name  &gt;</li>
-<li>&lt; param-value  &gt; <a href="http://web.xxx.com" target="_blank" rel="noopener">http://web.xxx.com</a>  &lt;/  param-value  &gt;</li>
-<li>&lt;/  init-param  &gt;</li>
-<li>&lt; init-param  &gt;</li>
-<li>&lt; param-name  &gt; allowMethods  &lt;/  param-name  &gt;</li>
-<li>&lt; param-value  &gt; GET,POST,PUT,DELETE,OPTIONS  &lt;/  param-value  &gt;</li>
-<li>&lt;/  init-param  &gt;</li>
-<li>&lt; init-param  &gt;</li>
-<li>&lt; param-name  &gt; allowCredentials  &lt;/  param-name  &gt;</li>
-<li>&lt; param-value  &gt; true  &lt;/  param-value  &gt;</li>
-<li>&lt;/  init-param  &gt;</li>
-<li>&lt; init-param  &gt;</li>
-<li>&lt; param-name  &gt; allowHeaders  &lt;/  param-name  &gt;</li>
-<li>&lt; param-value  &gt; Content-Type  &lt;/  param-value  &gt;</li>
-<li>&lt;/  init-param  &gt;</li>
-<li>&lt;/  filter  &gt;</li>
-<li>&lt; filter-mapping  &gt;</li>
-<li>&lt; filter-name  &gt; corsFilter  &lt;/  filter-name  &gt;</li>
-<li>&lt; url-pattern  &gt; /*  &lt;/  url-pattern  &gt;</li>
-<li>&lt;/  filter-mapping  &gt;</li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>完成以上过程即可实现AJAX跨域功能了，但似乎还存在另外一个问题，由于REST是无状态的，后端应用发布的REST<br>API可在用户未登录的情况下被任意调用，这显然是不安全的，如何解决这个问题呢？我们需要为REST请求提供安全机制。</p>
-<h4 id="4-6-提供安全机制"><a href="#4-6-提供安全机制" class="headerlink" title="4.6 提供安全机制"></a>4.6 提供安全机制</h4><p>解决REST安全调用问题，可以做得很复杂，也可以做得特简单，可按照以下过程提供REST安全机制：</p>
-<ol>
-<li>当用户登录成功后，在服务端生成一个token，并将其放入内存中（可放入JVM或Redis中），同时将该token返回到客户端。 </li>
-<li>在客户端中将返回的token写入cookie中，并且每次请求时都将token随请求头一起发送到服务端。 </li>
-<li>提供一个AOP切面，用于拦截所有的Controller方法，在切面中判断token的有效性。 </li>
-<li>当登出时，只需清理掉cookie中的token即可，服务端token可设置过期时间，使其自行移除。 </li>
-</ol>
-<p>首先，我们需要定义一个用于管理token的接口，包括创建token与检查token有效性的功能。代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  interface  TokenManager { </li>
-<li><ol start="3">
-<li>String createToken(String username); </li>
-</ol>
-</li>
-<li><ol start="5">
-<li>boolean  checkToken(String token); </li>
-</ol>
-</li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>然后，我们可提供一个简单的TokenManager实现类，将token存储到JVM内存中。代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  class  DefaultTokenManager  implements  TokenManager { </li>
-<li><ol start="3">
-<li>private  static  Map&lt;String, String&gt; tokenMap =  new  ConcurrentHashMap&lt;&gt;(); </li>
-</ol>
-</li>
-<li><ol start="5">
-<li>@Override </li>
-</ol>
-</li>
-<li>public  String createToken(String username) { </li>
-<li>String token = CodecUtil.createUUID(); </li>
-<li>tokenMap.put(token, username); </li>
-<li>return  token; </li>
-<li>} </li>
-<li><ol start="12">
-<li>@Override </li>
-</ol>
-</li>
-<li>public  boolean  checkToken(String token) { </li>
-<li>return  !StringUtil.isEmpty(token) &amp;&amp; tokenMap.containsKey(token); </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>需要注意的是，如果需要做到分布式集群，建议基于Redis提供一个实现类，将token存储到Redis中，并利用Redis与生俱来的特性，做到token的分布<br>式一致性。</p>
-<p>然后，我们可以基于Spring<br>AOP写一个切面类，用于拦截Controller类的方法，并从请求头中获取token，最后对token有效性进行判断。代码如下：</p>
-<p><strong> [java] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>public  class  SecurityAspect { </li>
-<li><ol start="3">
-<li>private  static  final  String DEFAULT_TOKEN_NAME =  “X-Token”  ; </li>
-</ol>
-</li>
-<li><ol start="5">
-<li>private  TokenManager tokenManager; </li>
-</ol>
-</li>
-<li>private  String tokenName; </li>
-<li><ol start="8">
-<li>public  void  setTokenManager(TokenManager tokenManager) { </li>
-</ol>
-</li>
-<li>this  .tokenManager = tokenManager; </li>
-<li>} </li>
-<li><ol start="12">
-<li>public  void  setTokenName(String tokenName) { </li>
-</ol>
-</li>
-<li>if  (StringUtil.isEmpty(tokenName)) { </li>
-<li>tokenName = DEFAULT_TOKEN_NAME; </li>
-<li>} </li>
-<li>this  .tokenName = tokenName; </li>
-<li>} </li>
-<li><ol start="19">
-<li>public  Object execute(ProceedingJoinPoint pjp)  throws  Throwable { </li>
-</ol>
-</li>
-<li>// 从切点上获取目标方法 </li>
-<li>MethodSignature methodSignature = (MethodSignature) pjp.getSignature(); </li>
-<li>Method method = methodSignature.getMethod(); </li>
-<li>// 若目标方法忽略了安全性检查，则直接调用目标方法 </li>
-<li>if  (method.isAnnotationPresent(IgnoreSecurity.  class  )) { </li>
-<li>return  pjp.proceed(); </li>
-<li>} </li>
-<li>// 从 request header 中获取当前 token </li>
-<li>String token = WebContext.getRequest().getHeader(tokenName); </li>
-<li>// 检查 token 有效性 </li>
-<li>if  (!tokenManager.checkToken(token)) { </li>
-<li>String message = String.format(  ”token [%s] is invalid”  , token); </li>
-<li>throw  new  TokenException(message); </li>
-<li>} </li>
-<li>// 调用目标方法 </li>
-<li>return  pjp.proceed(); </li>
-<li>} </li>
-<li>} </li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>若要使SecurityAspect生效，则需要添加如下Spring 配置：</p>
-<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>&lt; bean  id  =  “securityAspect”  class  =  “com.xxx.api.security.SecurityAspect”  &gt;</li>
-<li>&lt; property  name  =  “tokenManager”  ref  =  “tokenManager”  /&gt;</li>
-<li>&lt; property  name  =  “tokenName”  value  =  “X-Token”  /&gt;</li>
-<li>&lt;/  bean  &gt;</li>
-<li><ol start="6">
-<li>&lt; aop:config  &gt;</li>
-</ol>
-</li>
-<li>&lt; aop:aspect  ref  =  “securityAspect”  &gt;</li>
-<li>&lt; aop:around  method  =  “execute”  pointcut  =  “@annotation(org.springframework.web.bind.annotation.RequestMapping)”  /&gt;</li>
-<li>&lt;/  aop:aspect  &gt;</li>
-<li>&lt;/  aop:config  &gt;</li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<p>最后，别忘了在web.xml中添加允许的X-Token响应头，配置如下：</p>
-<p><strong> [xml] </strong> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> view plain </a> <a href="http://www.csdn.net/article/2015-10-25/2826033#" target="_blank" rel="noopener"> copy </a></p>
-<ol>
-<li>&lt; init-param  &gt;</li>
-<li>&lt; param-name  &gt; allowHeaders  &lt;/  param-name  &gt;</li>
-<li>&lt; param-value  &gt; Content-Type,X-Token  &lt;/  param-value  &gt;</li>
-<li>&lt;/  init-param  &gt;</li>
-</ol>
-<p><img src="http://static.blog.csdn.net/images/save_snippets.png" alt=""></p>
-<h3 id="总结"><a href="#总结" class="headerlink" title=" 总结 "></a><strong> 总结 </strong></h3><p>本文从经典的MVC模式开始，对MVC模式是什么以及该模式存在的不足进行了简述。然后引出了如何对MVC模式的改良，让其转变为前后端分离架构，以及解释了为何要进<br>行前后端分离。最后通过REST服务将前后端进行解耦，并提供了一款基于Java的REST框架的主要实现过程，尤其是需要注意的核心技术问题及其解决方案。希望本文<br>对正在探索前后端分离的读者们有所帮助，期待与大家共同探讨。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-    <div class="bdsharebuttonbox">
-    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
-    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
-    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
-    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
-    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
-    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
-</div>
-<script>
-window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-</script>
-<style>
-    .bdshare_popup_box {
-        border-radius: 4px;
-        border: #e1e1e1 solid 1px;
-    }
-    .bdshare-button-style0-16 a,
-    .bdshare-button-style0-16 .bds_more {
-        padding-left: 20px;
-        margin: 6px 10px 6px 0;
-    }
-    .bdshare_dialog_list a,
-    .bdshare_popup_list a,
-    .bdshare_popup_bottom a {
-        font-family: 'Microsoft Yahei';
-    }
-    .bdshare_popup_top {
-        display: none;
-    }
-    .bdshare_popup_bottom {
-        height: auto;
-        padding: 5px;
-    }
-</style>
-
-
-</div>
-
-            
-    
-        <a href="https://www.itchina.top/2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/#comments" id="sourceId::2018/04/20/从MVC到前后端分离（REST-个人也认为是目前比较流行和比较好的方式）/" class="article-comment-link cy_cmt_count">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <article id="post-程序猿技能表" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -8871,8 +8871,8 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
                     <li>
                         
                         <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/" class="title">通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法</a></p>
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
                             <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
                         </div>
                     </li>
@@ -8880,8 +8880,8 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
                     <li>
                         
                         <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
-                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/" class="title">通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法</a></p>
                             <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
                         </div>
                     </li>
