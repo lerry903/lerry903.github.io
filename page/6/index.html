@@ -18,7 +18,7 @@
     
 
     
-        <link rel="alternate" href="/" title="LErry" type="application/atom+xml" />
+        <link rel="alternate" href="/atom.xml" title="LErry" type="application/atom+xml" />
     
 
     
@@ -186,7 +186,7 @@
                     </td>
                     
                     <td>
-                        <a href="/" target="_blank" title="qq" class=tooltip>
+                        <a href="http://wpa.qq.com/msgrd?v=3&uin=824444270&site=qq&menu=yes" target="_blank" title="qq" class=tooltip>
                             <i class="fa fa-qq"></i>
                         </a>
                     </td>
@@ -198,7 +198,7 @@
                     </td>
                     
                     <td>
-                        <a href="/" target="_blank" title="rss" class=tooltip>
+                        <a href="/atom.xml" target="_blank" title="rss" class=tooltip>
                             <i class="fa fa-rss"></i>
                         </a>
                     </td>
@@ -212,7 +212,7 @@
 
             
             <section id="main">
-    <article id="post-apache调优隐藏版本信息及404重定向" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-ActiveMQ笔记(6)：消息延时投递" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -220,7 +220,7 @@
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/apache调优隐藏版本信息及404重定向/">apache调优隐藏版本信息及404重定向</a>
+            <a class="article-title" href="/2018/04/20/ActiveMQ笔记(6)：消息延时投递/">ActiveMQ笔记(6)：消息延时投递</a>
         </h1>
     
 
@@ -229,8 +229,8 @@
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/apache调优隐藏版本信息及404重定向/">
-            <time datetime="2018-04-19T16:34:21.415Z" itemprop="datePublished">2018-04-20</time>
+        <a href="/2018/04/20/ActiveMQ笔记(6)：消息延时投递/">
+            <time datetime="2018-04-19T16:34:21.413Z" itemprop="datePublished">2018-04-20</time>
         </a>
     </div>
 
@@ -238,13 +238,13 @@
                         
     <div class="article-category">
     	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/Linux/">Linux</a>
+        <a class="article-category-link" href="/categories/ActiveMQ/">ActiveMQ</a>
     </div>
 
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Apache/">Apache</a>, <a class="tag-link" href="/tags/linux/">linux</a>
+        <a class="tag-link" href="/tags/activemq/">activemq</a>
     </div>
 
                     </div>
@@ -255,196 +255,120 @@
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>apache调优隐藏版本信息及404重定向</p>
-<p><strong> 本节所讲  内容：  </strong>   </p>
-<p><strong> 实战：源码编译安装  apache  及调优技巧  </strong></p>
-<hr>
-<p><strong> 实战环境：  </strong></p>
-<p><strong> 生产环境中，部署了  apache  之后，我们应该从安全还是性能角度，在  apache  服务上线之前，对其做诸多的优化调试才行。  </strong></p>
-<hr>
-<p><strong> Apache  </strong></p>
-<p><strong> 实验环境：  </strong></p>
-<p><strong> apache  版本：  httpd-2.2.31  </strong></p>
-<p><strong> 源码包存放位置：  /usr/local/src  </strong></p>
-<p><strong> 源码包编译安装位置：  apache  ：  /usr/local/apache2.2-xuegod/  </strong></p>
-<hr>
-<p><strong> 技巧  1  ：  </strong></p>
-<p><strong> 安装  apache  屏蔽  apache  版本等敏感信息  </strong></p>
-<hr>
-<p><strong> 查看  apache  版本信息：  </strong></p>
-<p><strong> [root@xuegod63 ~]# curl -I<a href="http://www.baidu.com" target="_blank" rel="noopener">www.baidu.com</a>  </strong></p>
-<p><strong> 。。。  </strong></p>
-<p><strong> X-Powered-By: HPHP  </strong></p>
-<p><strong> Server:  BWS/1.1  </strong></p>
-<p><strong> X-UA-Compatible:IE=Edge,chrome=1  </strong></p>
-<p><strong> BDPAGETYPE: 1  </strong></p>
-<p><strong> BDQID: 0xcfd31d8200026e11  </strong></p>
-<p><strong> BDUSERID: 0  </strong></p>
-<hr>
-<p><strong> 测试自己的网站看是什么版本？有没有相应的漏洞  </strong></p>
-<hr>
-<p><strong> [root@xuegod63 ~]# curl -I<a href="http://www.taobao.com" target="_blank" rel="noopener">www.taobao.com</a>  </strong></p>
-<p><strong> HTTP/1.1 302 Found  </strong></p>
-<p><strong> Server  :Tengine  基于  nginx  做了二次开发  </strong></p>
-<p><strong> Date: Tue, 17 Nov 201502:22:06 GMT  </strong></p>
-<p><strong> Content-Type: text/html  </strong></p>
-<p><strong> Content-Length: 258  </strong></p>
-<p><strong> Connection: keep-alive  </strong></p>
-<p><strong> Location: <a href="https://www.taobao.com/" target="_blank" rel="noopener"> https://www.taobao.com/ </a> </strong></p>
-<p><strong> 彻底让版本等敏感信息消失  </strong></p>
-<p><strong> 要彻底将版本之类的信息进行改头换面，需要在编译之前修改源码包下  include/ap_release.h  文件  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.25]#pwd  </strong></p>
-<p><strong> /usr/local/src  </strong></p>
-<p><strong> [root@xuegod63 src]# rm -rfhttpd-2.2.25  </strong></p>
-<p><strong> [root@xuegod63 src]# tar zxfhttpd-2.2.25.tar.gz  </strong></p>
-<p><strong> [root@xuegod63 src]# cdhttpd-2.2.25  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.25]#vim include/ap_release.h  #  修改源码中的版本信息为自己公司的相关信息，隐藏真实版本信息  </strong></p>
-<p><strong> 改：  </strong></p>
-<p><strong> 42 #define AP_SERVER_BASEVENDOR”Apache Software Foundation”  </strong></p>
-<p><strong> 43 #define AP_SERVER_BASEPROJECT “ApacheHTTP Server”  </strong></p>
-<p><strong> 44 #define AP_SERVER_BASEPRODUCT”Apache”  </strong></p>
-<p><strong> 45  </strong></p>
-<p><strong> 46 #define AP_SERVER_MAJORVERSION_NUMBER 2  </strong></p>
-<p><strong> 47 #define AP_SERVER_MINORVERSION_NUMBER 2  </strong></p>
-<p><strong> 48 #define AP_SERVER_PATCHLEVEL_NUMBER   25  </strong></p>
-<p><strong> 49 #define AP_SERVER_DEVBUILD_BOOLEAN    0  </strong></p>
-<p><strong> 为：  </strong></p>
-<p><strong> #defineAP_SERVER_BASEVENDOR “xuegod”  </strong></p>
-<p><strong> #defineAP_SERVER_BASEPROJECT “  </strong> <strong> web server”  </strong></p>
-<p><strong> #defineAP_SERVER_BASEPRODUCT “  </strong> <strong> xuegod web server”  </strong></p>
-<hr>
-<p><strong> #defineAP_SERVER_MAJORVERSION_NUMBER 8  </strong></p>
-<p><strong> #defineAP_SERVER_MINORVERSION_NUMBER 1  </strong></p>
-<p><strong> #defineAP_SERVER_PATCHLEVEL_NUMBER   2  </strong></p>
-<p><strong> #defineAP_SERVER_DEVBUILD_BOOLEAN    3  </strong></p>
-<p><strong> 注释：  </strong></p>
-<p><strong> #define AP_SERVER_BASEVENDOR”Apache Software Foundation” #  服务的供应商名称  </strong></p>
-<p><strong> #define AP_SERVER_BASEPROJECT”Apache HTTP Server”  #  服务的项目名称  </strong></p>
-<p><strong> #define AP_SERVER_BASEPRODUCT”Apache”        #  服务的产品名  </strong></p>
-<p><strong> #define AP_SERVER_MAJORVERSION_NUMBER2  #  主要版本号  </strong></p>
-<p><strong> #defineAP_SERVER_MINORVERSION_NUMBER 4  #  小版本号  </strong></p>
-<p><strong> #defineAP_SERVER_PATCHLEVEL_NUMBER  6  #  补丁级别  </strong></p>
-<p><strong> #defineAP_SERVER_DEVBUILD_BOOLEAN  0  #  </strong></p>
-<p><strong> 注：上述列出的行，大家可以修改成自己想要的，然后编译安装之后，再对  httpd-default.conf  文件进行修改，对方就彻底不知道你的版本号了。  </strong></p>
-<p><strong> 源码编译安装  apache  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.11]# yum installopenssl*  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.25]#./configure –prefix=/usr/local/apache2.2-xuegod –enable-so –enable-rewrite–enable-ssl   –enable-deflate  –enable-expires  #  检查安装环境并生成  Makefile  文件  </strong></p>
-<hr>
-<p><strong> 配置参数用途：  </strong></p>
-<p><strong> --prefix=/usr/local/apache2.2   #  指定安装路径  </strong></p>
-<p><strong> --enable-so  #  支持动态加载模  块  </strong></p>
-<p><strong> --enable-rewrite #  支持网站地址重写  </strong></p>
-<p><strong> --enable-ssl #  支持  ssl  加密  </strong></p>
-<p><strong> --enable-deflate #  支持页面传输前进行压缩  </strong></p>
-<p><strong> --enable-expires #  支持设置网页缓存的时间  </strong></p>
-<hr>
-<p><strong> 编译安装：  make&amp;&amp; make install  </strong></p>
-<hr>
-<p><strong> 查看安装后目录：  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.25]# ls/usr/local/apache2.2-xuegod/conf/httpd.conf  </strong></p>
-<p><strong> /usr/local/apache2.2-xuegod/conf/httpd.conf  </strong></p>
-<p><strong> 存放网站的根目录：  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.25]#ls /usr/local/apache2.2-xuegod/htdocs/  </strong></p>
-<p><strong> index.html  </strong></p>
-<p><strong> 修改默认首页内容：  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.25]# echo apache-xuegod&gt;&gt; /usr/local/apache2.2-xuegod/htdocs/index.html  </strong></p>
-<p><strong> 启动  apache  ：  </strong></p>
-<p><strong> 配置  apache  可以开机启动并且可以使用  service  命令启动  apache  服务器  </strong></p>
-<p><strong> [root@xuegod63 httpd-2.2.25]#cp /usr/local/apache2.2-xuegod/bin/apachectl /etc/init.d/apachectl-xuegod  </strong></p>
-<hr>
-<p><strong> 启动  apache  ：  </strong></p>
-<p><strong> [<a href="mailto:root@xuegod63httpd-2.2.25" target="_blank" rel="noopener">root@xuegod63httpd-2.2.25</a>]# /etc/init.d/apachectl-xuegod start  </strong></p>
-<p><strong> 测试：  </strong></p>
-<p><strong> 测试：隐藏  apache  版本信息  </strong></p>
-<p><strong> [root@xuegod63 ~]# curl -I192.168.1.63   #  看不到  apache  版本相关内容了  </strong></p>
-<p><strong> HTTP/1.1 200 OK  </strong></p>
-<p><strong> Date: Sat, 29 Aug 201509:43:44 GMT  </strong></p>
-<p><strong> Server:  xuegod web server/8.1.2-dev (Unix) mod_ssl/8.1.2-devOpenSSL/1.0.0-fips  </strong></p>
-<p><strong> Last-Modified: Sat, 29 Aug2015 09:37:36 GMT  </strong></p>
-<p><strong> ETag: “6d086-3a-51e6ff35dba19”  </strong></p>
-<p><strong> Accept-Ranges: bytes  </strong></p>
-<p><strong> Content-Length: 58  </strong></p>
-<p><strong> Content-Type: text/html  </strong></p>
-<hr>
-<p><strong> 再次隐藏版本号和系统类型  </strong></p>
-<p><strong> 接下来再次修改：  </strong></p>
-<hr>
-<p><strong> [root@xuegod63 ~]#  vim/usr/local/apache2.2-xuegod/conf/httpd.conf  </strong></p>
-<p><strong> 405 #Includeconf/extra/httpd-default.conf  </strong></p>
-<p><strong> 为：  </strong></p>
-<p><strong> Includeconf/extra/httpd-default.conf  </strong></p>
-<hr>
-<p><strong> 2  ）打开  httpd-default.conf  文件，修改如下两个地方  </strong></p>
-<p><strong> [root@xuegod63 ~]#  vim/usr/local/apache2.2-xuegod/conf/extra/httpd-default.conf  </strong></p>
-<p><strong> 改：  </strong></p>
-<p><strong> 55 ServerTokens Full  </strong></p>
-<p><strong> 65 ServerSignature On    signature  签名  </strong></p>
-<p><strong> 为：  </strong></p>
-<p><strong> ServerTokens Prod   #  不显示服务器操作系统类型  </strong></p>
-<p><strong> ServerSignature Off   #  不显示  web  服务器版本号  </strong></p>
-<hr>
-<p><strong> 让  apache  配置文件生效的方法：  </strong></p>
-<p><strong> 方法  1  ：重启服务：  restart  </strong></p>
-<p><strong> 方法  2  ：不重启服务，重新加载配置文件  </strong></p>
-<p><strong> reload  是  nginx  </strong></p>
-<p><strong> [root@xuegod63 ~]#/etc/init.d/apachectl-xuegod graceful  优雅的  </strong></p>
-<p><strong> 测试：  </strong></p>
-<p><strong> [root@xuegod63 ~]# curl -I192.168.1.63  </strong></p>
-<p><strong> HTTP/1.1 200 OK  </strong></p>
-<p><strong> Date: Thu, 14 Jan 201602:31:24 GMT  </strong></p>
-<p><strong> Server:  xuegod web server  </strong></p>
-<hr>
-<p><strong> 总结：  </strong></p>
-<p><strong> 1，  安装之前改  include/ap_release.h  </strong></p>
-<p><strong> 2，  Httpd.conf    extra/httpd-default.conf  去掉注释  </strong></p>
-<p><strong> 3，  修改  extra/httpd-default.conf  </strong></p>
-<p><strong> 55 ServerTokens Full  </strong></p>
-<p><strong> 65 ServerSignature On    signature  签名  </strong></p>
-<p><strong> 为：  </strong></p>
-<p><strong> ServerTokens Prod   #  不显示服务器操作系统类型  </strong></p>
-<p><strong> ServerSignature Off   #  不显示  web  服务器版本号  </strong></p>
-<hr>
-<p><strong> 2  、错误页面优雅显示  </strong></p>
-<p><strong> 为了提升网站的用户体验，避免  404  ，  403  之类的丑陋的默认错误提示出现。  </strong></p>
-<p><strong> <a href="http://192.18.1.63/a.html" target="_blank" rel="noopener"> http://192.18.1.63/a.html </a> </strong></p>
-<p><strong> 方法一：  </strong></p>
-<p><strong> [root@xuegod63 ~]# vim/usr/local/apache2.2-xuegod/conf/httpd.conf  #  在根目录的标签中添加以下红色标记内容。  </strong></p>
-<p><strong> 132 <directory" usr="" local="" apache2.2-xuegod="" htdocs"=""> </directory"></strong></p>
-<p><strong> 。。。  </strong></p>
-<p><strong> 在大约  159  行，插入：  </strong></p>
-<p><strong> ErrorDocument 404 /404.html  </strong></p>
-<p><strong> 160  </strong></p>
-<p><strong> 注：  #  将  404  错误跳转到  /usr/local/apache2.2-xuegod/htdocs  下的  404.html  页面上  </strong></p>
-<p><strong> 注：  ErrorDocument  的命令格式如下：  </strong></p>
-<p><strong> ErrorDocument  错误代码 跳转到的页面链接或文件  </strong></p>
-<hr>
-<p><strong> 创建  404  测试页：  </strong></p>
-<p><strong> [root@xuegod63 ~]# echo”404 go to home” &gt; /usr/local/apache2.2-xuegod/htdocs/404.html  </strong></p>
-<hr>
-<p><strong> 重启：  </strong></p>
-<p><strong> [root@xuegod63 ~]# /etc/init.d/apachectl-xuegodrestart  </strong></p>
-<hr>
-<hr>
-<p><strong> 方法  2  ： 出错后，跳转到一个链接  </strong></p>
-<p><strong> [root@xuegod63 ~]# vim/usr/local/apache2.2-xuegod/conf/httpd.conf  #  在根目录的标签中添加以下红色标记内容。  </strong></p>
-<p><strong> 132 <directory" usr="" local="" apache2.2-xuegod="" htdocs"=""> </directory"></strong></p>
-<p><strong> 。。。  </strong></p>
-<p><strong> 在大约  159  行，插入：  </strong></p>
-<p><strong> ErrorDocument 404 <a href="http://www.baidu.com" target="_blank" rel="noopener"> http://www.baidu.com </a> </strong></p>
-<p><strong> 160  </strong></p>
-<p><strong> 注：  #  将  404  错误跳转到  <a href="http://www.baidu.com" target="_blank" rel="noopener"> http://www.baidu.com </a> </strong></p>
-<hr>
-<p><strong> 重启：  </strong></p>
-<p><strong> [root@xuegod63 ~]#/etc/init.d/apachectl-xuegod restart  </strong></p>
-<hr>
-<hr>
-<p><strong> 总结：  ErrorDocument  的命令格式如下：  </strong></p>
-<p><strong> ErrorDocument  错误代码 跳转到的页面或文件  </strong></p>
-<p><strong> 另外这里需要注意，你若设置跳转到文件，必须要有这个文件才行。另外文件必须在站点目录内，不然会报错。  </strong></p>
-<hr>
-<p><strong> 终极总结：  </strong></p>
-<p><strong> 1、  隐藏  web  服务的版本信息  </strong></p>
-<p><strong> 2、  出现  404  错误，给它一个友好的提示  </strong></p>
+            <p>在开发业务系统时，某些业务场景需要消息定时发送或延时发送（类似：飞信的短信定时发送需求），这时候就需要用到activemq的消息延时投递，详细的文档可参考<br><a href="http://activemq.apache.org/delay-and-schedule-message-delivery.html" target="_blank" rel="noopener"> 官网说明 </a><br>，本文只介绍二种常用的用法：</p>
+<p>注：本文采用spring的JmsTemplate来发送消息</p>
+<p>步骤1、  首先要修改activemq.xml配置文件，启用延时投递</p>
+<pre><code>1 &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; ... schedulerSupport=&quot;true&quot; &gt;
+2     ...
+3   &lt;/broker&gt;
+</code></pre><p>即：在broker节点加上schedulerSupport=”true”，然后重启activemq即可</p>
+<p>步骤2、  定义一个MessagePostProcessor的实现类</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>10</p>
+<p>11</p>
+<p>12</p>
+<p>13</p>
+<p>14</p>
+<p>15</p>
+<p>16</p>
+<p>17</p>
+<p>18</p>
+<p>19</p>
+<p>20</p>
+<p>21</p>
+<p>22</p>
+<p>23</p>
+<p>24</p>
+<p>25</p>
+<p>26</p>
+<p>27</p>
+<p>28</p>
+<p>29</p>
+<p>30</p>
+<p>31</p>
+<p>32</p>
+<p>33</p>
+<p>34</p>
+<p>35</p>
+<p>36</p>
+<p>37</p>
+<p>38</p>
+<p><code>import</code> <code>javax.jms.JMSException;</code></p>
+<p><code>import</code> <code>javax.jms.Message;</code></p>
+<p><code>import</code> <code>lombok.Data;</code></p>
+<p><code>import</code> <code>org.apache.activemq.ScheduledMessage;</code></p>
+<p><code>import</code> <code>org.apache.commons.lang3.StringUtils;</code></p>
+<p><code>import</code> <code>org.springframework.jms.core.MessagePostProcessor;</code></p>
+<p><code>/**</code></p>
+<p><code></code> <code>* MQ延时投递处理器（注：ActiveMQ的配置文件中，要配置schedulerSupport=&quot;true&quot;，否则不起作用）</code></p>
+<p><code></code> <code>* by: 杨俊明 2016-06-16</code></p>
+<p><code></code> <code>*/</code></p>
+<p><code>@Data</code></p>
+<p><code>public</code> <code>class</code> <code>ScheduleMessagePostProcessor</code> <code>implements</code> <code>MessagePostProcessor {</code></p>
+<p><code></code> <code>private</code> <code>long</code> <code>delay = 0l;</code></p>
+<p><code></code> <code>private</code> <code>String corn =</code> <code>null</code> <code>;</code></p>
+<p><code></code> <code>public</code> <code>ScheduleMessagePostProcessor(</code> <code>long</code> <code>delay) {</code></p>
+<p><code></code> <code>this</code> <code>.delay = delay;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>ScheduleMessagePostProcessor(String cron) {</code></p>
+<p><code></code> <code>this</code> <code>.corn = cron;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>public</code> <code>Message postProcessMessage(Message message)</code> <code>throws</code> <code>JMSException {</code></p>
+<p><code></code> <code>if</code> <code>(delay &gt;</code> <code>0</code> <code>) {</code></p>
+<p><code></code> <code>message.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, delay);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>if</code> <code>(!StringUtils.isEmpty(corn)) {</code></p>
+<p><code></code> <code>message.setStringProperty(ScheduledMessage.AMQ_SCHEDULED_CRON, corn);</code></p>
+<p><code></code> <code>}</code></p>
+<p><code></code> <code>return</code> <code>message;</code></p>
+<p><code></code> <code>}</code></p>
+<p><code>}</code></p>
+<p>步骤3、  jmsTemplate发送示例</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>10</p>
+<p>11</p>
+<p>12</p>
+<p>13</p>
+<p><code>Object message1 =</code> <code>&quot;corn消息内容：&quot;</code> <code>\+ DateUtil.formatDate(</code> <code>new</code> <code>Date());</code></p>
+<p><code>//分 时 天 月 星期几</code></p>
+<p><code>jmsTemplate.convertAndSend(message1,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>&quot;40 22 * * *&quot;</code> <code>));</code></p>
+<p><code>logger.info(</code> <code>&quot;消息1：[&quot;</code> <code>\+ message1 +</code> <code>&quot;] 延时发送成功！&quot;</code> <code>);</code></p>
+<p><code>jmsTemplate.convertAndSend(message1,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>&quot;50 22 * * *&quot;</code> <code>));</code></p>
+<p><code>logger.info(</code> <code>&quot;消息1：[&quot;</code> <code>\+ message1 +</code> <code>&quot;] 延时发送成功！&quot;</code> <code>);</code></p>
+<p><code>Object message2 =</code> <code>&quot;message：&quot;</code> <code>\+ DateUtil.formatDate(</code> <code>new</code> <code>Date());</code></p>
+<p><code>jmsTemplate.convertAndSend(message2,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>30</code> <code>*</code> <code>1000</code> <code>));</code> <code>//延时30秒</code></p>
+<p><code>jmsTemplate.convertAndSend(message2,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>3600</code> <code>*</code> <code>24</code> <code>*</code> <code>1000</code> <code>));</code> <code>//延时24小时</code></p>
+<p><code>logger.info(</code> <code>&quot;消息2：[&quot;</code> <code>\+ message2 +</code> <code>&quot;] 延时发送成功！&quot;</code> <code>);</code></p>
+<p>上面的代码演示了二种延时的用法：延时N毫秒、按corn表达式延时（注：此corn表达式并非Quartz框架中的corn表达式，而是linux中corntab<br>中的表达 式，基本顺序是”分(0-59) 时(0-23) 日(1-31) 月（1-12） 星期几(1-7) “）</p>
+<p>发送成功后，可以登录activemq的webconsole查看消息的属性：</p>
+<p>在scheduled面板中，可以看到延时的消息</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201606/27612-201606182302114
+95-737992865.png" alt="点击看大图"></p>
+<p>注：在开启消息持久化存储的前提下，就算把相应的queue在webconsole面板中删除（即删除队列），只要投递的时间尚未到，该消息也不会删除，仍然能正常延<br>时投递。</p>
+<p>此外，在queues面板中，如何查看某条具体的消息，也可以通过属性发现这条消息是延时消息，参考下图：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201606/27612-201606182308471
+04-233535248.png" alt="点击看大图"></p>
+<p>参考文章：<br>1、 <a href="http://activemq.apache.org/delay-
+and-schedule-message-delivery.html" target="_blank" rel="noopener"> Delay and Schedule Message Delivery </a></p>
+<p>2、 <a href="https://zh.wikipedia.org/wiki/Cron" target="_blank" rel="noopener"> 喂鸡百科上的Corn表达式解释 </a> （中文）</p>
+<p>3、 <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener"> 喂鸡百科上的Corn表达式解释 </a> （英文）</p>
+<p><a href="http://activemq.apache.org/kahadb.html" target="_blank" rel="noopener"> 4、kahaDB官方文档 </a></p>
 
         
         </div>
@@ -492,354 +416,7 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
             
     
-        <a href="https://www.itchina.top/2018/04/20/apache调优隐藏版本信息及404重定向/#comments" id="sourceId::2018/04/20/apache调优隐藏版本信息及404重定向/" class="article-comment-link cy_cmt_count">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-Activiti工作流引擎使用" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/Activiti工作流引擎使用/">Activiti工作流引擎使用</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/Activiti工作流引擎使用/">
-            <time datetime="2018-04-19T16:34:21.414Z" itemprop="datePublished">2018-04-20</time>
-        </a>
-    </div>
-
-
-                        
-                        
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <h1 id="Activiti工作流引擎使用"><a href="#Activiti工作流引擎使用" class="headerlink" title="Activiti工作流引擎使用"></a>Activiti工作流引擎使用</h1><h1 id="1-简单介工作流引擎与Activiti"><a href="#1-简单介工作流引擎与Activiti" class="headerlink" title="1.简单介工作流引擎与Activiti"></a>1.简单介工作流引擎与Activiti</h1><p>对于工作流引擎的解释请参考百度百科： <a href="http://baike.baidu.com/view/1636259.htm" target="_blank" rel="noopener"> 工作流引擎 </a></p>
-<h3 id="1-1-我与工作流引擎"><a href="#1-1-我与工作流引擎" class="headerlink" title="1.1 我与工作流引擎"></a>1.1 我与工作流引擎</h3><p>在第一家公司工作的时候主要任务就是开发OA系统，当然基本都是有工作流的支持，不过当时使用的工作流引擎是公司一些牛人开发的（据说是用一个开源的引擎修改的），名<br>称叫CoreFlow；功能相对Activiti来说比较弱，但是能满足日常的使用，当然也有不少的问题所以后来我们只能修改引擎的代码打补丁。</p>
-<p>现在是我工作的第二家公司，因为要开发ERP、OA等系统需要使用工作流，在项目调研阶段我先搜索资料选择使用哪个 <strong> 开源 </strong><br>工作流引擎，最终确定了Activiti5并基于公司的架构做了一些DEMO。</p>
-<h3 id="1-2-Activiti与JBPM5？"><a href="#1-2-Activiti与JBPM5？" class="headerlink" title="1.2 Activiti与JBPM5？"></a>1.2 Activiti与JBPM5？</h3><p>对于Activiti、jBPM4、jBPM5我们应该如何选择，在InfoQ上有一篇文章写的很好，从大的层面比较各个引擎之间的差异，请参考文章： <a href="http://www.infoq.com/cn/articles/rh-
-jbpm5-activiti5" target="_blank" rel="noopener"><br>纵观jBPM：从jBPM3到jBPM5以及Activiti5 </a></p>
-<h3 id="1-3-Activiti资料"><a href="#1-3-Activiti资料" class="headerlink" title="1.3 Activiti资料"></a>1.3 Activiti资料</h3><ul>
-<li><p>官网： <a href="http://www.activiti.org/" target="_blank" rel="noopener"> http://www.activiti.org/ </a></p>
-</li>
-<li><p>下载： <a href="http://www.activiti.org/download.html" target="_blank" rel="noopener"> http://www.activiti.org/download.html </a></p>
-</li>
-<li><p>版本：Activiti的版本是从 <strong> 5 </strong> 开始的，因为Activiti是使用jBPM4的源码； <strong> 版本发布 </strong> ：两个月发布一次。 </p>
-</li>
-<li><p>Eclipse Plugin: <a href="http://activiti.org/designer/update/" target="_blank" rel="noopener"> http://activiti.org/designer/update/ </a></p>
-</li>
-<li><p>Activit中文群：5435716 </p>
-</li>
-</ul>
-<h2 id="2-初次使用遇到问题收集"><a href="#2-初次使用遇到问题收集" class="headerlink" title="2.初次使用遇到问题收集"></a>2.初次使用遇到问题收集</h2><p>因为Activiti刚刚退出不久所以资料比较 <strong> 空缺 </strong> ，中文资料更是少的 <strong> 可怜 </strong> ，所以开始的时候一头雾水（虽然之前用过工作流，但是感觉<br>差距很多），而且官方的手册还不是很全面；所以我把我在学习使用的过程遇到的一些疑问都罗列出来分享给大家；以下几点是我遇到和想到的，如果你还有什么疑问可以在评论<br>中和我交流再补充。</p>
-<h3 id="2-1-部署流程图后中文乱码"><a href="#2-1-部署流程图后中文乱码" class="headerlink" title="2.1 部署流程图后中文乱码"></a>2.1 部署流程图后中文乱码</h3><p><strong> 乱码 </strong> 是一直缠绕着国人的问题，之前各个技术、工具出现乱码的问题写过很多文章，这里也不例外……，Activiti的乱码问题在流程图中。 </p>
-<p>流程图的乱码如下图所示：</p>
-<p><img src="http://static.open-
-open.com/lib/uploadImg/20121017/20121017155144_803.png" alt="Activiti工作流引擎使用"></p>
-<p>解决办法有两种：</p>
-<h4 id="2-1-1-修改源代码方式"><a href="#2-1-1-修改源代码方式" class="headerlink" title="2.1.1 修改源代码方式"></a>2.1.1 修改源代码方式</h4><p>修改源码</p>
-<pre><code>org.activiti.engine.impl.bpmn.diagram.ProcessDiagramCanvas
-</code></pre><p>在构造方法</p>
-<pre><code>public ProcessDiagramCanvas(int width, int height)
-</code></pre><p>中有一行代码是设置字体的，默认是用  <strong> Arial </strong> 字体，这就是乱码产生的原因，把字改为本地的中文字体即可，例如：</p>
-<pre><code>Font font = new Font(&quot;WenQuanYi Micro Hei&quot;, Font.BOLD, 11);
-</code></pre><p>当然如果你有配置文件读取工具那么可以设置在*.properties文件中，我就是这么做的：</p>
-<pre><code>Font font = new Font(PropertyFileUtil.get(&quot;activiti.diagram.canvas.font&quot;), Font.BOLD, 11);
-</code></pre><h4 id="2-1-2-使用压缩包方式部署"><a href="#2-1-2-使用压缩包方式部署" class="headerlink" title="2.1.2 使用压缩包方式部署"></a>2.1.2 使用压缩包方式部署</h4><p>Activiti支持部署*.bpmn20.xml、bar、zip格式的流程定义。</p>
-<p>使用Activit Deisigner工具设计流程图的时候会有三个类型的文件:</p>
-<ul>
-<li><p>.activiti设计工具使用的文件 </p>
-</li>
-<li><p>.bpmn20.xml设计工具自动根据.activiti文件生成的xml文件 </p>
-</li>
-<li><p>.png流程图图片 </p>
-</li>
-</ul>
-<p>解决办法就是把xml文件和图片文件同时部署，因为在单独部署xml文件的时候Activiti会自动生成一张流程图的图片文件，但是这样在使用的时候坐标和图片对应<br>不起来……</p>
-<p>所以把xml和图片同时部署的时候Activiti自动关联xml和图片，当需要获取图片的时候直接返回部署时压缩包里面的图片文件，而不是Activiti自动生成<br>的图片文件</p>
-<h5 id="2-1-2-1-使用工具打包Bar文件"><a href="#2-1-2-1-使用工具打包Bar文件" class="headerlink" title="2.1.2.1 使用工具打包Bar文件"></a>2.1.2.1 使用工具打包Bar文件</h5><p>右键项目名称然后点击“Create deployment artifacts”，会在src目录中创建 <strong> deployment </strong><br>文件夹，里面包含*.bar文件.</p>
-<h5 id="2-1-2-2-使用Ant脚本打包Zip文件"><a href="#2-1-2-2-使用Ant脚本打包Zip文件" class="headerlink" title="2.1.2.2 使用Ant脚本打包Zip文件"></a>2.1.2.2 使用Ant脚本打包Zip文件</h5><p>这也是我们采用的办法，你可以手动选择xml和png打包成zip格式的文件，也可以像我们一样采用ant target的方式打包这两个文件。</p>
-<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;project name=&quot;foo&quot;&gt;
-
-    &lt;property name=&quot;workflow.definition&quot; value=&quot;foo-common-core/src/main/resources/diagrams&quot; /&gt;
-    &lt;property name=&quot;workflow.deployments&quot; value=&quot;foo-common-core/src/main/resources/deployments&quot; /&gt;
-
-&lt;target name=&quot;workflow.package.oa.leave&quot;&gt;
-        &lt;echo&gt;打包流程定义及流程图::OA-请假&lt;/echo&gt;
-        &lt;zip destfile=&quot;${workflow.deployments}/oa/leave.zip&quot; basedir=&quot;${workflow.definition}/oa/leave&quot; update=&quot;true&quot;
-            includes=&quot;*.xml,*.png&quot; /&gt;
-    &lt;/target&gt;
-&lt;/project&gt;
-</code></pre><p>这样当修改流程定义文件后只要运行ant命令就可以打包了：</p>
-<pre><code>ant workflow.package.oa.leave
-</code></pre><p>现在部署bar或者zip文件查看流程图图片就不是乱码了，而是你的压缩包里面的png文件。</p>
-<h3 id="2-2-使用引擎提供的Form还是自定义业务Form"><a href="#2-2-使用引擎提供的Form还是自定义业务Form" class="headerlink" title="2.2 使用引擎提供的Form还是自定义业务Form"></a>2.2 使用引擎提供的Form还是自定义业务Form</h3><h4 id="2-2-1-引擎提供的Form"><a href="#2-2-1-引擎提供的Form" class="headerlink" title="2.2.1 引擎提供的Form"></a>2.2.1 引擎提供的Form</h4><p>定义表单的方式在每个Task标签中定义 <strong> extensionElements </strong> 和 <strong> activiti:formProperty </strong><br>即可，到达这个节点的时候可以通过API读取表单元素。</p>
-<p>Activiti官方的例子使用的就是在流程定义中设置每一个节点显示什么样的表单哪些字段需要显示、哪些字段只读、哪些字段必填。</p>
-<p>但是这种方式仅仅适用于比较简单的流程，对于稍微复杂或者页面需要业务逻辑的判断的情况就不适用了。</p>
-<p>对于数据的保存都是在引擎的表中，不利于和其他表的关联、对整个系统的规划也不利！</p>
-<h4 id="2-2-2-自定义业务Form"><a href="#2-2-2-自定义业务Form" class="headerlink" title="2.2.2 自定义业务Form"></a>2.2.2 自定义业务Form</h4><p>这种方式应该是大家用的最多的了，因为一般的业务系统业务逻辑都会比较复杂，而且数据库中很多表都会有依赖关系，表单中有很多状态判断。</p>
-<p>例如我们的系统适用jQuery UI作为UI，有很多javascript代码，页面的很多操作需要特殊处理（例如：多个选项的互斥、每个节点根据类型和操作人显示<br>不同的按钮）；基本每个公司都有一套自己的UI风格，要保持多个系统的操作习惯一致只能使用自定义表单才能满足。</p>
-<h3 id="2-3-业务和流程的关联方式"><a href="#2-3-业务和流程的关联方式" class="headerlink" title="2.3 业务和流程的关联方式"></a>2.3 业务和流程的关联方式</h3><p>这个问题在群里面很多人都问过，这也是我刚刚开始迷惑的地方；</p>
-<p>后来看了以下API发现RuntimeService有两个方法：</p>
-<h3 id="2-3-1-startProcessInstanceByKey"><a href="#2-3-1-startProcessInstanceByKey" class="headerlink" title="2.3.1 startProcessInstanceByKey"></a>2.3.1 startProcessInstanceByKey</h3><p>javadoc对其说明：</p>
-<pre><code>startProcessInstanceByKey(String processDefinitionKey, Map variabes) 
-          Starts a new process instance in the latest version of the process definition with the given key
-</code></pre><p>其中 <strong> businessKey </strong><br>就是业务ID，例如要申请请假，那么先填写登记信息，然后（保存+启动流程），因为请假是单独设计的数据表，所以保存后得到实体ID就可以把它传给 <strong><br>processInstanceBusinessKey </strong> 方法启动流程。当需要根据businessKey查询流程的时候就可以通过API查询:</p>
-<pre><code>runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(processInstanceBusinessKey, processDefinitionKey);
-</code></pre><p>建  <strong> 议数据库冗余设计 </strong> ：在业务表设计的时候添加一列：  <strong> PROCESS_INSTANCE_ID varchar2(64) </strong><br>，在流程启动之后把流程ID更新到业务表中，这样不管从业务还是流程都可以查询到对方！</p>
-<p><strong> 特别说明： </strong> 此方法启动时自动选择最新版本的流程定义。 </p>
-<h3 id="2-3-2-startProcessInstanceById"><a href="#2-3-2-startProcessInstanceById" class="headerlink" title="2.3.2 startProcessInstanceById"></a>2.3.2 startProcessInstanceById</h3><p>javadoc对其说明：</p>
-<pre><code>startProcessInstanceById(String processDefinitionId, String businessKey, Map variables) 
-          Starts a new process instance in the exactly specified version of the process definition with the given id.
-</code></pre><p><strong> processDefinitionId </strong> ：这个参数的值可以通过 <strong> repositoryService.createProcessDefinitionQuery() </strong> 方法查询，对应数据库： <strong> ACT_RE_PROCDEF </strong> ；每次部署一次流程定义就会添加一条数据，同名的版本号累加。 </p>
-<p><strong> 特别说明： </strong> 此可以指定不同版本的流程定义，让用户多一层选择。 </p>
-<h3 id="2-3-3-如何选择"><a href="#2-3-3-如何选择" class="headerlink" title="2.3.3 如何选择"></a>2.3.3 如何选择</h3><p>建议使用 <strong> startProcessInstanceByKey </strong> ，特殊情况需要使用以往的版本选择使用 <strong><br>startProcessInstanceById </strong> 。</p>
-<h3 id="2-4-同步用户数据"><a href="#2-4-同步用户数据" class="headerlink" title="2.4 同步用户数据"></a>2.4 同步用户数据</h3><p>这个问题也是比较多的人询问过，Activiti支持对任务分配到：指定人、指定组、两者组合，而这些人和组的信息都保存在 <strong> ACT_ID.. </strong> 表中，有<br>自己的用户和组(角色)管理让很多人不知所措了；原因是因为每个系统都会存在一个权限管理模块（维护：用户、部门、角色、授权），不知道该怎么和Activiti同步<br>。</p>
-<h4 id="2-4-1-建议处理方式"><a href="#2-4-1-建议处理方式" class="headerlink" title="2.4.1 建议处理方式"></a>2.4.1 建议处理方式</h4><p>Activiti有一个 <strong> IdentityService </strong> 接口，通过这个接口可以操控Activiti的ACT_ID_*表的数据，一般的做法是用业务<br>系统的权限管理模块维护用户数据，当进行CRUD操作的时候在原有业务逻辑后面添加同步到Activiti的代码；例如添加一个用户时同步Activiti<br>User的代码片段：</p>
-<pre><code>/**
- * 保存用户信息 并且同步用户信息到activiti的identity.User，同时设置角色
- * @param user
- * @param roleIds
- */
-public void saveUser(User user, List&lt;Long&gt; roleIds, boolean synToActiviti) {
-    accountManager.saveEntity(user);
-    String userId = user.getId().toString();
-
-    if (synToActiviti) {
-        List&lt;org.activiti.engine.identity.User&gt; activitiUsers = identityService.createUserQuery().userId(userId).list();
-        if (activitiUsers.size() == 1) {
-            //更新信息
-            org.activiti.engine.identity.User activitiUser = activitiUsers.get(0);
-            activitiUser.setFirstName(user.getName());
-            activitiUser.setLastName(&quot;&quot;);
-            activitiUser.setPassword(user.getPassword());
-            activitiUser.setEmail(user.getEmail());
-            identityService.saveUser(activitiUser);
-
-            // 删除用户的membership
-            List&lt;Group&gt; activitiGroups = identityService.createGroupQuery().groupMember(userId).list();
-            for (Group group : activitiGroups) {
-                identityService.deleteMembership(userId, group.getId());
-            }
-
-            // 添加membership
-            for (Long roleId : roleIds) {
-                Role role = roleManager.getEntity(roleId);
-                identityService.createMembership(userId, role.getEnName());
-            }
-
-        } else {
-            org.activiti.engine.identity.User newUser = identityService.newUser(userId);
-            newUser.setFirstName(user.getName());
-            newUser.setLastName(&quot;&quot;);
-            newUser.setPassword(user.getPassword());
-            newUser.setEmail(user.getEmail());
-            identityService.saveUser(newUser);
-
-            // 添加membership
-            for (Long roleId : roleIds) {
-                Role role = roleManager.getEntity(roleId);
-                identityService.createMembership(userId, role.getEnName());
-            }
-        }
-    }
-
-}
-</code></pre><p>删除操作也和这个类似！</p>
-<p>不管从业务系统维护用户还是从Activiti维护，肯定要确定一方，然后CRUD的时候同步到对方，如果需要同步多个子系统那么可以再调用WebService实现<br>。</p>
-<h3 id="2-5-流程图设计工具用什么"><a href="#2-5-流程图设计工具用什么" class="headerlink" title="2.5 流程图设计工具用什么"></a>2.5 流程图设计工具用什么</h3><p>Activiti提供了两个流程设计工具，但是面向对象不同。</p>
-<ul>
-<li><p>Activiti Modeler，面向业务人员，使用开源的BPMN设计工具 <a href="http://www.signavio.com/en.html" target="_blank" rel="noopener"> Signavio </a> ，使用BPMN描述业务流程图 </p>
-</li>
-<li><p>Eclipse Designer，面向开发人员，Eclipse的插件，可以让开发人员定制每个节点的属性（ID、Name、Listener、Attr等） </p>
-</li>
-</ul>
-<h4 id="2-5-1-我们的方式"><a href="#2-5-1-我们的方式" class="headerlink" title="2.5.1 我们的方式"></a>2.5.1 我们的方式</h4><p>可能你会惊讶，因为我们没有使用Activiti Modeler，我们认为用Viso已经能表达流程图的意思了，而且项目经理也是技术出身，和开发人员也容易沟通。</p>
-<p>目前这个项目是第一个使用Activiti的，开始我们在需求调研阶段使用Viso设计流程图，利用 <a href="http://wiki.mbalib.com/wiki/%E6%B3%B3%E9%81%93%E6%B5%81%E7%A8%8B%E5%9B%BE" target="_blank" rel="noopener"> 泳道流程图
-</a><br>设计和客户沟通，确定后由负责流程的开发人员用Eclipse Designer设计得到bpmn20.xml，最后部署。</p>
-<h3 id="2-6-Eclipse-Designer存在的问题"><a href="#2-6-Eclipse-Designer存在的问题" class="headerlink" title="2.6 Eclipse Designer存在的问题"></a>2.6 Eclipse Designer存在的问题</h3><p>这个插件有一个很讨厌的Bug一直未修复，安装了插件后Eclipse的复制和粘帖快捷键会被更换为(Ctrl+Insert、Shift+Insert)；Bug描<br>述请见：</p>
-<ul>
-<li><p><a href="http://forums.activiti.org/en/viewtopic.php?f=8&amp;t=2701" target="_blank" rel="noopener"> Activit Forums中报告的Bug </a></p>
-</li>
-<li><p><a href="http://jira.codehaus.org/browse/ACT-992" target="_blank" rel="noopener"> Jira的登记 </a></p>
-</li>
-</ul>
-<p>所以最后我们只能单独开一个安装了Eclipse Designer的Eclipse专门用来设计流程图，这样就不影响正常使用Eclipse JAVAEE了。</p>
-<h2 id="3-配置"><a href="#3-配置" class="headerlink" title="3.配置"></a>3.配置</h2><h3 id="3-1-集成Spring"><a href="#3-1-集成Spring" class="headerlink" title="3.1 集成Spring"></a>3.1 集成Spring</h3><p>对于和Spring的集成Activiti做的不错，简单配置一些Bean代理即可实现，但是有两个和事务相关的地方要提示：</p>
-<ul>
-<li><p>配置 <strong> processEngineConfiguration </strong> 的时候属性 <strong> transactionManager </strong> 要使用和业务功能的同一个事务管理Bean，否则事务不同步。 </p>
-</li>
-<li><p>对于实现了org.activiti.engine.delegate包中的接口的类需要被事务控制的实现类需要被Spring代理，并且添加事务的Annotation或者在xml中配置，例如: </p>
-</li>
-</ul>
-<pre><code>/**
- * 创建缴费流程的时候自动创建实体
- *
- * @author HenryYan
- */
-@Service
-@Transactional
-publicclass CreatePaymentProcessListener implementsExecutionListener {
-   ....
-}
-</code></pre><h2 id="4-使用单元测试"><a href="#4-使用单元测试" class="headerlink" title="4.使用单元测试"></a>4.使用单元测试</h2><p>单元测试均使用Spring的AbstractTransactionalJUnit4SpringContextTests作为SuperClass，并且在测试类<br>添加：</p>
-<pre><code>@ContextConfiguration(locations = { &quot;/applicationContext-test.xml&quot;})
-@RunWith(SpringJUnit4ClassRunner.class)
-</code></pre><p>虽然Activiti也提供了测试的一些超类，但是感觉不好用，所以自己封装了一些方法。</p>
-<p>代码请转移： <a href="https://gist.github.com/2182847" target="_blank" rel="noopener"> https://gist.github.com/2182847 </a></p>
-<h3 id="4-1-验证流程图设计是否正确"><a href="#4-1-验证流程图设计是否正确" class="headerlink" title="4.1 验证流程图设计是否正确"></a>4.1 验证流程图设计是否正确</h3><p>代码请转移： <a href="https://gist.github.com/2182869" target="_blank" rel="noopener"> https://gist.github.com/2182869 </a></p>
-<h3 id="4-2-业务对象和流程关联测试"><a href="#4-2-业务对象和流程关联测试" class="headerlink" title="4.2 业务对象和流程关联测试"></a>4.2 业务对象和流程关联测试</h3><p>代码请转移： <a href="https://gist.github.com/2182973" target="_blank" rel="noopener"> https://gist.github.com/2182973 </a></p>
-<h2 id="5-各种状态的任务查询以及和业务对象关联"><a href="#5-各种状态的任务查询以及和业务对象关联" class="headerlink" title="5.各种状态的任务查询以及和业务对象关联"></a>5.各种状态的任务查询以及和业务对象关联</h2><p>我们目前分为4中状态：未签收、办理中、运行中、已完成。</p>
-<p>查询到任务或者流程实例后要显示在页面，这个时候需要添加业务数据，最终结果就是业务和流程的并集，请参考 <strong> 6.2 </strong> 。</p>
-<h3 id="5-1-未签收-Task"><a href="#5-1-未签收-Task" class="headerlink" title="5.1 未签收(Task)"></a>5.1 未签收(Task)</h3><p>此类任务针对于把Task分配给一个角色时，例如部门领导，因为 <strong> 部门领导 </strong> 角色可以指定多个人所以需要先签收再办理，术语： <strong> 抢占式 </strong></p>
-<p>对应的API查询：</p>
-<pre><code>/**
- * 获取未签收的任务查询对象
- * @param userId    用户ID
- */
-@Transactional(readOnly = true)
-publicTaskQuery createUnsignedTaskQuery(String userId) {
-    TaskQuery taskCandidateUserQuery = taskService.createTaskQuery().processDefinitionKey(getProcessDefKey())
-            .taskCandidateUser(userId);
-    returntaskCandidateUserQuery;
-}
-</code></pre><h3 id="5-2-办理中-Task"><a href="#5-2-办理中-Task" class="headerlink" title="5.2 办理中(Task)"></a>5.2 办理中(Task)</h3><p>此类任务数据类源有两种:</p>
-<ul>
-<li><p>签收后的，5.1中签收后就应该为办理中状态 </p>
-</li>
-<li><p>节点指定的是具体到一个人，而不是角色 </p>
-</li>
-</ul>
-<p>对应的API查询：</p>
-<pre><code>/**
- * 获取正在处理的任务查询对象
- * @param userId    用户ID
- */
-@Transactional(readOnly = true)
-publicTaskQuery createTodoTaskQuery(String userId) {
-    TaskQuery taskAssigneeQuery = taskService.createTaskQuery().processDefinitionKey(getProcessDefKey()).taskAssignee(userId);
-    returntaskAssigneeQuery;
-}
-</code></pre><h3 id="5-3-运行中-ProcessInstance"><a href="#5-3-运行中-ProcessInstance" class="headerlink" title="5.3 运行中(ProcessInstance)"></a>5.3 运行中(ProcessInstance)</h3><p>说白了就是没有结束的流程，所有参与过的人都应该可以看到这个实例，但是Activiti的API没有可以通过用户查询的方法，这个只能自己用hack的方式处理了，<br>我目前还没有处理。</p>
-<p>从表 <strong> ACT_RU_EXECUTION </strong> 中查询数据。</p>
-<p>对应的API查询：</p>
-<pre><code>/**
- * 获取未经完成的流程实例查询对象
- * @param userId    用户ID
- */
-@Transactional(readOnly = true)
-publicProcessInstanceQuery createUnFinishedProcessInstanceQuery(String userId) {
-    ProcessInstanceQuery unfinishedQuery = runtimeService.createProcessInstanceQuery().processDefinitionKey(getProcessDefKey())
-            .active();
-    returnunfinishedQuery;
-}
-</code></pre><h3 id="5-4-已完成-HistoricProcessInstance"><a href="#5-4-已完成-HistoricProcessInstance" class="headerlink" title="5.4 已完成(HistoricProcessInstance)"></a>5.4 已完成(HistoricProcessInstance)</h3><p>已经结束的流程实例。</p>
-<p>从表 <strong> ACT_HI_PROCINST </strong> 中查询数据。</p>
-<pre><code>/**
- * 获取已经完成的流程实例查询对象
- * @param userId    用户ID
- */
-@Transactional(readOnly = true)
-publicHistoricProcessInstanceQuery createFinishedProcessInstanceQuery(String userId) {
-    HistoricProcessInstanceQuery finishedQuery = historyService.createHistoricProcessInstanceQuery()
-            .processDefinitionKey(getProcessDefKey()).finished();
-    returnfinishedQuery;
-}
-</code></pre><h3 id="5-5-查询时和业务关联"><a href="#5-5-查询时和业务关联" class="headerlink" title="5.5 查询时和业务关联"></a>5.5 查询时和业务关联</h3><p>提示：之前在业务对象添加了 <strong> PROCESS_INSTANCE_ID </strong> 字段</p>
-<p>思路：现在可以利用这个字段查询了，不管是Task还是ProcessInstance都可以得到流程实例ID，可以根据流程实例ID查询实体然后把流程对象设置到实<br>体的一个属性中由Action或者Controller输出到前台。</p>
-<p>代码请参考： <a href="https://gist.github.com/2183557" target="_blank" rel="noopener"> https://gist.github.com/2183557 </a></p>
-<h2 id="6-UI及截图"><a href="#6-UI及截图" class="headerlink" title="6.UI及截图"></a>6.UI及截图</h2><p>结合实际业务描述一个业务从开始到结束的过程，对于迷惑的同学看完豁然开朗了；这里使用请假作为例子。</p>
-<h3 id="6-1-单独一个列表负责申请"><a href="#6-1-单独一个列表负责申请" class="headerlink" title="6.1 单独一个列表负责申请"></a>6.1 单独一个列表负责申请</h3><p>这样的好处是申请和流程办理分离开处理，列表显示未启动流程的请假记录（数据库PROCESS_INSTANCE_ID为空）。</p>
-<p>申请界面的截图：</p>
-<p><img src="http://static.open-
-open.com/lib/uploadImg/20121017/20121017155145_849.png" alt="Activiti工作流引擎使用"></p>
-<h3 id="6-2-流程状态"><a href="#6-2-流程状态" class="headerlink" title="6.2 流程状态"></a>6.2 流程状态</h3><p><img src="http://static.open-
-open.com/lib/uploadImg/20121017/20121017155146_668.png" alt="Activiti工作流引擎使用"></p>
-<h3 id="6-3-流程跟踪"><a href="#6-3-流程跟踪" class="headerlink" title="6.3 流程跟踪"></a>6.3 流程跟踪</h3><p>图片方式显示当前节点：</p>
-<p><img src="http://static.open-
-open.com/lib/uploadImg/20121017/20121017155147_20.png" alt="Activiti工作流引擎使用"></p>
-<p>列表形式显示流程流转过程:</p>
-<p><img src="http://static.open-
-open.com/lib/uploadImg/20121017/20121017155147_321.png" alt="Activiti工作流引擎使用"></p>
-<h4 id="6-3-1-当前节点定位JS"><a href="#6-3-1-当前节点定位JS" class="headerlink" title="6.3.1 当前节点定位JS"></a>6.3.1 当前节点定位JS</h4><p><strong> Java </strong> 代码请移步： <a href="https://gist.github.com/2183712" target="_blank" rel="noopener"> https://gist.github.com/2183712 </a></p>
-<p><strong> Javascript </strong> 思路：先通过Ajax获取当前节点的坐标，在指定位置添加红色边框，然后加载图片。 </p>
-<p>代码移步： <a href="https://gist.github.com/2183804" target="_blank" rel="noopener"> https://gist.github.com/2183804 </a></p>
-<h2 id="7-开启Logger"><a href="#7-开启Logger" class="headerlink" title="7.开启Logger"></a>7.开启Logger</h2><ol>
-<li>添加log4j的jar </li>
-<li>设置 <strong> log4j.logger.java.sql </strong> =DEBUG </li>
-</ol>
-<h2 id="8-结束"><a href="#8-结束" class="headerlink" title="8.结束"></a>8.结束</h2><p>之前就想写这篇文章，现在终于完成了，花费了几个小时，希望能节省你几天的时间。</p>
-<p>请读者仔细阅读Activiti的用户手册和Javadoc。  </p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-    <div class="bdsharebuttonbox">
-    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
-    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
-    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
-    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
-    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
-    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
-</div>
-<script>
-window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-</script>
-<style>
-    .bdshare_popup_box {
-        border-radius: 4px;
-        border: #e1e1e1 solid 1px;
-    }
-    .bdshare-button-style0-16 a,
-    .bdshare-button-style0-16 .bds_more {
-        padding-left: 20px;
-        margin: 6px 10px 6px 0;
-    }
-    .bdshare_dialog_list a,
-    .bdshare_popup_list a,
-    .bdshare_popup_bottom a {
-        font-family: 'Microsoft Yahei';
-    }
-    .bdshare_popup_top {
-        display: none;
-    }
-    .bdshare_popup_bottom {
-        height: auto;
-        padding: 5px;
-    }
-</style>
-
-
-</div>
-
-            
-    
-        <a href="https://www.itchina.top/2018/04/20/Activiti工作流引擎使用/#comments" id="sourceId::2018/04/20/Activiti工作流引擎使用/" class="article-comment-link cy_cmt_count">评论</a>
+        <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(6)：消息延时投递/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(6)：消息延时投递/" class="article-comment-link cy_cmt_count">评论</a>
     
 
         </footer>
@@ -1353,220 +930,6 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
 
 
-    <article id="post-ActiveMQ笔记(6)：消息延时投递" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/ActiveMQ笔记(6)：消息延时投递/">ActiveMQ笔记(6)：消息延时投递</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/ActiveMQ笔记(6)：消息延时投递/">
-            <time datetime="2018-04-19T16:34:21.413Z" itemprop="datePublished">2018-04-20</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/ActiveMQ/">ActiveMQ</a>
-    </div>
-
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/activemq/">activemq</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>在开发业务系统时，某些业务场景需要消息定时发送或延时发送（类似：飞信的短信定时发送需求），这时候就需要用到activemq的消息延时投递，详细的文档可参考<br><a href="http://activemq.apache.org/delay-and-schedule-message-delivery.html" target="_blank" rel="noopener"> 官网说明 </a><br>，本文只介绍二种常用的用法：</p>
-<p>注：本文采用spring的JmsTemplate来发送消息</p>
-<p>步骤1、  首先要修改activemq.xml配置文件，启用延时投递</p>
-<pre><code>1 &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; ... schedulerSupport=&quot;true&quot; &gt;
-2     ...
-3   &lt;/broker&gt;
-</code></pre><p>即：在broker节点加上schedulerSupport=”true”，然后重启activemq即可</p>
-<p>步骤2、  定义一个MessagePostProcessor的实现类</p>
-<p>1</p>
-<p>2</p>
-<p>3</p>
-<p>4</p>
-<p>5</p>
-<p>6</p>
-<p>7</p>
-<p>8</p>
-<p>9</p>
-<p>10</p>
-<p>11</p>
-<p>12</p>
-<p>13</p>
-<p>14</p>
-<p>15</p>
-<p>16</p>
-<p>17</p>
-<p>18</p>
-<p>19</p>
-<p>20</p>
-<p>21</p>
-<p>22</p>
-<p>23</p>
-<p>24</p>
-<p>25</p>
-<p>26</p>
-<p>27</p>
-<p>28</p>
-<p>29</p>
-<p>30</p>
-<p>31</p>
-<p>32</p>
-<p>33</p>
-<p>34</p>
-<p>35</p>
-<p>36</p>
-<p>37</p>
-<p>38</p>
-<p><code>import</code> <code>javax.jms.JMSException;</code></p>
-<p><code>import</code> <code>javax.jms.Message;</code></p>
-<p><code>import</code> <code>lombok.Data;</code></p>
-<p><code>import</code> <code>org.apache.activemq.ScheduledMessage;</code></p>
-<p><code>import</code> <code>org.apache.commons.lang3.StringUtils;</code></p>
-<p><code>import</code> <code>org.springframework.jms.core.MessagePostProcessor;</code></p>
-<p><code>/**</code></p>
-<p><code></code> <code>* MQ延时投递处理器（注：ActiveMQ的配置文件中，要配置schedulerSupport=&quot;true&quot;，否则不起作用）</code></p>
-<p><code></code> <code>* by: 杨俊明 2016-06-16</code></p>
-<p><code></code> <code>*/</code></p>
-<p><code>@Data</code></p>
-<p><code>public</code> <code>class</code> <code>ScheduleMessagePostProcessor</code> <code>implements</code> <code>MessagePostProcessor {</code></p>
-<p><code></code> <code>private</code> <code>long</code> <code>delay = 0l;</code></p>
-<p><code></code> <code>private</code> <code>String corn =</code> <code>null</code> <code>;</code></p>
-<p><code></code> <code>public</code> <code>ScheduleMessagePostProcessor(</code> <code>long</code> <code>delay) {</code></p>
-<p><code></code> <code>this</code> <code>.delay = delay;</code></p>
-<p><code></code> <code>}</code></p>
-<p><code></code> <code>public</code> <code>ScheduleMessagePostProcessor(String cron) {</code></p>
-<p><code></code> <code>this</code> <code>.corn = cron;</code></p>
-<p><code></code> <code>}</code></p>
-<p><code></code> <code>public</code> <code>Message postProcessMessage(Message message)</code> <code>throws</code> <code>JMSException {</code></p>
-<p><code></code> <code>if</code> <code>(delay &gt;</code> <code>0</code> <code>) {</code></p>
-<p><code></code> <code>message.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, delay);</code></p>
-<p><code></code> <code>}</code></p>
-<p><code></code> <code>if</code> <code>(!StringUtils.isEmpty(corn)) {</code></p>
-<p><code></code> <code>message.setStringProperty(ScheduledMessage.AMQ_SCHEDULED_CRON, corn);</code></p>
-<p><code></code> <code>}</code></p>
-<p><code></code> <code>return</code> <code>message;</code></p>
-<p><code></code> <code>}</code></p>
-<p><code>}</code></p>
-<p>步骤3、  jmsTemplate发送示例</p>
-<p>1</p>
-<p>2</p>
-<p>3</p>
-<p>4</p>
-<p>5</p>
-<p>6</p>
-<p>7</p>
-<p>8</p>
-<p>9</p>
-<p>10</p>
-<p>11</p>
-<p>12</p>
-<p>13</p>
-<p><code>Object message1 =</code> <code>&quot;corn消息内容：&quot;</code> <code>\+ DateUtil.formatDate(</code> <code>new</code> <code>Date());</code></p>
-<p><code>//分 时 天 月 星期几</code></p>
-<p><code>jmsTemplate.convertAndSend(message1,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>&quot;40 22 * * *&quot;</code> <code>));</code></p>
-<p><code>logger.info(</code> <code>&quot;消息1：[&quot;</code> <code>\+ message1 +</code> <code>&quot;] 延时发送成功！&quot;</code> <code>);</code></p>
-<p><code>jmsTemplate.convertAndSend(message1,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>&quot;50 22 * * *&quot;</code> <code>));</code></p>
-<p><code>logger.info(</code> <code>&quot;消息1：[&quot;</code> <code>\+ message1 +</code> <code>&quot;] 延时发送成功！&quot;</code> <code>);</code></p>
-<p><code>Object message2 =</code> <code>&quot;message：&quot;</code> <code>\+ DateUtil.formatDate(</code> <code>new</code> <code>Date());</code></p>
-<p><code>jmsTemplate.convertAndSend(message2,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>30</code> <code>*</code> <code>1000</code> <code>));</code> <code>//延时30秒</code></p>
-<p><code>jmsTemplate.convertAndSend(message2,</code> <code>new</code> <code>ScheduleMessagePostProcessor(</code> <code>3600</code> <code>*</code> <code>24</code> <code>*</code> <code>1000</code> <code>));</code> <code>//延时24小时</code></p>
-<p><code>logger.info(</code> <code>&quot;消息2：[&quot;</code> <code>\+ message2 +</code> <code>&quot;] 延时发送成功！&quot;</code> <code>);</code></p>
-<p>上面的代码演示了二种延时的用法：延时N毫秒、按corn表达式延时（注：此corn表达式并非Quartz框架中的corn表达式，而是linux中corntab<br>中的表达 式，基本顺序是”分(0-59) 时(0-23) 日(1-31) 月（1-12） 星期几(1-7) “）</p>
-<p>发送成功后，可以登录activemq的webconsole查看消息的属性：</p>
-<p>在scheduled面板中，可以看到延时的消息</p>
-<p><img src="http://images2015.cnblogs.com/blog/27612/201606/27612-201606182302114
-95-737992865.png" alt="点击看大图"></p>
-<p>注：在开启消息持久化存储的前提下，就算把相应的queue在webconsole面板中删除（即删除队列），只要投递的时间尚未到，该消息也不会删除，仍然能正常延<br>时投递。</p>
-<p>此外，在queues面板中，如何查看某条具体的消息，也可以通过属性发现这条消息是延时消息，参考下图：</p>
-<p><img src="http://images2015.cnblogs.com/blog/27612/201606/27612-201606182308471
-04-233535248.png" alt="点击看大图"></p>
-<p>参考文章：<br>1、 <a href="http://activemq.apache.org/delay-
-and-schedule-message-delivery.html" target="_blank" rel="noopener"> Delay and Schedule Message Delivery </a></p>
-<p>2、 <a href="https://zh.wikipedia.org/wiki/Cron" target="_blank" rel="noopener"> 喂鸡百科上的Corn表达式解释 </a> （中文）</p>
-<p>3、 <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener"> 喂鸡百科上的Corn表达式解释 </a> （英文）</p>
-<p><a href="http://activemq.apache.org/kahadb.html" target="_blank" rel="noopener"> 4、kahaDB官方文档 </a></p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-    <div class="bdsharebuttonbox">
-    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
-    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
-    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
-    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
-    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
-    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
-</div>
-<script>
-window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-</script>
-<style>
-    .bdshare_popup_box {
-        border-radius: 4px;
-        border: #e1e1e1 solid 1px;
-    }
-    .bdshare-button-style0-16 a,
-    .bdshare-button-style0-16 .bds_more {
-        padding-left: 20px;
-        margin: 6px 10px 6px 0;
-    }
-    .bdshare_dialog_list a,
-    .bdshare_popup_list a,
-    .bdshare_popup_bottom a {
-        font-family: 'Microsoft Yahei';
-    }
-    .bdshare_popup_top {
-        display: none;
-    }
-    .bdshare_popup_bottom {
-        height: auto;
-        padding: 5px;
-    }
-</style>
-
-
-</div>
-
-            
-    
-        <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(6)：消息延时投递/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(6)：消息延时投递/" class="article-comment-link cy_cmt_count">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <article id="post-ActiveMQ笔记(5)：JMX监控" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -1775,228 +1138,6 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
             
     
         <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(5)：JMX监控/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(5)：JMX监控/" class="article-comment-link cy_cmt_count">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-ActiveMQ笔记(3)：基于Networks of Brokers的HA方案" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/">ActiveMQ笔记(3)：基于Networks of Brokers的HA方案</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/">
-            <time datetime="2018-04-19T16:34:21.411Z" itemprop="datePublished">2018-04-20</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/ActiveMQ/">ActiveMQ</a>
-    </div>
-
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/activemq/">activemq</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p><a href="http://blog.csdn.net/lsy0903/article/details/53413355" target="_blank" rel="noopener"> 上一篇介绍了基于ZK的ActiveMQ HA方案
-</a> ，虽然理解起来比较容易，但是有二个不足：</p>
-<p>1)  占用的节点数过多，1个zk集群至少3个节点，1个activemq集群也至少得3个节点，但其实正常运行时，只有一个master节点在对外响应，换句话说<br>，花6个节点的成本只为了保证1个activemq master节点的高可用，太浪费资源了。</p>
-<p>2)  性能下降太明显，比起单节点的activemq，性能下降了近1个数量级。</p>
-<p>这一篇将介绍基于networks of<br>brokers的HA方案，不需要借助zk等第3方组件，只需要2个activemq节点就能达到类似效果，进入正题之前，先来简单谈谈Broker这个概念。</p>
-<p>Broker一词的原意是『  经纪人、中间人  』，用在ActiveMQ的构架中，即：Broker作为Producer与Consumer的中间人(或代理人)<br>，生产者不用知道消费者在哪里、如何消费这些细节，只要将消息扔给中间人Broker即可，类似的，消费者也不用关心消息是从哪个生产者过来的，它只知道这是从Bro<br>ker那里拿来的，如果画一张图来描述，就是下面这样（引用自本文最后参考文章中的图片）</p>
-<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325232947995-77
-5199925.gif" alt=""></p>
-<p>那么，当生产者将消息发给Broker时，会发生什么？下图描述的就是这个过程：</p>
-<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233102823-19
-44467648.gif" alt=""></p>
-<p>1) 生产者将消息发给Broker</p>
-<p>2) Broker将消息落地存储</p>
-<p>3) 然后给生产者反馈：事情我已经办妥了！</p>
-<p>继续，再来看看消费者又是如何跟Broker打交道的：</p>
-<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233400479-19
-84865403.gif" alt=""></p>
-<p>1) Broker将接收到的消息，从db中取出</p>
-<p>2) 然后发送给消费者</p>
-<p>3)<br>如果消费者使用的是自动确认模式(即：Session.AUTO_ACKNOWLEDGE），则Consumer会马上告诉Broker：ok，消息我已经收到了。</p>
-<p>4) 然后进行自己的业务处理</p>
-<p>5) Broker一旦收到确认，将会马上更新消息的状态为已消费(或直接删除，取决于持久化的实现机制）（注：虽然图中步骤5排在步骤4之后，但是步骤4、5几乎是<br>同时发生的）</p>
-<p>在一些大型应用中，如果一个Broker出现性能瓶颈抗不住压力，可能会拆分成多个Broker，如下图所示：</p>
-<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326143807511-76
-6176344.gif" alt=""></p>
-<p>(注：上图中箭头的方法并非数据流向，而应该理解成调用关系，即：Producer调用Broker1，Consumer调用Broker2…)</p>
-<p>Producer将消息发送给Broker1，而Consumer从另一个Broker2接收消息，有点类似数据库读写分离的意思，这样系统的性能可以提升一定程度的<br>提升，但是问题来了，Broker1上的消息，如何  “同步”（见下面的注释）  到Broker2呢，这就依赖networkConnector的配置。</p>
-<p>注：  _ 同步这个词用在这里可能不太准确，但也找不到一个更精确的词来描述，实际上，二个broker用上述机制组建成小集群后，如果生产者连接到broker1<br>，消费者连接到broker2，当消息发送到broker1后，broker1不会将该消息复制一份到broker2，而是等消费者从broker2上消费该消息时，<br>这条消息才从broker1取到broker2上，相当于此时broker2是消费者，从broker1消费了一条消息，然后broker2上就有这条消息了，最终消<br>费者才能broker2上拿到这条消息。 _</p>
-<p><img src="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif" alt=""><br><img src="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif" alt=""></p>
-<pre><code> 1 &lt;beans
- 2         xmlns=&quot;http://www.springframework.org/schema/beans&quot;
- 3         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
- 4         xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
- 5   http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd&quot;&gt;
- 6 
- 7   &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
- 8     &lt;property name=&quot;locations&quot;&gt;
- 9       &lt;value&gt;file:${activemq.conf}/credentials.properties&lt;/value&gt;
-10     &lt;/property&gt;
-11   &lt;/bean&gt;
-12 
-13   &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; brokerName=&quot;activemq-1&quot;&gt;
-14     &lt;networkConnectors&gt;
-15       &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61626)&quot;/&gt;
-16     &lt;/networkConnectors&gt;
-17     &lt;persistenceAdapter&gt;
-18       &lt;kahaDB directory=&quot;${activemq.data}/kahadb&quot;/&gt;
-19     &lt;/persistenceAdapter&gt;
-20     &lt;transportConnectors&gt;
-21       &lt;transportConnector name=&quot;openwire&quot;
-22                           uri=&quot;tcp://0.0.0.0:61616?maximumConnections=1000&amp;amp;wireFormat.maxFrameSize=104857600&quot;/&gt;
-23     &lt;/transportConnectors&gt;
-24   &lt;/broker&gt;
-25 
-26   &lt;import resource=&quot;jetty.xml&quot;/&gt;
-27 &lt;/beans&gt;
-</code></pre><p>View Code</p>
-<p>注意：14-16行及21-22行，该Broker对外暴露616 <strong> 1  </strong> 6端口，同时”连接”到616 <strong> 2  </strong><br>6端口（即另1个broker）,最终的效果相当于，如果有producer把消息发到616 <strong> 1  </strong><br>6（broker1）,则从另一个broker(616 <strong> 2  </strong> 6端口)上也能消费这条消息。</p>
-<p>明白这些基本原理后，在61626对应的activemq上，也做类似的配置，只不过”连接方向”正好相反，参考以下配置：</p>
-<p><img src="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif" alt=""><br><img src="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif" alt=""></p>
-<pre><code> 1 &lt;beans
- 2         xmlns=&quot;http://www.springframework.org/schema/beans&quot;
- 3         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
- 4         xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
- 5   http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd&quot;&gt;
- 6 
- 7     &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
- 8         &lt;property name=&quot;locations&quot;&gt;
- 9             &lt;value&gt;file:${activemq.conf}/credentials.properties&lt;/value&gt;
-10         &lt;/property&gt;
-11     &lt;/bean&gt;
-12 
-13     &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; brokerName=&quot;activemq-2&quot;&gt;
-14         &lt;networkConnectors&gt;
-15             &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61616)&quot;/&gt;
-16         &lt;/networkConnectors&gt;
-17         &lt;persistenceAdapter&gt;
-18             &lt;kahaDB directory=&quot;${activemq.data}/kahadb&quot;/&gt;
-19         &lt;/persistenceAdapter&gt;
-20         &lt;transportConnectors&gt;
-21             &lt;transportConnector name=&quot;openwire&quot;
-22                                 uri=&quot;tcp://0.0.0.0:61626?maximumConnections=1000&amp;amp;wireFormat.maxFrameSize=104857600&quot;/&gt;
-23         &lt;/transportConnectors&gt;
-24     &lt;/broker&gt;
-25 
-26     &lt;import resource=&quot;jetty.xml&quot;/&gt;
-27 &lt;/beans&gt;
-</code></pre><p>View Code</p>
-<p>(注：如果希望2个activemq上都能访问admin管理界面，jetty.xml中的端口要修改，不要冲突)</p>
-<p>这样，activemq-1与activemq-2这二个broker就互为主备，发给你的消息会同步到我，发给我的消息也会同步到你，实现了HA，示意图如下：</p>
-<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326151335604-95
-1843855.png" alt=""></p>
-<p>Producer与Consumer连接到activemq时，配置文件可以这么写：</p>
-<p><img src="//common.cnblogs.com/images/copycode.gif" alt="复制代码"></p>
-<pre><code>1 &lt;bean id=&quot;jmsFactory&quot; class=&quot;org.apache.activemq.pool.PooledConnectionFactory&quot; destroy-method=&quot;stop&quot;&gt;
-2     &lt;property name=&quot;connectionFactory&quot;&gt;
-3         &lt;bean class=&quot;org.apache.activemq.ActiveMQConnectionFactory&quot;&gt;
-4             &lt;!--broker服务的地址--&gt;
-5             &lt;property name=&quot;brokerURL&quot; value=&quot;failover:(tcp://localhost:61616,tcp://localhost:61626)&quot;/&gt;
-6             ...
-7         &lt;/bean&gt;
-8     &lt;/property&gt;
-9 &lt;/bean&gt;
-</code></pre><p><img src="//common.cnblogs.com/images/copycode.gif" alt="复制代码"></p>
-<p>这种HA方案的优点是占用的节点数更少(只需要2个节点),而且2个broker都可以响应消息的接收与发送，性能比zookeeper方案要好一些。</p>
-<p>最后，再给一个简化配置的技巧，以上述的2节点HA方案中，二个activemq的配置文件都要加networkConnector配置，如果想减轻配置的工作量，也<br>可以只在其中一个activemq设置，参考以下片段：</p>
-<pre><code>&lt;networkConnectors&gt;
-  &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61626)&quot; duplex=&quot;true&quot;/&gt;
-&lt;/networkConnectors&gt;
-</code></pre><p>即：在61616这个activemq的配置文件中，添加networkConnector时，增加  duplex=”true”  ，也就是双工通讯的意思，这样<br>61616与61626这二个activemq上的broker就建立了双向通讯连接，另一个activemq上就无需额外配置了（注：如果在61626上配置了，反<br>而会报错）</p>
-<p><strong> 参考文章：  </strong></p>
-<p><a href="http://www.jakubkorab.net/2011/11/understanding-activemq-
-broker-networks.html" target="_blank" rel="noopener"> http://www.jakubkorab.net/2011/11/understanding-activemq-broker-<br>networks.html  </a></p>
-<p><a href="http://activemq.apache.org/networks-of-brokers.html" target="_blank" rel="noopener"> http://activemq.apache.org/networks-of-brokers.html
-</a></p>
-<p><strong> 最后  </strong> 贴二段程序运行的输出日志，以说明同步机制的正确性，打消回复中“大鹏520”的顾虑： </p>
-<p>背景： <em>.</em>.<em>.15 与 </em>.<em>.</em>.16 作为HA(双主)的activemq集群，发送程序只连接到15发消息，然后退出。<br>接收程序只从16上收消息，如果收到了，表明15上的消息同步到16。</p>
-<p>下面是 <strong> 发送程序 </strong> 的输出片段：（注意输出日志中关于IP的部分，这是只连接到<em>.</em>.<em>.[b]15[/b]上发送的）<br>(注：部分敏感信息，比如真实IP前缀，公司package名，用</em>代替了)</p>
-<p>_ 14:53:09,996 &lt;<em>.DemoSender&gt; INFO [main]: 准备发送消息… _<br>_ 14:53:10,270 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[main]: Sending: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=</em>.<em>.</em>.15, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.InactivityMonitor&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>. <strong> 15  </strong> :61616@50616]: Using min of<br>local: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=</em>.<em>.</em>.15, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} and remote:<br>WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>. <strong> 15  </strong> :61616@50616]: Received<br>WireFormat: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>. <strong> 15  </strong> :61616@50616]:<br>tcp:///<em>.</em>.<em>.15:61616@50616 before negotiation: OpenWireFormat{version=11,<br>cacheEnabled=false, stackTraceEnabled=false, tightEncodingEnabled=false,<br>sizePrefixDisabled=false, maxFrameSize=9223372036854775807} _<br>_ 14:53:10,307 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>. <strong> 15  </strong> :61616@50616]:<br>tcp:///<em>.</em>.<em>.15:61616@50616 after negotiation: OpenWireFormat{version=11,<br>cacheEnabled=true, stackTraceEnabled=true, tightEncodingEnabled=true,<br>sizePrefixDisabled=false, maxFrameSize=104857600} _<br>_ 14:53:10,416 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Executing callback on JMS Session: PooledSession { ActiveMQSession {id=ID<br>:yangjunmings-MacBook-Pro.local-50615-1461480790088-1:1:1,started=false}<br>java.lang.Object@5a56cdac } _<br>_ 14:53:10,471 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Sending created message: ActiveMQTextMessage {commandId = 0, responseRequired<br>= false, messageId = null, originalDestination = null, originalTransactionId =<br>null, producerId = null, destination = null, transactionId = null, expiration<br>= 0, timestamp = 0, arrival = 0, brokerInTime = 0, brokerOutTime = 0,<br>correlationId = null, replyTo = null, persistent = false, type = null,<br>priority = 0, groupID = null, groupSequence = 0, targetConsumerId = null,<br>compressed = false, userID = null, content = null, marshalledProperties =<br>null, dataStructure = null, redeliveryCounter = 0, size = 0, properties =<br>null, readOnlyProperties = false, readOnlyBody = false, droppable = false,<br>jmsXGroupFirstForConsumer = false, text =  message test:0  } _<br>_ 14:53:10,516 &lt;</em>.DemoSender&gt; INFO [main]:  消息0发送完成!  _<br>_ 14:53:11,520 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Executing callback on JMS Session: PooledSession { ActiveMQSession {id=ID<br>:yangjunmings-MacBook-Pro.local-50615-1461480790088-1:1:1,started=false}<br>java.lang.Object@5a56cdac } _<br>_ 14:53:11,521 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Sending created message: ActiveMQTextMessage {commandId = 0, responseRequired<br>= false, messageId = null, originalDestination = null, originalTransactionId =<br>null, producerId = null, destination = null, transactionId = null, expiration<br>= 0, timestamp = 0, arrival = 0, brokerInTime = 0, brokerOutTime = 0,<br>correlationId = null, replyTo = null, persistent = false, type = null,<br>priority = 0, groupID = null, groupSequence = 0, targetConsumerId = null,<br>compressed = false, userID = null, content = null, marshalledProperties =<br>null, dataStructure = null, redeliveryCounter = 0, size = 0, properties =<br>null, readOnlyProperties = false, readOnlyBody = false, droppable = false,<br>jmsXGroupFirstForConsumer = false, text = message test:1} _</p>
-<p>运行完以后，关掉发送程序，然后启动 <strong> 接收程序 </strong> ：</p>
-<p>_ 14:54:40,965 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[main]: Sending: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=<em>.</em>.<em>.  <strong> 16 </strong> ,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,002 &lt;org.apache.activemq.transport.InactivityMonitor&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>.  <strong> 16 </strong> :61616@50642]: Using min of<br>local: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=<em>.</em>.<em>.  <strong> 16 </strong> ,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} and remote: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=104857600, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,003 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>.  <strong> 16 </strong> :61616@50642]: Received<br>WireFormat: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,003 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>.  <strong> 16 </strong> :61616@50642]: tcp:///</em>.<em>.</em>.  <strong><br>16 </strong> :61616@50642 before negotiation: OpenWireFormat{version=11,<br>cacheEnabled=false, stackTraceEnabled=false, tightEncodingEnabled=false,<br>sizePrefixDisabled=false, maxFrameSize=9223372036854775807} _<br>_ 14:54:41,004 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>.  <strong> 16 </strong> :61616@50642]:<br>tcp:///</em>.<em>.</em>.16:61616@50642 after negotiation: OpenWireFormat{version=11,<br>cacheEnabled=true, stackTraceEnabled=true, tightEncodingEnabled=true,<br>sizePrefixDisabled=false, maxFrameSize=104857600} _<br>_ 14:54:41,163 &lt;org.apache.activemq.thread.TaskRunnerFactory&gt; DEBUG [main]:<br>Initialized TaskRunnerFactory[ActiveMQ Session Task] using ExecutorService:<br>java.util.concurrent.ThreadPoolExecutor@485966cc[Running, pool size = 0,<br>active threads = 0, queued tasks = 0, completed tasks = 0] _<br>_ 14:54:41,181 &lt;*.DemoListener&gt; INFO [ActiveMQ Session Task-1]:  message<br>test:0  _</p>
-<p>注意接收程序中IP的部分，这是从<em>.</em>.<em>.[b]16[/b]上接收到的，说明消息已经从 </em>.<em>.</em>.15同步到<em>.</em>.*.16上了，否则不可能收到消息。</p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-    <div class="bdsharebuttonbox">
-    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
-    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
-    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
-    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
-    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
-    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
-</div>
-<script>
-window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-</script>
-<style>
-    .bdshare_popup_box {
-        border-radius: 4px;
-        border: #e1e1e1 solid 1px;
-    }
-    .bdshare-button-style0-16 a,
-    .bdshare-button-style0-16 .bds_more {
-        padding-left: 20px;
-        margin: 6px 10px 6px 0;
-    }
-    .bdshare_dialog_list a,
-    .bdshare_popup_list a,
-    .bdshare_popup_bottom a {
-        font-family: 'Microsoft Yahei';
-    }
-    .bdshare_popup_top {
-        display: none;
-    }
-    .bdshare_popup_bottom {
-        height: auto;
-        padding: 5px;
-    }
-</style>
-
-
-</div>
-
-            
-    
-        <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/" class="article-comment-link cy_cmt_count">评论</a>
     
 
         </footer>
@@ -2252,6 +1393,228 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
             
     
         <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(4)：搭建Broker集群(cluster)/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(4)：搭建Broker集群(cluster)/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
+    <article id="post-ActiveMQ笔记(3)：基于Networks of Brokers的HA方案" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/">ActiveMQ笔记(3)：基于Networks of Brokers的HA方案</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/">
+            <time datetime="2018-04-19T16:34:21.411Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/ActiveMQ/">ActiveMQ</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/activemq/">activemq</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p><a href="http://blog.csdn.net/lsy0903/article/details/53413355" target="_blank" rel="noopener"> 上一篇介绍了基于ZK的ActiveMQ HA方案
+</a> ，虽然理解起来比较容易，但是有二个不足：</p>
+<p>1)  占用的节点数过多，1个zk集群至少3个节点，1个activemq集群也至少得3个节点，但其实正常运行时，只有一个master节点在对外响应，换句话说<br>，花6个节点的成本只为了保证1个activemq master节点的高可用，太浪费资源了。</p>
+<p>2)  性能下降太明显，比起单节点的activemq，性能下降了近1个数量级。</p>
+<p>这一篇将介绍基于networks of<br>brokers的HA方案，不需要借助zk等第3方组件，只需要2个activemq节点就能达到类似效果，进入正题之前，先来简单谈谈Broker这个概念。</p>
+<p>Broker一词的原意是『  经纪人、中间人  』，用在ActiveMQ的构架中，即：Broker作为Producer与Consumer的中间人(或代理人)<br>，生产者不用知道消费者在哪里、如何消费这些细节，只要将消息扔给中间人Broker即可，类似的，消费者也不用关心消息是从哪个生产者过来的，它只知道这是从Bro<br>ker那里拿来的，如果画一张图来描述，就是下面这样（引用自本文最后参考文章中的图片）</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325232947995-77
+5199925.gif" alt=""></p>
+<p>那么，当生产者将消息发给Broker时，会发生什么？下图描述的就是这个过程：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233102823-19
+44467648.gif" alt=""></p>
+<p>1) 生产者将消息发给Broker</p>
+<p>2) Broker将消息落地存储</p>
+<p>3) 然后给生产者反馈：事情我已经办妥了！</p>
+<p>继续，再来看看消费者又是如何跟Broker打交道的：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160325233400479-19
+84865403.gif" alt=""></p>
+<p>1) Broker将接收到的消息，从db中取出</p>
+<p>2) 然后发送给消费者</p>
+<p>3)<br>如果消费者使用的是自动确认模式(即：Session.AUTO_ACKNOWLEDGE），则Consumer会马上告诉Broker：ok，消息我已经收到了。</p>
+<p>4) 然后进行自己的业务处理</p>
+<p>5) Broker一旦收到确认，将会马上更新消息的状态为已消费(或直接删除，取决于持久化的实现机制）（注：虽然图中步骤5排在步骤4之后，但是步骤4、5几乎是<br>同时发生的）</p>
+<p>在一些大型应用中，如果一个Broker出现性能瓶颈抗不住压力，可能会拆分成多个Broker，如下图所示：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326143807511-76
+6176344.gif" alt=""></p>
+<p>(注：上图中箭头的方法并非数据流向，而应该理解成调用关系，即：Producer调用Broker1，Consumer调用Broker2…)</p>
+<p>Producer将消息发送给Broker1，而Consumer从另一个Broker2接收消息，有点类似数据库读写分离的意思，这样系统的性能可以提升一定程度的<br>提升，但是问题来了，Broker1上的消息，如何  “同步”（见下面的注释）  到Broker2呢，这就依赖networkConnector的配置。</p>
+<p>注：  _ 同步这个词用在这里可能不太准确，但也找不到一个更精确的词来描述，实际上，二个broker用上述机制组建成小集群后，如果生产者连接到broker1<br>，消费者连接到broker2，当消息发送到broker1后，broker1不会将该消息复制一份到broker2，而是等消费者从broker2上消费该消息时，<br>这条消息才从broker1取到broker2上，相当于此时broker2是消费者，从broker1消费了一条消息，然后broker2上就有这条消息了，最终消<br>费者才能broker2上拿到这条消息。 _</p>
+<p><img src="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif" alt=""><br><img src="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif" alt=""></p>
+<pre><code> 1 &lt;beans
+ 2         xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+ 3         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+ 4         xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+ 5   http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd&quot;&gt;
+ 6 
+ 7   &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+ 8     &lt;property name=&quot;locations&quot;&gt;
+ 9       &lt;value&gt;file:${activemq.conf}/credentials.properties&lt;/value&gt;
+10     &lt;/property&gt;
+11   &lt;/bean&gt;
+12 
+13   &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; brokerName=&quot;activemq-1&quot;&gt;
+14     &lt;networkConnectors&gt;
+15       &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61626)&quot;/&gt;
+16     &lt;/networkConnectors&gt;
+17     &lt;persistenceAdapter&gt;
+18       &lt;kahaDB directory=&quot;${activemq.data}/kahadb&quot;/&gt;
+19     &lt;/persistenceAdapter&gt;
+20     &lt;transportConnectors&gt;
+21       &lt;transportConnector name=&quot;openwire&quot;
+22                           uri=&quot;tcp://0.0.0.0:61616?maximumConnections=1000&amp;amp;wireFormat.maxFrameSize=104857600&quot;/&gt;
+23     &lt;/transportConnectors&gt;
+24   &lt;/broker&gt;
+25 
+26   &lt;import resource=&quot;jetty.xml&quot;/&gt;
+27 &lt;/beans&gt;
+</code></pre><p>View Code</p>
+<p>注意：14-16行及21-22行，该Broker对外暴露616 <strong> 1  </strong> 6端口，同时”连接”到616 <strong> 2  </strong><br>6端口（即另1个broker）,最终的效果相当于，如果有producer把消息发到616 <strong> 1  </strong><br>6（broker1）,则从另一个broker(616 <strong> 2  </strong> 6端口)上也能消费这条消息。</p>
+<p>明白这些基本原理后，在61626对应的activemq上，也做类似的配置，只不过”连接方向”正好相反，参考以下配置：</p>
+<p><img src="http://images.cnblogs.com/OutliningIndicators/ContractedBlock.gif" alt=""><br><img src="http://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif" alt=""></p>
+<pre><code> 1 &lt;beans
+ 2         xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+ 3         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+ 4         xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+ 5   http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd&quot;&gt;
+ 6 
+ 7     &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+ 8         &lt;property name=&quot;locations&quot;&gt;
+ 9             &lt;value&gt;file:${activemq.conf}/credentials.properties&lt;/value&gt;
+10         &lt;/property&gt;
+11     &lt;/bean&gt;
+12 
+13     &lt;broker xmlns=&quot;http://activemq.apache.org/schema/core&quot; brokerName=&quot;activemq-2&quot;&gt;
+14         &lt;networkConnectors&gt;
+15             &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61616)&quot;/&gt;
+16         &lt;/networkConnectors&gt;
+17         &lt;persistenceAdapter&gt;
+18             &lt;kahaDB directory=&quot;${activemq.data}/kahadb&quot;/&gt;
+19         &lt;/persistenceAdapter&gt;
+20         &lt;transportConnectors&gt;
+21             &lt;transportConnector name=&quot;openwire&quot;
+22                                 uri=&quot;tcp://0.0.0.0:61626?maximumConnections=1000&amp;amp;wireFormat.maxFrameSize=104857600&quot;/&gt;
+23         &lt;/transportConnectors&gt;
+24     &lt;/broker&gt;
+25 
+26     &lt;import resource=&quot;jetty.xml&quot;/&gt;
+27 &lt;/beans&gt;
+</code></pre><p>View Code</p>
+<p>(注：如果希望2个activemq上都能访问admin管理界面，jetty.xml中的端口要修改，不要冲突)</p>
+<p>这样，activemq-1与activemq-2这二个broker就互为主备，发给你的消息会同步到我，发给我的消息也会同步到你，实现了HA，示意图如下：</p>
+<p><img src="http://images2015.cnblogs.com/blog/27612/201603/27612-20160326151335604-95
+1843855.png" alt=""></p>
+<p>Producer与Consumer连接到activemq时，配置文件可以这么写：</p>
+<p><img src="//common.cnblogs.com/images/copycode.gif" alt="复制代码"></p>
+<pre><code>1 &lt;bean id=&quot;jmsFactory&quot; class=&quot;org.apache.activemq.pool.PooledConnectionFactory&quot; destroy-method=&quot;stop&quot;&gt;
+2     &lt;property name=&quot;connectionFactory&quot;&gt;
+3         &lt;bean class=&quot;org.apache.activemq.ActiveMQConnectionFactory&quot;&gt;
+4             &lt;!--broker服务的地址--&gt;
+5             &lt;property name=&quot;brokerURL&quot; value=&quot;failover:(tcp://localhost:61616,tcp://localhost:61626)&quot;/&gt;
+6             ...
+7         &lt;/bean&gt;
+8     &lt;/property&gt;
+9 &lt;/bean&gt;
+</code></pre><p><img src="//common.cnblogs.com/images/copycode.gif" alt="复制代码"></p>
+<p>这种HA方案的优点是占用的节点数更少(只需要2个节点),而且2个broker都可以响应消息的接收与发送，性能比zookeeper方案要好一些。</p>
+<p>最后，再给一个简化配置的技巧，以上述的2节点HA方案中，二个activemq的配置文件都要加networkConnector配置，如果想减轻配置的工作量，也<br>可以只在其中一个activemq设置，参考以下片段：</p>
+<pre><code>&lt;networkConnectors&gt;
+  &lt;networkConnector uri=&quot;static:(tcp://127.0.0.1:61626)&quot; duplex=&quot;true&quot;/&gt;
+&lt;/networkConnectors&gt;
+</code></pre><p>即：在61616这个activemq的配置文件中，添加networkConnector时，增加  duplex=”true”  ，也就是双工通讯的意思，这样<br>61616与61626这二个activemq上的broker就建立了双向通讯连接，另一个activemq上就无需额外配置了（注：如果在61626上配置了，反<br>而会报错）</p>
+<p><strong> 参考文章：  </strong></p>
+<p><a href="http://www.jakubkorab.net/2011/11/understanding-activemq-
+broker-networks.html" target="_blank" rel="noopener"> http://www.jakubkorab.net/2011/11/understanding-activemq-broker-<br>networks.html  </a></p>
+<p><a href="http://activemq.apache.org/networks-of-brokers.html" target="_blank" rel="noopener"> http://activemq.apache.org/networks-of-brokers.html
+</a></p>
+<p><strong> 最后  </strong> 贴二段程序运行的输出日志，以说明同步机制的正确性，打消回复中“大鹏520”的顾虑： </p>
+<p>背景： <em>.</em>.<em>.15 与 </em>.<em>.</em>.16 作为HA(双主)的activemq集群，发送程序只连接到15发消息，然后退出。<br>接收程序只从16上收消息，如果收到了，表明15上的消息同步到16。</p>
+<p>下面是 <strong> 发送程序 </strong> 的输出片段：（注意输出日志中关于IP的部分，这是只连接到<em>.</em>.<em>.[b]15[/b]上发送的）<br>(注：部分敏感信息，比如真实IP前缀，公司package名，用</em>代替了)</p>
+<p>_ 14:53:09,996 &lt;<em>.DemoSender&gt; INFO [main]: 准备发送消息… _<br>_ 14:53:10,270 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[main]: Sending: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=</em>.<em>.</em>.15, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.InactivityMonitor&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>. <strong> 15  </strong> :61616@50616]: Using min of<br>local: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=</em>.<em>.</em>.15, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} and remote:<br>WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>. <strong> 15  </strong> :61616@50616]: Received<br>WireFormat: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:53:10,306 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>. <strong> 15  </strong> :61616@50616]:<br>tcp:///<em>.</em>.<em>.15:61616@50616 before negotiation: OpenWireFormat{version=11,<br>cacheEnabled=false, stackTraceEnabled=false, tightEncodingEnabled=false,<br>sizePrefixDisabled=false, maxFrameSize=9223372036854775807} _<br>_ 14:53:10,307 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>. <strong> 15  </strong> :61616@50616]:<br>tcp:///<em>.</em>.<em>.15:61616@50616 after negotiation: OpenWireFormat{version=11,<br>cacheEnabled=true, stackTraceEnabled=true, tightEncodingEnabled=true,<br>sizePrefixDisabled=false, maxFrameSize=104857600} _<br>_ 14:53:10,416 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Executing callback on JMS Session: PooledSession { ActiveMQSession {id=ID<br>:yangjunmings-MacBook-Pro.local-50615-1461480790088-1:1:1,started=false}<br>java.lang.Object@5a56cdac } _<br>_ 14:53:10,471 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Sending created message: ActiveMQTextMessage {commandId = 0, responseRequired<br>= false, messageId = null, originalDestination = null, originalTransactionId =<br>null, producerId = null, destination = null, transactionId = null, expiration<br>= 0, timestamp = 0, arrival = 0, brokerInTime = 0, brokerOutTime = 0,<br>correlationId = null, replyTo = null, persistent = false, type = null,<br>priority = 0, groupID = null, groupSequence = 0, targetConsumerId = null,<br>compressed = false, userID = null, content = null, marshalledProperties =<br>null, dataStructure = null, redeliveryCounter = 0, size = 0, properties =<br>null, readOnlyProperties = false, readOnlyBody = false, droppable = false,<br>jmsXGroupFirstForConsumer = false, text =  message test:0  } _<br>_ 14:53:10,516 &lt;</em>.DemoSender&gt; INFO [main]:  消息0发送完成!  _<br>_ 14:53:11,520 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Executing callback on JMS Session: PooledSession { ActiveMQSession {id=ID<br>:yangjunmings-MacBook-Pro.local-50615-1461480790088-1:1:1,started=false}<br>java.lang.Object@5a56cdac } _<br>_ 14:53:11,521 &lt;org.springframework.jms.core.JmsTemplate&gt; DEBUG [main]:<br>Sending created message: ActiveMQTextMessage {commandId = 0, responseRequired<br>= false, messageId = null, originalDestination = null, originalTransactionId =<br>null, producerId = null, destination = null, transactionId = null, expiration<br>= 0, timestamp = 0, arrival = 0, brokerInTime = 0, brokerOutTime = 0,<br>correlationId = null, replyTo = null, persistent = false, type = null,<br>priority = 0, groupID = null, groupSequence = 0, targetConsumerId = null,<br>compressed = false, userID = null, content = null, marshalledProperties =<br>null, dataStructure = null, redeliveryCounter = 0, size = 0, properties =<br>null, readOnlyProperties = false, readOnlyBody = false, droppable = false,<br>jmsXGroupFirstForConsumer = false, text = message test:1} _</p>
+<p>运行完以后，关掉发送程序，然后启动 <strong> 接收程序 </strong> ：</p>
+<p>_ 14:54:40,965 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[main]: Sending: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=<em>.</em>.<em>.  <strong> 16 </strong> ,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,002 &lt;org.apache.activemq.transport.InactivityMonitor&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>.  <strong> 16 </strong> :61616@50642]: Using min of<br>local: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=9223372036854775807, Host=<em>.</em>.<em>.  <strong> 16 </strong> ,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} and remote: WireFormatInfo { version=11,<br>properties={TcpNoDelayEnabled=true, SizePrefixDisabled=false, CacheSize=1024,<br>StackTraceEnabled=true, CacheEnabled=true, TightEncodingEnabled=true,<br>MaxFrameSize=104857600, MaxInactivityDuration=30000,<br>MaxInactivityDurationInitalDelay=10000}, magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,003 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///</em>.<em>.</em>.  <strong> 16 </strong> :61616@50642]: Received<br>WireFormat: WireFormatInfo { version=11, properties={TcpNoDelayEnabled=true,<br>SizePrefixDisabled=false, CacheSize=1024, StackTraceEnabled=true,<br>CacheEnabled=true, TightEncodingEnabled=true, MaxFrameSize=104857600,<br>MaxInactivityDuration=30000, MaxInactivityDurationInitalDelay=10000},<br>magic=[A,c,t,i,v,e,M,Q]} _<br>_ 14:54:41,003 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>.  <strong> 16 </strong> :61616@50642]: tcp:///</em>.<em>.</em>.  <strong><br>16 </strong> :61616@50642 before negotiation: OpenWireFormat{version=11,<br>cacheEnabled=false, stackTraceEnabled=false, tightEncodingEnabled=false,<br>sizePrefixDisabled=false, maxFrameSize=9223372036854775807} _<br>_ 14:54:41,004 &lt;org.apache.activemq.transport.WireFormatNegotiator&gt; DEBUG<br>[ActiveMQ Transport: tcp:///<em>.</em>.<em>.  <strong> 16 </strong> :61616@50642]:<br>tcp:///</em>.<em>.</em>.16:61616@50642 after negotiation: OpenWireFormat{version=11,<br>cacheEnabled=true, stackTraceEnabled=true, tightEncodingEnabled=true,<br>sizePrefixDisabled=false, maxFrameSize=104857600} _<br>_ 14:54:41,163 &lt;org.apache.activemq.thread.TaskRunnerFactory&gt; DEBUG [main]:<br>Initialized TaskRunnerFactory[ActiveMQ Session Task] using ExecutorService:<br>java.util.concurrent.ThreadPoolExecutor@485966cc[Running, pool size = 0,<br>active threads = 0, queued tasks = 0, completed tasks = 0] _<br>_ 14:54:41,181 &lt;*.DemoListener&gt; INFO [ActiveMQ Session Task-1]:  message<br>test:0  _</p>
+<p>注意接收程序中IP的部分，这是从<em>.</em>.<em>.[b]16[/b]上接收到的，说明消息已经从 </em>.<em>.</em>.15同步到<em>.</em>.*.16上了，否则不可能收到消息。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/#comments" id="sourceId::2018/04/20/ActiveMQ笔记(3)：基于Networks of Brokers的HA方案/" class="article-comment-link cy_cmt_count">评论</a>
     
 
         </footer>
@@ -2976,6 +2339,268 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
 
 
+    <article id="post-40个Java多线程问题总结" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2018/04/20/40个Java多线程问题总结/">40个Java多线程问题总结</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/40个Java多线程问题总结/">
+            <time datetime="2018-04-19T16:34:21.408Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/J2EE/">J2EE</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/java/">java</a>, <a class="tag-link" href="/tags/多线程/">多线程</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p><strong> 前言 </strong></p>
+<p>个人认为，学习，内容越多、越杂的知识，越需要进行深刻的总结，这样才能记忆深刻，将知识变成自己的。这篇文章主要是对多线程的问题进行总结的，因此罗列了40个多线<br>程的问题。</p>
+<p>这些多线程的问题，有些来源于各大网站、有些来源于自己的思考。可能有些问题网上有、可能有些问题对应的答案也有、也可能有些各位网友也都看过，但是本文写作的重心就<br>是  <strong> 所有的问题都会按照自己的理解回答一遍，不会去看网上的答案 </strong> ，因此可能有些问题讲的不对，能指正的希望大家不吝指教。</p>
+<p><strong> 40个问题汇总 </strong></p>
+<p><strong> 1、多线程有什么用？  </strong></p>
+<p>一个可能在很多人看来很扯淡的一个问题：我会用多线程就好了，还管它有什么用？在我看来，这个回答更扯淡。所谓”知其然知其所以然”，”会用”只是”知其然”，”为什<br>么用”才是”知其所以然”，只有达到”知其然知其所以然”的程度才可以说是把一个知识点运用自如。OK，下面说说我对这个问题的看法：</p>
+<p>（1）发挥多核CPU的优势</p>
+<p>随着工业的进步，现在的笔记本、台式机乃至商用的应用服务器至少也都是双核的，4核、8核甚至16核的也都不少见，如果是单线程的程序，那么在双核CPU上就浪费了5<br>0%，在4核CPU上就浪费了75%。 <strong><br>单核CPU上所谓的”多线程”那是假的多线程，同一时间处理器只会处理一段逻辑，只不过线程之间切换得比较快，看着像多个线程”同时”运行罢了  </strong><br>。多核CPU上的多线程才是真正的多线程，它能让你的多段逻辑同时工作，多线程，可以真正发挥出多核CPU的优势来，达到充分利用CPU的目的。</p>
+<p>（2）防止阻塞</p>
+<p>从程序运行效率的角度来看，单核CPU不但不会发挥出多线程的优势，反而会因为在单核CPU上运行多线程导致线程上下文的切换，而降低程序整体的效率。但是单核CPU<br>我们还是要应用多线程，就是为了防止阻塞。试想，如果单核CPU使用单线程，那么只要这个线程阻塞了，比方说远程读取某个数据吧，对端迟迟未返回又没有设置超时时间，<br>那么你的整个程序在数据返回回来之前就停止运行了。多线程可以防止这个问题，多条线程同时运行，哪怕一条线程的代码执行读取数据阻塞，也不会影响其它任务的执行。</p>
+<p>（3）便于建模</p>
+<p>这是另外一个没有这么明显的优点了。假设有一个大的任务A，单线程编程，那么就要考虑很多，建立整个程序模型比较麻烦。但是如果把这个大的任务A分解成几个小任务，任<br>务B、任务C、任务D，分别建立程序模型，并通过多线程分别运行这几个任务，那就简单很多了。</p>
+<p><strong> 2、创建线程的方式  </strong></p>
+<p>比较常见的一个问题了，一般就是两种：</p>
+<p>（1）继承Thread类</p>
+<p>（2）实现Runnable接口</p>
+<p>至于哪个好，不用说肯定是后者好，因为实现接口的方式比继承类的方式更灵活，也能减少程序之间的耦合度，  <strong> 面向接口编程 </strong> 也是设计模式6大原则的核心。</p>
+<p><strong> 3、start()方法和run()方法的区别 </strong></p>
+<p>只有调用了start()方法，才会表现出多线程的特性，不同线程的run()方法里面的代码交替执行。如果只是调用run()方法，那么代码还是同步执行的，必须等<br>待一个线程的run()方法里面的代码全部执行完毕之后，另外一个线程才可以执行其run()方法里面的代码。</p>
+<p><strong> 4、Runnable接口和Callable接口的区别  </strong></p>
+<p>有点深的问题了，也看出一个Java程序员学习知识的广度。</p>
+<p>Runnable接口中的run()方法的返回值是void，它做的事情只是纯粹地去执行run()方法中的代码而已；Callable接口中的call()方法是有<br>返回值的，是一个泛型，和Future、FutureTask配合可以用来获取异步执行的结果。</p>
+<p>这其实是很有用的一个特性，因为  <strong> 多线程相比单线程更难、更复杂的一个重要原因就是因为多线程充满着未知性 </strong> ，某条线程是否执行了？某条线程执行了多久<br>？某条线程执行的时候我们期望的数据是否已经赋值完毕？无法得知，我们能做的只是等待这条多线程的任务执行完毕而已。而Callable+Future/Future<br>Task却可以获取多线程运行的结果，可以在等待时间太长没获取到需要的数据的情况下取消该线程的任务，真的是非常有用。</p>
+<p><strong> 5、CyclicBarrier和CountDownLatch的区别 </strong></p>
+<p>两个看上去有点像的类，都在java.util.concurrent下，都可以用来表示代码运行到某个点上，二者的区别在于：</p>
+<p>（1）CyclicBarrier的某个线程运行到某个点上之后，该线程即停止运行，直到所有的线程都到达了这个点，所有线程才重新运行；CountDownLatc<br>h则不是，某线程运行到某个点上之后，只是给某个数值-1而已，该线程继续运行</p>
+<p>（2）CyclicBarrier只能唤起一个任务，CountDownLatch可以唤起多个任务</p>
+<p>（3）CyclicBarrier可重用，CountDownLatch不可重用，计数值为0该CountDownLatch就不可再用了</p>
+<p><strong> 6、volatile关键字的作用  </strong></p>
+<p>一个非常重要的问题，是每个学习、应用多线程的Java程序员都必须掌握的。理解volatile关键字的作用的前提是要理解Java内存模型，这里就不讲Java内<br>存模型了，可以参见第31点，volatile关键字的作用主要有两个：</p>
+<p>（1）多线程主要围绕可见性和原子性两个特性而展开，使用volatile关键字修饰的变量，保证了其在多线程之间的可见性，即每次读取到volatile变量，一定<br>是最新的数据</p>
+<p>（2）代码底层执行不像我们看到的高级语言—-Java程序这么简单，它的执行是  <strong><br>Java代码–&gt;字节码–&gt;根据字节码执行对应的C/C++代码–&gt;C/C++代码被编译成汇编语言–&gt;和硬件电路交互 </strong> ，现实中，为了获取更好的性能JVM可<br>能会对指令进行重排序，多线程下可能会出现一些意想不到的问题。使用volatile则会对禁止语义重排序，当然这也一定程度上降低了代码执行效率</p>
+<p>从实践角度而言，volatile的一个重要作用就是和CAS结合，保证了原子性，详细的可以参见java.util.concurrent.atomic包下的类，<br>比如AtomicInteger。</p>
+<p><strong> 7、什么是线程安全  </strong></p>
+<p>又是一个理论的问题，各式各样的答案有很多，我给出一个个人认为解释地最好的：  <strong><br>如果你的代码在多线程下执行和在单线程下执行永远都能获得一样的结果，那么你的代码就是线程安全的 </strong> 。</p>
+<p>这个问题有值得一提的地方，就是线程安全也是有几个级别的：</p>
+<p>（1）不可变</p>
+<p>像String、Integer、Long这些，都是final类型的类，任何一个线程都改变不了它们的值，要改变除非新创建一个，因此这些不可变对象不需要任何同步<br>手段就可以直接在多线程环境下使用</p>
+<p>（2）绝对线程安全</p>
+<p>不管运行时环境如何，调用者都不需要额外的同步措施。要做到这一点通常需要付出许多额外的代价，Java中标注自己是线程安全的类，实际上绝大多数都不是线程安全的，<br>不过绝对线程安全的类，Java中也有，比方说CopyOnWriteArrayList、CopyOnWriteArraySet</p>
+<p>（3）相对线程安全</p>
+<p>相对线程安全也就是我们通常意义上所说的线程安全，像Vector这种，add、remove方法都是原子操作，不会被打断，但也仅限于此，如果有个线程在遍历某个V<br>ector、有个线程同时在add这个Vector，99%的情况下都会出现ConcurrentModificationException，也就是  <strong><br>fail-fast机制 </strong> 。</p>
+<p>（4）线程非安全</p>
+<p>这个就没什么好说的了，ArrayList、LinkedList、HashMap等都是线程非安全的类</p>
+<p><strong> 8、Java中如何获取到线程dump文件  </strong></p>
+<p>死循环、死锁、阻塞、页面打开慢等问题，打线程dump是最好的解决问题的途径。所谓线程dump也就是线程堆栈，获取到线程堆栈有两步：</p>
+<p>（1）获取到线程的pid，可以通过使用jps命令，在Linux环境下还可以使用ps -ef | grep java</p>
+<p>（2）打印线程堆栈，可以通过使用jstack pid命令，在Linux环境下还可以使用kill -3 pid</p>
+<p>另外提一点，Thread类提供了一个<br>getStackTrace()方法也可以用于获取线程堆栈。这是一个实例方法，因此此方法是和具体线程实例绑定的，每次获取获取到的是具体某个线程当前运行的堆栈，</p>
+<p><strong> 9、一个线程如果出现了运行时异常会怎么样  </strong></p>
+<p>如果这个异常没有被捕获的话，这个线程就停止执行了。另外重要的一点是：  <strong> 如果这个线程持有某个某个对象的监视器，那么这个对象监视器会被立即释放 </strong></p>
+<p><strong> 10、如何在两个线程之间共享数据  </strong></p>
+<p>通过在线程之间共享对象就可以了，然后通过wait/notify/notifyAll、await/signal/signalAll进行唤起和等待，比方说阻塞队<br>列BlockingQueue就是为线程之间共享数据而设计的</p>
+<p><strong> 11、sleep方法和wait方法有什么区别 </strong></p>
+<p>这个问题常问，sleep方法和wait方法都可以用来放弃CPU一定的时间，不同点在于如果线程持有某个对象的监视器，sleep方法不会放弃这个对象的监视器，w<br>ait方法会放弃这个对象的监视器</p>
+<p><strong> 12、生产者消费者模型的作用是什么  </strong></p>
+<p>这个问题很理论，但是很重要：</p>
+<p>（1）  <strong> 通过平衡生产者的生产能力和消费者的消费能力来提升整个系统的运行效率 </strong> ，这是生产者消费者模型最重要的作用</p>
+<p>（2）解耦，这是生产者消费者模型附带的作用，解耦意味着生产者和消费者之间的联系少，联系越少越可以独自发展而不需要收到相互的制约</p>
+<p><strong> 13、ThreadLocal有什么用 </strong></p>
+<p>简单说ThreadLocal就是一种以  <strong> 空间换时间 </strong> 的做法，在每个Thread里面维护了一个以开地址法实现的ThreadLocal.Threa<br>dLocalMap，把数据进行隔离，数据不共享，自然就没有线程安全方面的问题了</p>
+<p><strong> 14、为什么wait()方法和notify()/notifyAll()方法要在同步块中被调用  </strong></p>
+<p>这是JDK强制的，wait()方法和notify()/notifyAll()方法在调用前都必须先获得对象的锁</p>
+<p><strong> 15、wait()方法和notify()/notifyAll()方法在放弃对象监视器时有什么区别  </strong></p>
+<p>wait()方法和notify()/notifyAll()方法在放弃对象监视器的时候的区别在于：  <strong><br>wait()方法立即释放对象监视器，notify()/notifyAll()方法则会等待线程剩余代码执行完毕才会放弃对象监视器 </strong> 。</p>
+<p><strong> 16、为什么要使用线程池 </strong>   </p>
+<p>避免频繁地创建和销毁线程，达到线程对象的重用。另外，使用线程池还可以根据项目灵活地控制并发的数目。</p>
+<p><strong> 17、怎么检测一个线程是否持有对象监视器  </strong></p>
+<p>我也是在网上看到一道多线程面试题才知道有方法可以判断某个线程是否持有对象监视器：Thread类提供了一个holdsLock(Object<br>obj)方法，当且仅当对象obj的监视器被某条线程持有的时候才会返回true，注意这是一个static方法，这意味着  <strong> “某条线程”指的是当前线程
+</strong> 。</p>
+<p><strong> 18、synchronized和ReentrantLock的区别  </strong></p>
+<p>synchronized是和if、else、for、while一样的关键字，ReentrantLock是类，这是二者的本质区别。既然ReentrantLoc<br>k是类，那么它就提供了比synchronized更多更灵活的特性，可以被继承、可以有方法、可以有各种各样的类变量，ReentrantLock比synchro<br>nized的扩展性体现在几点上：</p>
+<p>（1）ReentrantLock可以对获取锁的等待时间进行设置，这样就避免了死锁</p>
+<p>（2）ReentrantLock可以获取各种锁的信息</p>
+<p>（3）ReentrantLock可以灵活地实现多路通知</p>
+<p>另外，二者的锁机制其实也是不一样的。ReentrantLock底层调用的是Unsafe的park方法加锁，synchronized操作的应该是对象头中mar<br>k word，这点我不能确定。</p>
+<p><strong> 19、ConcurrentHashMap的并发度是什么  </strong></p>
+<p>ConcurrentHashMap的并发度就是segment的大小，默认为16，这意味着最多同时可以有16条线程操作ConcurrentHashMap，这也<br>是ConcurrentHashMap对Hashtable的最大优势，任何情况下，Hashtable能同时有两条线程获取Hashtable中的数据吗？</p>
+<p><strong> 20、ReadWriteLock是什么  </strong></p>
+<p>首先明确一下，不是说ReentrantLock不好，只是ReentrantLock某些时候有局限。如果使用ReentrantLock，可能本身是为了防止线程<br>A在写数据、线程B在读数据造成的数据不一致，但这样，如果线程C在读数据、线程D也在读数据，读数据是不会改变数据的，没有必要加锁，但是还是加锁了，降低了程序的<br>性能。</p>
+<p>因为这个，才诞生了读写锁ReadWriteLock。ReadWriteLock是一个读写锁接口，ReentrantReadWriteLock是ReadWri<br>teLock接口的一个具体实现，实现了读写的分离，  <strong> 读锁是共享的，写锁是独占的 </strong><br>，读和读之间不会互斥，读和写、写和读、写和写之间才会互斥，提升了读写的性能。</p>
+<p><strong> 21、FutureTask是什么  </strong></p>
+<p>这个其实前面有提到过，FutureTask表示一个异步运算的任务。FutureTask里面可以传入一个Callable的具体实现类，可以对这个异步运算的任务<br>的结果进行等待获取、判断是否已经完成、取消任务等操作。当然，由于FutureTask也是Runnable接口的实现类，所以FutureTask也可以放入线程<br>池中。</p>
+<p><strong> 22、Linux环境下如何查找哪个线程使用CPU最长  </strong></p>
+<p>这是一个比较偏实践的问题，这种问题我觉得挺有意义的。可以这么做：</p>
+<p>（1）获取项目的pid，jps或者ps -ef | grep java，这个前面有讲过</p>
+<p>（2）top -H -p pid，顺序不能改变</p>
+<p>这样就可以打印出当前的项目，每条线程占用CPU时间的百分比。注意这里打出的是LWP，也就是操作系统原生线程的线程号，我笔记本山没有部署Linux环境下的Ja<br>va工程，因此没有办法截图演示，网友朋友们如果公司是使用Linux环境部署项目的话，可以尝试一下。</p>
+<p>使用”top -H -p pid”+”jps<br>pid”可以很容易地找到某条占用CPU高的线程的线程堆栈，从而定位占用CPU高的原因，一般是因为不当的代码操作导致了死循环。</p>
+<p>最后提一点，”top -H -p pid”打出来的LWP是十进制的，”jps<br>pid”打出来的本地线程号是十六进制的，转换一下，就能定位到占用CPU高的线程的当前线程堆栈了。</p>
+<p><strong> 23、Java编程写一个会导致死锁的程序  </strong></p>
+<p>第一次看到这个题目，觉得这是一个非常好的问题。很多人都知道死锁是怎么一回事儿：线程A和线程B相互等待对方持有的锁导致程序无限死循环下去。当然也仅限于此了，问<br>一下怎么写一个死锁的程序就不知道了，这种情况说白了就是不懂什么是死锁，懂一个理论就完事儿了，实践中碰到死锁的问题基本上是看不出来的。</p>
+<p>真正理解什么是死锁，这个问题其实不难，几个步骤：</p>
+<p>（1）两个线程里面分别持有两个Object对象：lock1和lock2。这两个lock作为同步代码块的锁；</p>
+<p>（2）线程1的run()方法中同步代码块先获取lock1的对象锁，Thread.sleep(xxx)，时间不需要太多，50毫秒差不多了，然后接着获取lock<br>2的对象锁。这么做主要是为了防止线程1启动一下子就连续获得了lock1和lock2两个对象的对象锁</p>
+<p>（3）线程2的run)(方法中同步代码块先获取lock2的对象锁，接着获取lock1的对象锁，当然这时lock1的对象锁已经被线程1锁持有，线程2肯定是要等<br>待线程1释放lock1的对象锁的</p>
+<p>这样，线程1”睡觉”睡完，线程2已经获取了lock2的对象锁了，线程1此时尝试获取lock2的对象锁，便被阻塞，此时一个死锁就形成了。代码就不写了，占的篇幅<br>有点多， <a href="http://www.cnblogs.com/xrq730/p/4853713.html" target="_blank" rel="noopener"> Java多线程7：死锁 </a><br>这篇文章里面有，就是上面步骤的代码实现。</p>
+<p><strong> 24、怎么唤醒一个阻塞的线程  </strong></p>
+<p>如果线程是因为调用了wait()、sleep()或者join()方法而导致的阻塞，可以中断线程，并且通过抛出InterruptedException来唤醒它<br>；如果线程遇到了IO阻塞，无能为力，因为IO是操作系统实现的，Java代码并没有办法直接接触到操作系统。</p>
+<p><strong> 25、不可变对象对多线程有什么帮助 </strong></p>
+<p>前面有提到过的一个问题，不可变对象保证了对象的内存可见性，对不可变对象的读取不需要进行额外的同步手段，提升了代码执行效率。</p>
+<p><strong> 26、什么是多线程的上下文切换  </strong></p>
+<p>多线程的上下文切换是指CPU控制权由一个已经正在运行的线程切换到另外一个就绪并等待获取CPU执行权的线程的过程。</p>
+<p><strong> 27、如果你提交任务时，线程池队列已满，这时会发生什么  </strong></p>
+<p>这里区分一下：</p>
+<ol>
+<li>如果使用的是无界队列LinkedBlockingQueue，也就是无界队列的话，没关系，继续添加任务到阻塞队列中等待执行，因为LinkedBlockingQueue可以近乎认为是一个无穷大的队列，可以无限存放任务 </li>
+<li>如果使用的是有界队列比如ArrayBlockingQueue，任务首先会被添加到ArrayBlockingQueue中，ArrayBlockingQueue满了，会根据maximumPoolSize的值增加线程数量，如果增加了线程数量还是处理不过来，ArrayBlockingQueue继续满，那么则会使用拒绝策略RejectedExecutionHandler处理满了的任务，默认是AbortPolicy </li>
+</ol>
+<p><strong> 28、Java中用到的线程调度算法是什么  </strong></p>
+<p>抢占式。一个线程用完CPU之后，操作系统会根据线程优先级、线程饥饿情况等数据算出一个总的优先级并分配下一个时间片给某个线程执行。</p>
+<p><strong> 29、Thread.sleep(0)的作用是什么  </strong></p>
+<p>这个问题和上面那个问题是相关的，我就连在一起了。由于Java采用抢占式的线程调度算法，因此可能会出现某条线程常常获取到CPU控制权的情况，为了让某些优先级比<br>较低的线程也能获取到CPU控制权，可以使用Thread.sleep(0)手动触发一次操作系统分配时间片的操作，这也是平衡CPU控制权的一种操作。</p>
+<p><strong> 30、什么是自旋  </strong></p>
+<p>很多synchronized里面的代码只是一些很简单的代码，执行时间非常快，此时等待的线程都加锁可能是一种不太值得的操作，因为线程阻塞涉及到用户态和内核态切<br>换的问题。既然synchronized里面的代码执行得非常快，不妨让等待锁的线程不要被阻塞，而是在synchronized的边界做忙循环，这就是自旋。如果做<br>了多次忙循环发现还没有获得锁，再阻塞，这样可能是一种更好的策略。</p>
+<p><strong> 31、什么是Java内存模型  </strong></p>
+<p>Java内存模型定义了一种多线程访问Java内存的规范。Java内存模型要完整讲不是这里几句话能说清楚的，我简单总结一下Java内存模型的几部分内容：</p>
+<p>（1）Java内存模型将内存分为了  <strong> 主内存和工作内存 </strong> 。类的状态，也就是类之间共享的变量，是存储在主内存中的，每次Java线程用到这些主内存中<br>的变量的时候，会读一次主内存中的变量，并让这些内存在自己的工作内存中有一份拷贝，运行自己线程代码的时候，用到这些变量，操作的都是自己工作内存中的那一份。在线<br>程代码执行完毕之后，会将最新的值更新到主内存中去</p>
+<p>（2）定义了几个原子操作，用于操作主内存和工作内存中的变量</p>
+<p>（3）定义了volatile变量的使用规则</p>
+<p>（4）happens-before，即先行发生原则，定义了操作A必然先行发生于操作B的一些规则，比如在同一个线程内控制流前面的代码一定先行发生于控制流后面的<br>代码、一个释放锁unlock的动作一定先行发生于后面对于同一个锁进行锁定lock的动作等等，只要符合这些规则，则不需要额外做同步措施<br>，如果某段代码不符合所有的happens-before规则，则这段代码一定是线程非安全的</p>
+<p><strong> 32、什么是CAS </strong>   </p>
+<p>CAS，全称为Compare and Swap，即比较-替换。假设有三个操作数：  <strong><br>内存值V、旧的预期值A、要修改的值B，当且仅当预期值A和内存值V相同时，才会将内存值修改为B并返回true，否则什么都不做并返回false </strong> 。当然CA<br>S一定要volatile变量配合，这样才能保证每次拿到的变量是主内存中最新的那个值，否则旧的预期值A对某条线程来说，永远是一个不会变的值A，只要某次CAS操<br>作失败，永远都不可能成功。</p>
+<p><strong> 33、什么是乐观锁和悲观锁  </strong></p>
+<p>（1）乐观锁：就像它的名字一样，对于并发间操作产生的线程安全问题持乐观状态，乐观锁认为竞争不总是会发生，因此它不需要持有锁，将  <strong> 比较-替换 </strong><br>这两个动作作为一个原子操作尝试去修改内存中的变量，如果失败则表示发生冲突，那么就应该有相应的重试逻辑。</p>
+<p>（2）悲观锁：还是像它的名字一样，对于并发间操作产生的线程安全问题持悲观状态，悲观锁认为竞争总是会发生，因此每次对某资源进行操作时，都会持有一个独占的锁，就<br>像synchronized，不管三七二十一，直接上了锁就操作资源了。</p>
+<p><strong> 34、什么是AQS  </strong></p>
+<p>简单说一下AQS，AQS全称为AbstractQueuedSychronizer，翻译过来应该是抽象队列同步器。</p>
+<p>如果说java.util.concurrent的基础是CAS的话，那么AQS就是整个Java并发包的核心了，ReentrantLock、CountDownL<br>atch、Semaphore等等都用到了它。AQS实际上以双向队列的形式连接所有的Entry，比方说ReentrantLock，所有等待的线程都被放在一个E<br>ntry中并连成双向队列，前面一个线程使用ReentrantLock好了，则双向队列实际上的第一个Entry开始运行。</p>
+<p>AQS定义了对双向队列所有的操作，而只开放了tryLock和tryRelease方法给开发者使用，开发者可以根据自己的实现重写tryLock和tryRele<br>ase方法，以实现自己的并发功能。</p>
+<p><strong> 35、单例模式的线程安全性  </strong></p>
+<p>老生常谈的问题了，首先要说的是单例模式的线程安全意味着：  <strong> 某个类的实例在多线程环境下只会被创建一次出来 </strong> 。单例模式有很多种的写法，我总结一下：</p>
+<p>（1）饿汉式单例模式的写法：线程安全</p>
+<p>（2）懒汉式单例模式的写法：非线程安全</p>
+<p>（3）双检锁单例模式的写法：线程安全</p>
+<p><strong> 36、Semaphore有什么作用 </strong></p>
+<p>Semaphore就是一个信号量，它的作用是 <strong> 限制某段代码块的并发数  </strong> 。Semaphore有一个构造函数，可以传入一个int型整数n，表示某段<br>代码最多只有n个线程可以访问，如果超出了n，那么请等待，等到某个线程执行完毕这段代码块，下一个线程再进入。由此可以看出如果Semaphore构造函数中传入的<br>int型整数n=1，相当于变成了一个synchronized了。</p>
+<p><strong> 37、Hashtable的size()方法中明明只有一条语句”return count”，为什么还要做同步？  </strong></p>
+<p>这是我之前的一个困惑，不知道大家有没有想过这个问题。某个方法中如果有多条语句，并且都在操作同一个类变量，那么在多线程环境下不加锁，势必会引发线程安全问题，这<br>很好理解，但是size()方法明明只有一条语句，为什么还要加锁？</p>
+<p>关于这个问题，在慢慢地工作、学习中，有了理解，主要原因有两点：</p>
+<p>（1）  <strong> 同一时间只能有一条线程执行固定类的同步方法，但是对于类的非同步方法，可以多条线程同时访问 </strong> 。所以，这样就有问题了，可能线程A在执行Ha<br>shtable的put方法添加数据，线程B则可以正常调用size()方法读取Hashtable中当前元素的个数，那读取到的值可能不是最新的，可能线程A添加了<br>完了数据，但是没有对size++，线程B就已经读取size了，那么对于线程B来说读取到的size一定是不准确的。而给size()方法加了同步之后，意味着线程<br>B调用size()方法只有在线程A调用put方法完毕之后才可以调用，这样就保证了线程安全性</p>
+<p>（2）  <strong> CPU执行代码，执行的不是Java代码，这点很关键，一定得记住 </strong><br>。Java代码最终是被翻译成汇编代码执行的，汇编代码才是真正可以和硬件电路交互的代码。  <strong><br>即使你看到Java代码只有一行，甚至你看到Java代码编译之后生成的字节码也只有一行，也不意味着对于底层来说这句语句的操作只有一个 </strong><br>。一句”return count”假设被翻译成了三句汇编语句执行，完全可能执行完第一句，线程就切换了。</p>
+<p><strong> 38、线程类的构造方法、静态块是被哪个线程调用的  </strong></p>
+<p>这是一个非常刁钻和狡猾的问题。请记住：线程类的构造方法、静态块是被new这个线程类所在的线程所调用的，而run方法里面的代码才是被线程自身所调用的。</p>
+<p>如果说上面的说法让你感到困惑，那么我举个例子，  假设Thread2中new了Thread1，main函数中new了Thread2，那么：</p>
+<p>（1）Thread2的构造方法、静态块是main线程调用的，Thread2的run()方法是Thread2自己调用的</p>
+<p>（2）Thread1的构造方法、静态块是Thread2调用的，Thread1的run()方法是Thread1自己调用的</p>
+<p><strong> 39、同步方法和同步块，哪个是更好的选择  </strong></p>
+<p>同步块，这意味着同步块之外的代码是异步执行的，这比同步整个方法更提升代码的效率。请知道一条原则：  <strong> 同步的范围越小越好 </strong> 。</p>
+<p>借着这一条，我额外提一点，虽说同步的范围越少越好，但是在Java虚拟机中还是存在着一种叫做  <strong> 锁粗化 </strong> 的优化方法，这种方法就是把同步范围变大。这<br>是有用的，比方说StringBuffer，它是一个线程安全的类，自然最常用的append()方法是一个同步方法，我们写代码的时候会反复append字符串，这<br>意味着要进行反复的加锁-&gt;解锁，这对性能不利，因为这意味着Java虚拟机在这条线程上要反复地在内核态和用户态之间进行切换，因此Java虚拟机会将多次appe<br>nd方法调用的代码进行一个锁粗化的操作，将多次的append的操作扩展到append方法的头尾，变成一个大的同步块，这样就减少了加锁–&gt;解锁的次数，有效地提<br>升了代码执行的效率。</p>
+<p><strong> 40、高并发、任务执行时间短的业务怎样使用线程池？并发不高、任务执行时间长的业务怎样使用线程池？并发高、业务执行时间长的业务怎样使用线程池？  </strong></p>
+<p>这是我在并发编程网上看到的一个问题，把这个问题放在最后一个，希望每个人都能看到并且思考一下，因为这个问题非常好、非常实际、非常专业。关于这个问题，个人看法是<br>：</p>
+<p>（1）高并发、任务执行时间短的业务，线程池线程数可以设置为CPU核数+1，减少线程上下文的切换</p>
+<p>（2）并发不高、任务执行时间长的业务要区分开看：</p>
+<p>a）假如是业务时间长集中在IO操作上，也就是IO密集型的任务，因为IO操作并不占用CPU，所以不要让所有的CPU闲下来，可以加大线程池中的线程数目，让CPU<br>处理更多的业务</p>
+<p>b）假如是业务时间长集中在计算操作上，也就是计算密集型任务，这个就没办法了，和（1）一样吧，线程池中的线程数设置得少一些，减少线程上下文的切换</p>
+<p>（3）并发高、业务执行时间长，解决这种类型任务的关键不在于线程池而在于整体架构的设计，看看这些业务里面某些数据是否能做缓存是第一步，增加服务器是第二步，至于<br>线程池的设置，设置参考（2）。最后，业务执行时间长的问题，也可能需要分析一下，看看能不能使用中间件对任务进行拆分和解耦。</p>
+<p>** ==================================================================================   </p>
+<p>我不能保证写的每个地方都是对的，但是至少能保证不复制、不黏贴，保证每一句话、每一行代码都经过了认真的推敲、仔细的斟酌。每一篇文章的背后，希望都能看到自己对于<br>技术、对于生活的态度。  </p>
+<p>我相信乔布斯说的，只有那些疯狂到认为自己可以改变世界的人才能真正地改变世界。面对压力，我可以挑灯夜战、不眠不休；面对困难，我愿意迎难而上、永不退缩。  </p>
+<p>** 其实我想说的是，我只是一个程序员，这就是我现在纯粹人生的全部。   </p>
+<p>==============================================================================<br>==== <strong> </strong> <strong> </strong></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/40个Java多线程问题总结/#comments" id="sourceId::2018/04/20/40个Java多线程问题总结/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-7个步骤让PC网站自动适配手机网页" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -3154,6 +2779,145 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
 
 
+    <article id="post-【译】Redis Cluster官方教程" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2018/04/20/【译】Redis Cluster官方教程/">【译】Redis Cluster官方教程</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/04/20/【译】Redis Cluster官方教程/">
+            <time datetime="2018-04-19T16:34:21.407Z" itemprop="datePublished">2018-04-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Redis/">Redis</a>
+    </div>
+
+                        
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>摘要<br>这篇文章主要介绍redis cluster可用性和一致性相关的特性，值得一提的是，redis cluster需要高于等于redis3.0版本。</p>
+<p><strong> 概要 </strong></p>
+<p>这篇文章主要介绍redis cluster可用性和一致性相关的特性，值得一提的是，redis cluster需要高于等于redis3.0版本。</p>
+<p><strong> Redis Cluster 101 </strong><br>Redis Cluster提供了一种数据自动分片到不同Redis实例中的解决方案，Redis Cluster在一定程度上提高了Redis系统的可用性，即当一<br>些节点挂掉之后，其他节点还可以继续提供服务。而当大部分的master节点都挂掉的时候，Redis Cluster会停止服务。<br>因此Redis Cluster带来了：</p>
+<ol>
+<li>自动将数据分散到不同的节点。 </li>
+<li>允许当一些节点挂掉之后剩下的节点仍然可以工作，或者是禁止这些节点继续工作。 </li>
+</ol>
+<p><strong> Redis Cluster TCP ports </strong><br>每一个Redis Cluster节点需要开两个TCP端口，一个是用来处理客户端的请求，例如6379端口，另一个端口由第一个端口加上10000之后得到即163<br>79，第二个端口用来作为集群总线，也就是集群之间节点相互进行二进制通信用的。集群总线的用处如下：</p>
+<ul>
+<li>错误检测 </li>
+<li>配置更新 </li>
+<li>failover </li>
+<li>…… </li>
+</ul>
+<p>客户端的连接端口和集群总线的连接端口之间的距离10000是固定的。为了让Redis Cluster正常的工作，对于每一个节点：</p>
+<ul>
+<li>客户端连接端口需要能够和Cluster进行通信，用于keys迁移。 </li>
+<li>所有节点的Cluster端口能够相互通信。 </li>
+</ul>
+<p>如果这两个端口没有打开，则Redis Cluster不能够正常工作。<br>Cluster端口之间使用特殊的二进制协议进行通信，这种二进制协议更适合节点之间通信，可以占用更小的带宽和更少的传输时间。</p>
+<p><strong> Redis Cluster Docker </strong><br>当前的Redis Cluster不支持NATted环境，Docker使用端口映射技术，也即运行在Docker容器内部的应用暴露在容器外面的端口和应用暴露的端<br>口不一样，这对于多个应用在Docker中使用同一个端口是非常重要的。为了让Redis Cluster能够在Docker中好好工作，我们需要检查–<br>net=host选项，更多的信息见 <a href="https://docs.docker.com/engine/userguide/networking/" target="_blank" rel="noopener"> Docket文档
+</a> 。</p>
+<p><strong> Redis Cluster 数据 sharding  </strong><br>Redis Cluster不使用一致性哈希，但是不同形式的sharding，每一个key理论上是hash slot的一部分。在Redis<br>Cluster中有16384个hash slot，为了计算指定key的hash<br>slot，我们简单的使用CRC16算法并对结果进行16384取模。在Redis Cluster中的每一个节点代表着所有hash<br>slot的一个子集，例如我们有三个节点：</p>
+<ul>
+<li>Node A 包括0到5500之间的hash slots </li>
+<li>Node B 包括5501到11000之间的hash slots </li>
+<li>Node C 包括11001到16383之间的hash slots </li>
+</ul>
+<p>这使得可以很容易的向Redis Cluster中添加或删除节点。例如，我们想要添加一个节点D，我们需要将一些hash<br>slots从A，B，C节点移给D。假如我们想要移除A节点，我们可以把A节点上原有的hash slots移动到B和C节点。当A节点的hash<br>slots移除完毕之后，就可以把A节点下线了。<br>将hash slots从一个节点移动到其他节点不需要任何的停机操作。<br>Redis Cluster支持多key操作，多个key是通过一个命令、或者一个事务、或者一个lua脚本执行的，属于同一个hash<br>slot。用户可以强制多个key属于同一个hash slot，这个概念叫hash tags。<br>Hash tags有关的介绍在Redis Cluster规范里面有介绍，主旨是当key中包含{}的时候，只有{}括号内的字符串才被用来hash。例如，一个k<br>ey是this{key}，另一个key是that{key}，他们会被映射到同一个hash slot，而且可以被用于一批key一个命令的操作。</p>
+<p><strong> Redis Cluster master-slave模式 </strong><br>为了让当某一个master挂掉之后，这个master的hash slot仍然可以使用，Redis Cluster使用master-<br>slave模式，因此对于每一批hash slot来说都有N个备份，其中N-1个是slave。在我们的例子中，节点A、B、C，如果B挂了，则整个Redis<br>Cluster就不能用了，因为没有实例类服务5501-11000这部分hash<br>slots。但是如果我们为每个master节点各增加一个slave节点，比如A1，B1，C1节点，如果B挂了，整个集群还是可以正常工作的。<br>Node B1是B的复制，如果B挂了，Cluster将会选择B1作为新的master，然后继续工作。值得注意的是，如果B和B1同时挂了，那就没辙了。</p>
+<p><strong> Redis Cluster一致性保证 </strong><br>Redis Cluster并不保证强一致性，也就是在一定条件下，Redis Cluster可能丢失被确认写入的数据，第一个有可能Redis<br>Cluster丢失数据的原因是因为复制是异步进行的，意味着下面情景有可能发生：</p>
+<ul>
+<li>客户端将数据写入B </li>
+<li>master B回复客户端写入成功 </li>
+<li>master将写命令传播给B1，B2和B3 </li>
+</ul>
+<p>我们可以看到，在B回复客户端之前不会等到B1，B2，B3的应答。因此如果客户端向B写了数据，B确认了，但是在数据复制到B1，B2，B3之前挂了，那数据对于B<br>1，B2，B3来说就丢失了。和传统的数据库类似，可以强制数据库将日志写入磁盘再告知客户端写成功，但是这么做带来的性能损耗是非常大的，这对于Redis<br>Cluster来说就是同步复制。<br>所以这就是一致性和可用性之间的权衡，如果确实需要，Redis Cluster是支持同步写的，由WAIT命令实现，这可以保证尽量少的丢失数据，尽管Redis<br>Cluster提供了同步复制的支持，但是Redis Cluster并没有实现强一致性，因此在一些复杂的应用场景中，还是有可能丢失数据的。<br>另外一个数据会丢失的场景也值得一提，即当出现网络分区的时候，也就是某一个或多个master和其他的master失去了联系，举个例子，我们有六个Redis实例<br>，三个master和三个slave，还有一个client我们把它叫做Z1。当出现网络分区的时候，比如A，C，A1，B1，C1，处于一个分区，另一个分区有B和<br>Z1。<br>Z1还可以向B写数据，B也接受了Z1的写请求，如果分区只持续一小段时间，Cluster仍然可以继续工作。然而，如果时间足够大，Cluster选举了B1作为m<br>aster，那么之前Z1写入的数据就丢失了。<br>值得一提的是在Z1还可以向B写数据的时候，有一个最大的窗口时间，如果过了这个时间，Cluster选取了B1作为master，B就不能够接受写请求了。这段时间<br>是非常重要的，这个时间被叫做node timeout。当node<br>timeout之后，master被认为出问题了，并且可以被其slave代替，然后master不能够处理写请求。</p>
+<p><strong> Redis Cluster配置参数 </strong><br><strong> cluster-enabled&lt;yes/no&gt; </strong> ：如果是yes，则当前redis启动为Redis Cluster的一个实例，否则当前Redis以单机模式启动。   </p>
+<p><strong> cluster-config-file<filename> </filename></strong> :值得注意的是这个配置文件是用户不可编辑的，是由Redis 集群节点自动创建的，每次节点状态有变化的时候都会持久化这个配置文件，也是为了Redis集群节点重启的时候重新读取。配置文件的内容包括集群中的其他节点、他们的状态、持久变量等等。每当接受到消息的时候，文件会被刷新并且写入磁盘。   </p>
+<p><strong> cluster-node-timeout<milliseconds> </milliseconds></strong> ：Redis集群节点的超时时间，如果在这个时间内Redis集群节点不可达，则集群将会执行failover策略，将该master的slave节点选为master。这个参数控制Redis集群重要的，值得提的是，如果指定时间当前节点联系不到大多数的master，则会拒绝服务。   </p>
+<p><strong> cluster-slave-validity-factor<factor> </factor></strong> ：如果将该项设置为0，不管slave节点和master节点间失联多久都会一直尝试failover（设为正数，失联大于一定时间（factor*节点TimeOut），不再进行FailOver）。比如，如果节点的timeout设置为5秒，该项设置为10，如果master跟slave之间失联超过50秒，slave不会去failover它的master（意思是不会去把master设置为挂起状态，并取代它）。注意：任意非0数值都有可能导致当master挂掉又没有slave去failover它，这样redis集群不可用。在这种情况下只有原来那个master重新回到集群中才能让集群恢复工作。   </p>
+<p><strong> cluster-migration-barrier<count> </count></strong> ：一个master可以拥有的最小slave数量。该项的作用是，当一个master没有任何slave的时候，某些有富余slave的master节点，可以自动的分一个slave给它。   </p>
+<p><strong> cluster-require-full-coverage&lt;yes/no&gt; </strong> ：如果该项设置为yes（默认就是yes） 当一定比例的键空间没有被覆盖到（就是某一部分的哈希槽没了，有可能是暂时挂了）集群就停止处理任何查询操作。如果该项设置为no，那么就算请求中只有一部分的键可以被查到，一样可以查询（但是有可能会查不全） </p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+    <div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more">分享到：</a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间">QQ空间</a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博">新浪微博</a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博">腾讯微博</a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网">人人网</a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信">微信</a>
+</div>
+<script>
+window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{"bdSize":16}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+<style>
+    .bdshare_popup_box {
+        border-radius: 4px;
+        border: #e1e1e1 solid 1px;
+    }
+    .bdshare-button-style0-16 a,
+    .bdshare-button-style0-16 .bds_more {
+        padding-left: 20px;
+        margin: 6px 10px 6px 0;
+    }
+    .bdshare_dialog_list a,
+    .bdshare_popup_list a,
+    .bdshare_popup_bottom a {
+        font-family: 'Microsoft Yahei';
+    }
+    .bdshare_popup_top {
+        display: none;
+    }
+    .bdshare_popup_bottom {
+        height: auto;
+        padding: 5px;
+    }
+</style>
+
+
+</div>
+
+            
+    
+        <a href="https://www.itchina.top/2018/04/20/【译】Redis Cluster官方教程/#comments" id="sourceId::2018/04/20/【译】Redis Cluster官方教程/" class="article-comment-link cy_cmt_count">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <nav id="page-nav">
         <a class="extend prev" rel="prev" href="/page/5/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/">下一页 &raquo;</a>
     </nav>
@@ -3167,24 +2931,6 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="no-thumbnail">
-                
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
-                            <p class="item-title"><a href="/2018/04/20/在Docker容器中运行Spring Boot应用/" class="title">在Docker容器中运行Spring Boot应用</a></p>
-                            <p class="item-date"><time datetime="2018-04-19T16:34:21.469Z" itemprop="datePublished">2018-04-20</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/集群/">集群</a></p>
-                            <p class="item-title"><a href="/2018/04/20/小白科普：分布式和集群/" class="title">小白科普：分布式和集群</a></p>
-                            <p class="item-date"><time datetime="2018-04-19T16:34:21.468Z" itemprop="datePublished">2018-04-20</time></p>
-                        </div>
-                    </li>
                 
                     <li>
                         
@@ -3210,6 +2956,24 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
                             <p class="item-category"></p>
                             <p class="item-title"><a href="/2018/04/20/通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法/" class="title">通过Ajax进行POST提交JSON类型的数据到SpringMVC Controller的方法</a></p>
                             <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/Spring/">Spring</a></p>
+                            <p class="item-title"><a href="/2018/04/20/使用 Spring Data JPA 简化 JPA 开发/" class="title">使用 Spring Data JPA 简化 JPA 开发</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.448Z" itemprop="datePublished">2018-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/04/20/面试感悟----一名3年工作经验的程序员应该具备的技能/" class="title">面试感悟----一名3年工作经验的程序员应该具备的技能</a></p>
+                            <p class="item-date"><time datetime="2018-04-19T16:34:21.447Z" itemprop="datePublished">2018-04-20</time></p>
                         </div>
                     </li>
                 
@@ -3275,7 +3039,20 @@ window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMin
 
             
         </div>
-        <footer id="footer">
+        <!--google 底部广告 -->
+<div style="width:100%;text-align: center;clear: both;margin-bottom: 20px;" class="hidden-xs">
+    <script async src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <!-- 博客footer上方的广告 -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-8254913025324557"
+         data-ad-slot="3369473724"
+         data-ad-format="auto"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</div>
+<footer id="footer">
     <div class="outer">
         <div id="footer-info" class="inner">
             &copy;2018 - 2018&nbsp; LErry Li &nbsp;版权所有<br>
